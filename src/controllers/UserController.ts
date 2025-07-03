@@ -1,123 +1,135 @@
-import {
-  Controller,
-  Route,
-  Post,
-  Patch,
-  Delete,
-  Body,
-  Path,
-  Request,
-  Response as TsoaResponse,
-  SuccessResponse,
-  Security,
-} from 'tsoa';
-import { Request as ExpressRequest, Response as ExpressResponse } from 'express';
+import { Request, Response as ExpressResponse } from 'express';
 import UserService from '../services/UserService';
+import Response  from '../utils/response';
+import { UserListQueryDTO } from '../types/dtos/CreateUserDto';
 
-@Route('users')
-export class UserController extends Controller {
-  private userService = UserService;
-
-  @Post('signup')
-  @SuccessResponse('201', 'Created')
-  public async signup(@Request() req: ExpressRequest, res: ExpressResponse) {
-    return this.userService.signup(req, res);
+class UserController {
+  async signup(req: Request, res: ExpressResponse) {
+    try {
+      const user = await UserService.signup(req.body);
+      return Response.created(res, user, 'User registered successfully');
+    } catch (error: any) {
+      return Response.badRequest(res, error.message || 'Signup failed');
+    }
   }
 
-  @Post('login')
-  public async login(@Request() req: ExpressRequest, res: ExpressResponse) {
-    return this.userService.login(req, res);
+  async login(req: Request, res: ExpressResponse) {
+    try {
+      const { user, token } = await UserService.login(req.body);
+      return Response.success(res, { user, token }, 'Login successful');
+    } catch (error: any) {
+      return Response.badRequest(res, error.message || 'Login failed');
+    }
   }
 
-  @Patch('{id}')
-  @SuccessResponse('200', 'User updated')
-  public async updateUser(
-    @Path() id: number,
-    @Request() req: ExpressRequest,
-    res: ExpressResponse
-  ) {
-    req.params.id = id.toString();
-    return this.userService.updateUser(req, res);
+  async updateUser(req: Request, res: ExpressResponse) {
+    try {
+      const userId = Number(req.params.id);
+      const user = await UserService.updateUser(userId, req.body);
+      if (!user) return Response.notFound(res, 'User not found');
+      return Response.success(res, user, 'User updated successfully');
+    } catch (error: any) {
+      return Response.badRequest(res, error.message || 'Update failed');
+    }
   }
 
-  @Delete('soft-delete/{id}')
-  @SuccessResponse('200', 'User soft deleted')
-  public async softDeleteUser(
-    @Path() id: number,
-    @Request() req: ExpressRequest,
-res: ExpressResponse
-  ) {
-    req.params.id = id.toString();
-    return this.userService.softDeleteUser(req, res);
+  async softDeleteUser(req: Request, res: ExpressResponse) {
+    try {
+      const userId = Number(req.params.id);
+      const user = await UserService.softDeleteUser(userId);
+      if (!user) return Response.notFound(res, 'User not found');
+      return Response.success(res, user, 'User soft deleted');
+    } catch (error: any) {
+      return Response.badRequest(res, error.message || 'Soft delete failed');
+    }
   }
 
-  @Delete('hard-delete/{id}')
-  @SuccessResponse('200', 'User permanently deleted')
-  public async hardDeleteUser(
-    @Path() id: number,
-    @Request() req: ExpressRequest,
-     res: ExpressResponse
-  ) {
-    req.params.id = id.toString();
-    return this.userService.hardDeleteUser(req, res);
+  async hardDeleteUser(req: Request, res: ExpressResponse) {
+    try {
+      const userId = Number(req.params.id);
+      const user = await UserService.hardDeleteUser(userId);
+      if (!user) return Response.notFound(res, 'User not found');
+      return Response.success(res, user, 'User permanently deleted');
+    } catch (error: any) {
+      return Response.badRequest(res, error.message || 'Hard delete failed');
+    }
   }
 
-  @Post('restore/{id}')
-  @SuccessResponse('200', 'User restored')
-  public async restoreUser(
-    @Path() id: number,
-    @Request() req: ExpressRequest,
-    res: ExpressResponse
-  ) {
-    req.params.id = id.toString();
-    return this.userService.restoreUser(req, res);
+  async restoreUser(req: Request, res: ExpressResponse) {
+    try {
+      const userId = Number(req.params.id);
+      const user = await UserService.restoreUser(userId);
+      if (!user) return Response.notFound(res, 'User not found');
+      return Response.success(res, user, 'User restored');
+    } catch (error: any) {
+      return Response.badRequest(res, error.message || 'Restore failed');
+    }
   }
 
-  @Patch('change-password')
-  @Security('jwt')
-  @SuccessResponse('200', 'Password changed')
-  public async changePassword(
-    @Request() req: ExpressRequest,
-    res: ExpressResponse
-  ) {
-    return this.userService.changePassword(req, res);
+  async changePassword(req: Request, res: ExpressResponse) {
+    try {
+      // assuming user id is in req.user (after auth middleware)
+      const userId = req.userId;
+      if (!userId) return Response.unauthorized(res, 'Unauthorized');
+
+      const user = await UserService.changePassword(userId, req.body);
+      if (!user) return Response.badRequest(res, 'Password change failed');
+      return Response.success(res, user, 'Password changed successfully');
+    } catch (error: any) {
+      return Response.badRequest(res, error.message || 'Change password failed');
+    }
   }
 
-  @Post('request-password-reset')
-  @SuccessResponse('200', 'OTP sent')
-  public async requestPasswordReset(
-    @Request() req: ExpressRequest,
-     res: ExpressResponse
-  ) {
-    return this.userService.requestPasswordReset(req, res);
+  async requestPasswordReset(req: Request, res: ExpressResponse) {
+    try {
+      const { email } = req.body;
+      const result = await UserService.requestPasswordReset(email);
+      return Response.success(res, result, 'OTP sent to email');
+    } catch (error: any) {
+      return Response.badRequest(res, error.message || 'Request password reset failed');
+    }
   }
 
-  @Post('reset-password')
-  @SuccessResponse('200', 'Password reset')
-  public async resetPassword(
-    @Request() req: ExpressRequest,
-res: ExpressResponse
-  ) {
-    return this.userService.resetPassword(req, res);
+  async resetPassword(req: Request, res: ExpressResponse) {
+    try {
+      const user = await UserService.resetPassword(req.body);
+      if (!user) return Response.badRequest(res, 'Password reset failed');
+      return Response.success(res, user, 'Password reset successful');
+    } catch (error: any) {
+      return Response.badRequest(res, error.message || 'Reset password failed');
+    }
   }
 
-  @Patch('change-role/{id}')
-  @SuccessResponse('200', 'User role changed')
-  public async changeRole(
-    @Path() id: number,
-    @Request() req: ExpressRequest,
-     res: ExpressResponse
-  ) {
-    req.params.id = id.toString();
-    return this.userService.changeRole(req, res);
+  async changeRole(req: Request, res: ExpressResponse) {
+    try {
+      const userId = Number(req.params.id);
+      const { role } = req.body;
+      const user = await UserService.changeRole(userId, role);
+      if (!user) return Response.notFound(res, 'User not found');
+      return Response.success(res, user, 'User role changed');
+    } catch (error: any) {
+      return Response.badRequest(res, error.message || 'Change role failed');
+    }
   }
 
-  @Post()
-  @SuccessResponse('201', 'User created')
-  public async createUser(
-    @Request() req: ExpressRequest,
-     res: ExpressResponse
-  ) {
-    return this.userService.createUser(req, res);
+  async createUser(req: Request, res: ExpressResponse) {
+    try {
+      const user = await UserService.createUser(req.body);
+      return Response.created(res, user, 'User created successfully');
+    } catch (error: any) {
+      return Response.badRequest(res, error.message || 'Create user failed');
+    }
+  }
+
+  async listUsers(req: Request, res: ExpressResponse) {
+    try {
+      const query = req.query as unknown as UserListQueryDTO;
+      const result = await UserService.listUsers(query);
+      return Response.success(res, result, 'Users retrieved successfully');
+    } catch (error: any) {
+      return Response.badRequest(res, error.message || 'List users failed');
+    }
   }
 }
+
+export default new UserController();

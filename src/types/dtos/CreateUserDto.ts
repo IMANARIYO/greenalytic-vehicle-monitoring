@@ -77,3 +77,19 @@ export interface PaginationMeta {
   hasNextPage: boolean; // true if there's a next page
   hasPrevPage: boolean; // true if there's a previous page
 }
+export interface PaginationParams {
+  page?: number;
+  limit?: number;
+}
+
+export interface UserFilterParams {
+  search?: string;
+  role?: UserRole;
+  status?: string;
+}
+
+export interface UserSortParams {
+  sortBy?: Prisma.UserScalarFieldEnum;
+  sortOrder?: 'asc' | 'desc';
+}
+export interface UserListQueryDTO extends PaginationParams, UserFilterParams, UserSortParams {}

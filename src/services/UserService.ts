@@ -1,38 +1,52 @@
-import { Request, Response as ExpressResponse } from 'express';
-import { Prisma as PrismaTypes } from '@prisma/client';
+import { Prisma as PrismaTypes, User, UserRole } from '@prisma/client';
 import UserRepo from '../repositories/UserRepository';
-import Response from '../utils/response';
 import { generateOTP, isOTPValid, passComparer, passHashing } from '../utils/passwordFunctions';
-import { AuthenticatedRequest, tokengenerating } from '../utils/jwtFunctions';
 
+import {
+  SignupDTO,
+  LoginDTO,
+  ChangePasswordDTO,
+  ResetPasswordDTO,
+  CreateUserDTO,
+  UpdateUserDTO,
+  UserListQueryDTO,
+  PaginationMeta,
+} from '../types/dtos/CreateUserDto';
+import { tokengenerating } from '../utils/jwtFunctions';
 
-
+function removeNulls<T extends object>(obj: T): T {
+  const cleanedObj: any = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value === null) {
+      cleanedObj[key] = undefined;
+    } else if (typeof value === 'object' && !Array.isArray(value)) {
+      cleanedObj[key] = removeNulls(value);
+    } else {
+      cleanedObj[key] = value;
+    }
+  }
+  return cleanedObj;
+}
 
 class UserService {
-  // Signup
-  async signup(req: Request, res: ExpressResponse) {
+  async signup(data: SignupDTO): Promise<User> {
     try {
-      const { email, password, ...rest } = req.body;
-      const existingUser = await UserRepo.getUserByEmail(email);
-      if (existingUser) {
-        return Response.conflict(res, 'User already exists');
-      }
+      const existingUser = await UserRepo.getUserByEmail(data.email);
+      if (existingUser) throw new Error('User already exists');
 
-      const hashedPassword = await passHashing(password);
-      const user = await UserRepo.addUser({ email, password: hashedPassword, ...rest });
-      return Response.created(res, user, 'Signup successful');
+      const hashedPassword = await passHashing(data.password);
+      const cleanData = removeNulls({ ...data, password: hashedPassword });
+      return await UserRepo.addUser(cleanData as PrismaTypes.UserCreateInput);
     } catch (error) {
-      return Response.error(res, error, 'Signup failed');
+      throw error;
     }
   }
 
-  // Login
-  async login(req: Request, res: ExpressResponse) {
+  async login(data: LoginDTO): Promise<{ user: User; token: string }> {
     try {
-      const { email, password } = req.body;
-      const user = await UserRepo.getUserByEmail(email);
-      if (!user || !(await passComparer(password, user.password))) {
-        return Response.unauthorized(res, 'Invalid email or password');
+      const user = await UserRepo.getUserByEmail(data.email);
+      if (!user || !(await passComparer(data.password, user.password))) {
+        throw new Error('Invalid email or password');
       }
 
       const token = tokengenerating({
@@ -42,163 +56,117 @@ class UserService {
         username: user.username || '',
       });
 
-      return Response.success(res, { user, token }, 'Login successful');
+      return { user, token };
     } catch (error) {
-      return Response.error(res, error, 'Login failed');
+      throw error;
     }
   }
 
-  // Change Password (Authenticated)
-  async changePassword(req: AuthenticatedRequest, res: ExpressResponse) {
+  async listUsers(query: UserListQueryDTO): Promise<{ users: User[]; pagination: PaginationMeta }> {
     try {
-      const { oldPassword, newPassword } = req.body;
-      const userId = req.userId!;
+      return await UserRepo.getAllUsers(query);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async changePassword(userId: number, data: ChangePasswordDTO): Promise<User | null> {
+    try {
       const user = await UserRepo.getUserById(userId);
-
-      if (!user || !(await passComparer(oldPassword, user.password))) {
-        return Response.badRequest(res, 'Old password is incorrect');
+      if (!user || !(await passComparer(data.oldPassword, user.password))) {
+        throw new Error('Old password is incorrect');
       }
-
-      const hashedPassword = await passHashing(newPassword);
-      const updatedUser = await UserRepo.modifyUser(userId, { password: hashedPassword });
-
-      return Response.success(res, updatedUser, 'Password updated successfully');
+      const hashedPassword = await passHashing(data.newPassword);
+      return await UserRepo.modifyUser(userId, { password: hashedPassword });
     } catch (error) {
-      return Response.error(res, error, 'Failed to change password');
+      throw error;
     }
   }
 
-  // Forgot Password - Generate OTP
-  async requestPasswordReset(req: Request, res: ExpressResponse) {
+  async requestPasswordReset(email: string): Promise<{ otp: string }> {
     try {
-      const { email } = req.body;
       const user = await UserRepo.getUserByEmail(email);
-      if (!user) return Response.notFound(res, 'User not found');
+      if (!user) throw new Error('User not found');
 
       const { code, expiresAt } = generateOTP();
       await UserRepo.modifyUser(user.id, { otp: code, otpExpiresAt: expiresAt });
 
-      return Response.success(res, { otp: code }, 'OTP sent (displayed here for now)');
+      return { otp: code };
     } catch (error) {
-      return Response.error(res, error, 'Failed to generate OTP');
+      throw error;
     }
   }
 
-  // Reset Password using OTP
-  async resetPassword(req: Request, res: ExpressResponse) {
+  async resetPassword(data: ResetPasswordDTO): Promise<User | null> {
     try {
-      const { email, otp, newPassword } = req.body;
-      const user = await UserRepo.getUserByEmail(email);
-      if (!user || !user.otp || !user.otpExpiresAt) {
-        return Response.badRequest(res, 'OTP not found or expired');
-      }
+      const user = await UserRepo.getUserByEmail(data.email);
+      if (!user || !user.otp || !user.otpExpiresAt) throw new Error('OTP not found or expired');
 
-      const validation = isOTPValid(user.otp, otp, user.otpExpiresAt);
-      if (!validation.valid) {
-        return Response.badRequest(res, validation.message);
-      }
+      const validation = isOTPValid(user.otp, data.otp, user.otpExpiresAt);
+      if (!validation.valid) throw new Error(validation.message);
 
-      const hashedPassword = await passHashing(newPassword);
-      const updatedUser = await UserRepo.modifyUser(user.id, {
+      const hashedPassword = await passHashing(data.newPassword);
+      return await UserRepo.modifyUser(user.id, {
         password: hashedPassword,
         otp: null,
         otpExpiresAt: null,
       });
-
-      return Response.success(res, updatedUser, 'Password reset successful');
     } catch (error) {
-      return Response.error(res, error, 'Failed to reset password');
+      throw error;
     }
   }
 
-  // Change Role
-  async changeRole(req: Request, res: ExpressResponse) {
+  async changeRole(userId: number, role: string): Promise<User | null> {
     try {
-      const userId = Number(req.params.id);
-      const { role } = req.body;
-
-      const updatedUser = await UserRepo.modifyUser(userId, { role });
-      return Response.success(res, updatedUser, 'User role updated successfully');
+      return await UserRepo.modifyUser(userId, { role: role as UserRole });
     } catch (error) {
-      return Response.error(res, error, 'Failed to change role');
+      throw error;
     }
   }
 
-  // Create User (for admin bulk or manual creation)
-  async createUser(req: Request, res: ExpressResponse) {
+  async createUser(data: CreateUserDTO): Promise<User> {
     try {
-      const newUserData = req.body;
+      if (!data.password) throw new Error('Password is required');
 
-      // Hash the password before saving
-      if (!newUserData.password) {
-        return Response.badRequest(res, 'Password is required');
-      }
-
-      const hashedPassword = await passHashing(newUserData.password);
-
-      const user = await UserRepo.addUser({
-        ...newUserData,
-        password: hashedPassword,
-      });
-
-      return Response.created(res, user, 'User created successfully');
+      const hashedPassword = await passHashing(data.password);
+      const cleanData = removeNulls({ ...data, password: hashedPassword });
+      return await UserRepo.addUser(cleanData as PrismaTypes.UserCreateInput);
     } catch (error) {
-      return Response.error(res, error, 'Failed to create user');
+      throw error;
     }
   }
-  // Update User
-  async updateUser(req: Request, res: ExpressResponse) {
+
+  async updateUser(userId: number, data: UpdateUserDTO): Promise<User | null> {
     try {
-      const userId = Number(req.params.id);
-      const updatedData: PrismaTypes.UserUpdateInput = req.body;
+      return await UserRepo.modifyUser(userId, data);
+    } catch (error) {
+      throw error;
+    }
+  }
 
-      const updatedUser = await UserRepo.modifyUser(userId, updatedData);
-      if (!updatedUser) {
-        return Response.notFound(res, 'User not found');
-      }
+  async softDeleteUser(userId: number): Promise<User | null> {
+    try {
+      return await UserRepo.softDeleteUser(userId);
+    } catch (error) {
+      throw error;
+    }
+  }
 
-      return Response.success(res, updatedUser, 'User updated successfully');
-    } catch (error) {
-      return Response.error(res, error, 'Failed to update user');
-    }
-  }
-  
-  // Soft Delete User
-async softDeleteUser(req: Request, res: ExpressResponse) {
+  async hardDeleteUser(userId: number): Promise<User | null> {
     try {
-      const userId = Number(req.params.id);
-      const user = await UserRepo.softDeleteUser(userId);
-      if (!user) return Response.notFound(res, 'User not found');
-      return Response.success(res, user, 'User soft deleted');
+      return await UserRepo.hardDeleteUser(userId);
     } catch (error) {
-      return Response.error(res, error, 'Failed to soft delete user');
+      throw error;
     }
   }
-  
-  // Hard Delete User
-  async hardDeleteUser(req: Request, res: ExpressResponse) {
+
+  async restoreUser(userId: number): Promise<User | null> {
     try {
-      const userId = Number(req.params.id);
-      const user = await UserRepo.hardDeleteUser(userId);
-      if (!user) return Response.notFound(res, 'User not found');
-      return Response.success(res, user, 'User permanently deleted');
+      return await UserRepo.restoreUser(userId);
     } catch (error) {
-      return Response.error(res, error, 'Failed to hard delete user');
+      throw error;
     }
   }
-  
-  // Restore User
-  async restoreUser(req: Request, res: ExpressResponse) {
-    try {
-      const userId = Number(req.params.id);
-      const user = await UserRepo.restoreUser(userId);
-      if (!user) return Response.notFound(res, 'User not found');
-      return Response.success(res, user, 'User restored successfully');
-    } catch (error) {
-      return Response.error(res, error, 'Failed to restore user');
-    }
-  }
-  
 }
 
 export default new UserService();

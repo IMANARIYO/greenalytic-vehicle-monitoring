@@ -1,0 +1,148 @@
+{
+	"openapi": "3.0.0",
+	"components": {
+		"examples": {},
+		"headers": {},
+		"parameters": {},
+		"requestBodies": {},
+		"responses": {},
+		"schemas": {
+			"_36_Enums.UserRole": {
+				"type": "string",
+				"enum": [
+					"ADMIN",
+					"USER",
+					"TECHNICIAN",
+					"MANAGER",
+					"FLEET_MANAGER",
+					"ANALYST",
+					"SUPPORT_AGENT"
+				]
+			},
+			"UserRole": {
+				"$ref": "#/components/schemas/_36_Enums.UserRole"
+			},
+			"SignupDTO": {
+				"properties": {
+					"email": {
+						"type": "string"
+					},
+					"password": {
+						"type": "string"
+					},
+					"username": {
+						"type": "string",
+						"nullable": true
+					},
+					"image": {
+						"type": "string",
+						"nullable": true
+					},
+					"nationalId": {
+						"type": "string",
+						"nullable": true
+					},
+					"gender": {
+						"type": "string",
+						"nullable": true
+					},
+					"phoneNumber": {
+						"type": "string",
+						"nullable": true
+					},
+					"location": {
+						"type": "string",
+						"nullable": true
+					},
+					"companyName": {
+						"type": "string",
+						"nullable": true
+					},
+					"companyRegistrationNumber": {
+						"type": "string",
+						"nullable": true
+					},
+					"businessSector": {
+						"type": "string",
+						"nullable": true
+					},
+					"fleetSize": {
+						"type": "number",
+						"format": "double",
+						"nullable": true
+					},
+					"language": {
+						"type": "string",
+						"nullable": true
+					},
+					"notificationPreference": {
+						"type": "string",
+						"nullable": true
+					},
+					"role": {
+						"$ref": "#/components/schemas/UserRole"
+					},
+					"status": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"email",
+					"password"
+				],
+				"type": "object",
+				"additionalProperties": false
+			}
+		},
+		"securitySchemes": {}
+	},
+	"info": {
+		"title": "greenalytic-vehicle-monitoring",
+		"version": "1.0.0",
+		"license": {
+			"name": "ISC"
+		},
+		"contact": {}
+	},
+	"paths": {
+		"/users/signup": {
+			"post": {
+				"operationId": "Signup",
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"$ref": "#/components/schemas/SignupDTO"
+										},
+										{
+											"properties": {
+												"message": {
+													"type": "string"
+												}
+											},
+											"required": [
+												"message"
+											],
+											"type": "object"
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": []
+			}
+		}
+	},
+	"servers": [
+		{
+			"url": "/"
+		}
+	]
+}
