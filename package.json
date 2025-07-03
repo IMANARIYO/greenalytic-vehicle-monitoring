@@ -4,15 +4,13 @@
   "description": "",
   "main": "eslint.config.js",
   "scripts": {
-    
     "prisma:migrate": "npx prisma migrate dev --name init",
     "prisma:deploy": "npx prisma migrate deploy",
     "prisma:generate": "npx prisma generate",
     "tsoa:spec": "npx tsoa spec",
     "tsoa:routes": "npx tsoa routes",
     "start": "nodemon src/index.ts",
-"dev": "nodemon --watch src --ext ts,json --exec ts-node src/index.ts",
-
+    "dev": "nodemon --watch src --ext ts,json --exec ts-node src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -27,7 +25,8 @@
     "express-validator": "^7.2.1",
     "jsonwebtoken": "^9.0.2",
     "prisma": "^6.11.0",
-    "tsoa": "^6.6.0"
+    "tsoa": "^6.6.0",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^3.0.0",
