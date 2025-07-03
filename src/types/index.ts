@@ -13,3 +13,64 @@ export * from './TrackingDeviceTypes';
 export * from './UserNotificationTypes';
 export * from './UserTypes';
 export * from './VehicleTypes';
+
+// src/types/prisma-types.ts
+import {
+    User,
+    Vehicle,
+    TrackingDevice,
+    FuelData,
+    EmissionData,
+    GpsData,
+    OBDData,
+    Alert,
+    ConnectionState,
+    Report,
+    MaintenanceRecord,
+    ActivityLog,
+    InventoryItem,
+    ThresholdConfig,
+    DeviceHeartbeat,
+    UserNotification,
+    UserRole,
+    ConnectionStatus,
+    DeviceStatus,
+    VehicleStatus,
+    EmissionStatus,
+    FuelType,
+    DeviceCategory,
+    CommunicationProtocol,
+    UserStatus,
+    NotificationType,
+  } from '@prisma/client';
+  
+  export {
+    User,
+    Vehicle,
+    TrackingDevice,
+    FuelData,
+    EmissionData,
+    GpsData,
+    OBDData,
+    Alert,
+    ConnectionState,
+    Report,
+    MaintenanceRecord,
+    ActivityLog,
+    InventoryItem,
+    ThresholdConfig,
+    DeviceHeartbeat,
+    UserNotification,
+    // Enums
+    UserRole,
+    ConnectionStatus,
+    DeviceStatus,
+    VehicleStatus,
+    EmissionStatus,
+    FuelType,
+    DeviceCategory,
+    CommunicationProtocol,
+    UserStatus,
+    NotificationType,
+  };
+  
