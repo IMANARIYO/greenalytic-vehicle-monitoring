@@ -1,0 +1,60 @@
+greenalytic-vehicle-monitoring-backend/
+│
+├── prisma/
+│   ├── migrations/
+│   └── schema.prisma
+│
+├── src/
+│   ├── config/
+│   │   ├── db.ts
+│   │   └── env.ts
+│   │
+│   ├── controllers/
+│   │   ├── UserController.ts
+│   │   └── ...
+│   │
+│   ├── services/
+│   │   ├── UserService.ts
+│   │   └── ...
+│   │
+│   ├── repositories/              # <-- Add this for direct Prisma queries if needed
+│   │   └── UserRepository.ts
+│   │
+│   ├── middlewares/
+│   │   ├── auth.ts
+│   │   ├── errorHandler.ts
+│   │   └── validation.ts
+│   │
+│   ├── routes/
+│   │   └── index.ts
+│   │
+│   ├── utils/
+│   │   ├── logger.ts
+│   │   ├── response.ts             # <-- Your centralized Response class here
+│   │   └── validators.ts          # <-- Request validation helper functions
+│   │
+│   ├── types/                     # <-- Custom types and interfaces (DTOs)
+│   │   ├── UserTypes.ts
+│   │   └── ...
+│   │
+│   ├── swagger/
+│   │   └── openapi.json
+│   │
+│   ├── jobs/                      # <-- Scheduled jobs or cron tasks (e.g. notifications)
+│   │   └── sendAlertNotifications.ts
+│   │
+│   ├── tests/                     # <-- Tests folder for unit & integration tests
+│   │   ├── controllers/
+│   │   ├── services/
+│   │   └── ...
+│   │
+│   ├── index.ts
+│   └── server.ts
+│
+├── .env
+├── .gitignore
+├── package.json
+├── tsconfig.json
+├── tsoa.json
+├── README.md
+└── eslint.config.js               # <-- Add ESLint config for linting rules

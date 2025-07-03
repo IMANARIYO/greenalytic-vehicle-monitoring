@@ -1,0 +1,68 @@
+# Define root as current directory
+$root = Get-Location
+
+# Define folder structure as an array of relative paths
+$folders = @(
+    "prisma\migrations",
+    "src\config",
+    "src\controllers",
+    "src\services",
+    "src\repositories",
+    "src\middlewares",
+    "src\routes",
+    "src\utils",
+    "src\types",
+    "src\swagger",
+    "src\jobs",
+    "src\tests\controllers",
+    "src\tests\services"
+)
+
+# Create folders
+foreach ($folder in $folders) {
+    $path = Join-Path $root $folder
+    New-Item -ItemType Directory -Force -Path $path | Out-Null
+}
+
+# Define files to create with relative paths
+$files = @(
+    "prisma\schema.prisma",
+    "src\config\db.ts",
+    "src\config\env.ts",
+    "src\controllers\UserController.ts",
+    "src\services\UserService.ts",
+    "src\repositories\UserRepository.ts",
+    "src\middlewares\auth.ts",
+    "src\middlewares\errorHandler.ts",
+    "src\middlewares\validation.ts",
+    "src\routes\index.ts",
+    "src\utils\logger.ts",
+    "src\utils\response.ts",
+    "src\utils\validators.ts",
+    "src\types\UserTypes.ts",
+    "src\jobs\sendAlertNotifications.ts",
+    "src\tests\controllers\UserController.test.ts",
+    "src\tests\services\UserService.test.ts",
+    "src\index.ts",
+    "src\server.ts",
+    ".env",
+    ".gitignore",
+    "package.json",
+    "tsconfig.json",
+    "tsoa.json",
+    "README.md",
+    "eslint.config.js"
+)
+
+# Create empty files
+foreach ($file in $files) {
+    $path = Join-Path $root $file
+    # Create file and ensure folder exists (in case of root files)
+    $folderPath = Split-Path $path
+    if (!(Test-Path $folderPath)) {
+        New-Item -ItemType Directory -Force -Path $folderPath | Out-Null
+    }
+    New-Item -ItemType File -Force -Path $path | Out-Null
+}
+
+Write-Host "Basic folder and file structure created in current directory!"
