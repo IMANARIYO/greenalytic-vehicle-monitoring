@@ -8,7 +8,7 @@ export const ENV = {
   REDIS_URL: process.env.REDIS_URL || '',
   JWT_SECRET: process.env.JWT_SECRET || '',
   SALT_ROUNDS: process.env.saltRounds || '2',
-  JWT_EXP: process.env.JWT_EXP || '10h',
+  JWT_EXP: (process.env.JWT_EXP as `${number}${"d" | "h" | "m" | "s"}`) || "10h",
   CLOUD_NAME: process.env.CLOUD_NAME || '',
   API_KEY: process.env.API_KEY || '',
   API_SECRET: process.env.API_SECRET || '',

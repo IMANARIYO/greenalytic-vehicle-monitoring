@@ -1,4 +1,5 @@
 import { Response as ExpressResponse } from "express";
+import logger from './logger'; // adjust path as needed
 
 class Response {
   static success<T>(
@@ -7,6 +8,7 @@ class Response {
     message = "Success",
     statusCode = 200
   ): ExpressResponse {
+    logger.info(`Success: ${message}`);
     return res.status(statusCode).json({
       success: true,
       message,
@@ -19,6 +21,7 @@ class Response {
     data: T = {} as T,
     message = "Resource created successfully"
   ): ExpressResponse {
+    logger.info(`Created: ${message}`);
     return this.success(res, data, message, 201);
   }
 
@@ -27,10 +30,12 @@ class Response {
     data: T = {} as T,
     message = "Request accepted"
   ): ExpressResponse {
+    logger.info(`Accepted: ${message}`);
     return this.success(res, data, message, 202);
   }
 
   static noContent(res: ExpressResponse, message = "No content"): ExpressResponse {
+    logger.info(`No content: ${message}`);
     return res.status(204).send();
   }
 
@@ -39,6 +44,7 @@ class Response {
     message = "Bad request",
     error: unknown = null
   ): ExpressResponse {
+    logger.warn(`Bad Request: ${message} - Error: ${error?.toString() || "N/A"}`);
     return this.error(res, error, message, 400);
   }
 
@@ -46,10 +52,12 @@ class Response {
     res: ExpressResponse,
     message = "Unauthorized"
   ): ExpressResponse {
+    logger.warn(`Unauthorized: ${message}`);
     return this.error(res, null, message, 401);
   }
 
   static forbidden(res: ExpressResponse, message = "Forbidden"): ExpressResponse {
+    logger.warn(`Forbidden: ${message}`);
     return this.error(res, null, message, 403);
   }
 
@@ -57,6 +65,7 @@ class Response {
     res: ExpressResponse,
     message = "Resource not found"
   ): ExpressResponse {
+    logger.warn(`Not Found: ${message}`);
     return this.error(res, null, message, 404);
   }
 
@@ -65,6 +74,7 @@ class Response {
     message = "Conflict",
     error: unknown = null
   ): ExpressResponse {
+    logger.warn(`Conflict: ${message} - Error: ${error?.toString() || "N/A"}`);
     return this.error(res, error, message, 409);
   }
 
@@ -73,6 +83,7 @@ class Response {
     message = "Unprocessable entity",
     error: unknown = null
   ): ExpressResponse {
+    logger.warn(`Unprocessable Entity: ${message} - Error: ${error?.toString() || "N/A"}`);
     return this.error(res, error, message, 422);
   }
 
@@ -80,6 +91,7 @@ class Response {
     res: ExpressResponse,
     message = "Too many requests"
   ): ExpressResponse {
+    logger.warn(`Too Many Requests: ${message}`);
     return this.error(res, null, message, 429);
   }
 
@@ -89,6 +101,7 @@ class Response {
     message = "Something went wrong",
     statusCode = 500
   ): ExpressResponse {
+    logger.error(`Error: ${message} - ${error?.toString() || "No error details"}`);
     return res.status(statusCode).json({
       success: false,
       message,
