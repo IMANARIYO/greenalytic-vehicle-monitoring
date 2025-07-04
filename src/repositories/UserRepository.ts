@@ -1,9 +1,11 @@
 import prisma from '../config/db';
 import { Prisma as PrismaTypes, User, UserStatus } from '@prisma/client';
+
 import { UserListQueryDTO } from '../types/dtos/CreateUserDto';
 import { GetUserByIdResponse, InternalUser, UserListItemWithCounts } from '../types';
 import { PaginationMeta } from '../types/GrobalTypes';
 import logger from '../utils/logger';
+
 
 class UserRepository {
   private tag = '[UserRepository]';
