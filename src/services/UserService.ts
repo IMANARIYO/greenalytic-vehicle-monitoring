@@ -13,6 +13,7 @@ import {
   PaginationMeta,
 } from '../types/dtos/CreateUserDto';
 import { tokengenerating } from '../utils/jwtFunctions';
+import { UserListItemWithCounts } from '../types';
 
 function removeNulls<T extends object>(obj: T): T {
   const cleanedObj: any = {};
@@ -62,7 +63,7 @@ class UserService {
     }
   }
 
-  async listUsers(query: UserListQueryDTO): Promise<{ users: User[]; pagination: PaginationMeta }> {
+  async listUsers(query: UserListQueryDTO): Promise<{ users: UserListItemWithCounts[]; pagination: PaginationMeta }> {
     try {
       return await UserRepo.getAllUsers(query);
     } catch (error) {
@@ -72,7 +73,7 @@ class UserService {
 
   async changePassword(userId: number, data: ChangePasswordDTO): Promise<User | null> {
     try {
-      const user = await UserRepo.getUserById(userId);
+      const user = await UserRepo.getUserByIdWithPassword(userId);
       if (!user || !(await passComparer(data.oldPassword, user.password))) {
         throw new Error('Old password is incorrect');
       }

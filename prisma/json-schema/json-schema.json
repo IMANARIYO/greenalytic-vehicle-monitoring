@@ -1,0 +1,1092 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "User": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "username": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "email": {
+          "type": "string"
+        },
+        "image": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": "https://st3.depositphotos.com/15648834/17930/v/450/depositphotos_179308454-stock-illustration-unknown-person-silhouette-glasses-profile.jpg"
+        },
+        "password": {
+          "type": "string"
+        },
+        "nationalId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "gender": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "phoneNumber": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "location": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "companyName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "companyRegistrationNumber": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "businessSector": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fleetSize": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "language": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": "English"
+        },
+        "notificationPreference": {
+          "type": "string",
+          "default": "Email"
+        },
+        "role": {
+          "type": "string",
+          "default": "USER",
+          "enum": [
+            "ADMIN",
+            "USER",
+            "TECHNICIAN",
+            "MANAGER",
+            "FLEET_MANAGER",
+            "ANALYST",
+            "SUPPORT_AGENT"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "default": "ACTIVE",
+          "enum": [
+            "ACTIVE",
+            "PENDING_APPROVAL",
+            "SUSPENDED",
+            "DEACTIVATED"
+          ]
+        },
+        "otpExpiresAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "otp": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "token": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "verified": {
+          "type": "boolean",
+          "default": false
+        },
+        "deletedAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "vehicles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Vehicle"
+          }
+        },
+        "trackingDevices": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TrackingDevice"
+          }
+        },
+        "alerts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Alert"
+          }
+        },
+        "reports": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Report"
+          }
+        },
+        "activityLogs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ActivityLog"
+          }
+        },
+        "userNotifications": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UserNotification"
+          }
+        }
+      }
+    },
+    "Vehicle": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "plateNumber": {
+          "type": "string"
+        },
+        "registrationNumber": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "chassisNumber": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "vehicleType": {
+          "type": "string"
+        },
+        "vehicleModel": {
+          "type": "string"
+        },
+        "yearOfManufacture": {
+          "type": "integer"
+        },
+        "usage": {
+          "type": "string"
+        },
+        "fuelType": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "PETROL",
+            "DIESEL",
+            "ELECTRIC",
+            "HYBRID"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "default": "NORMAL_EMISSION",
+          "enum": [
+            "NORMAL_EMISSION",
+            "TOP_POLLUTING",
+            "INACTIVE_DISCONNECTED",
+            "UNDER_MAINTENANCE"
+          ]
+        },
+        "emissionStatus": {
+          "type": "string",
+          "default": "LOW",
+          "enum": [
+            "LOW",
+            "NORMAL",
+            "HIGH"
+          ]
+        },
+        "lastMaintenanceDate": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "user": {
+          "$ref": "#/definitions/User"
+        },
+        "emissionData": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EmissionData"
+          }
+        },
+        "gpsData": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/GpsData"
+          }
+        },
+        "fuelData": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FuelData"
+          }
+        },
+        "obdData": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/OBDData"
+          }
+        },
+        "trackingDevices": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TrackingDevice"
+          }
+        },
+        "alerts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Alert"
+          }
+        },
+        "maintenanceRecords": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MaintenanceRecord"
+          }
+        },
+        "connectionState": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ConnectionState"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "deletedAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        }
+      }
+    },
+    "TrackingDevice": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "serialNumber": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "plateNumber": {
+          "type": "string"
+        },
+        "batteryLevel": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "signalStrength": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "deviceCategory": {
+          "type": "string",
+          "enum": [
+            "MOTORCYCLE",
+            "CAR",
+            "TRUCK",
+            "TRICYCLE",
+            "OTHER"
+          ]
+        },
+        "firmwareVersion": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "simCardNumber": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "installationDate": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "communicationProtocol": {
+          "type": "string",
+          "default": "MQTT",
+          "enum": [
+            "MQTT",
+            "HTTP",
+            "SMS"
+          ]
+        },
+        "dataTransmissionInterval": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "enableOBDMonitoring": {
+          "type": "boolean",
+          "default": false
+        },
+        "enableGPSTracking": {
+          "type": "boolean",
+          "default": false
+        },
+        "enableEmissionMonitoring": {
+          "type": "boolean",
+          "default": false
+        },
+        "enableFuelMonitoring": {
+          "type": "boolean",
+          "default": false
+        },
+        "isActive": {
+          "type": "boolean",
+          "default": true
+        },
+        "status": {
+          "type": "string",
+          "default": "ACTIVE",
+          "enum": [
+            "ACTIVE",
+            "INACTIVE",
+            "PENDING",
+            "DISCONNECTED",
+            "MAINTENANCE"
+          ]
+        },
+        "lastPing": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "gpsData": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/GpsData"
+          }
+        },
+        "fuelData": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FuelData"
+          }
+        },
+        "emissionData": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EmissionData"
+          }
+        },
+        "obdData": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/OBDData"
+          }
+        },
+        "user": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/User"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "vehicle": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Vehicle"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "deviceHeartbeats": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DeviceHeartbeat"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "deletedAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        }
+      }
+    },
+    "FuelData": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "fuelLevel": {
+          "type": "number"
+        },
+        "fuelConsumption": {
+          "type": "number"
+        },
+        "plateNumber": {
+          "type": "string"
+        },
+        "trackingDevice": {
+          "$ref": "#/definitions/TrackingDevice"
+        },
+        "vehicle": {
+          "$ref": "#/definitions/Vehicle"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "EmissionData": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "co2Percentage": {
+          "type": "number"
+        },
+        "coPercentage": {
+          "type": "number"
+        },
+        "o2Percentage": {
+          "type": "number"
+        },
+        "hcPPM": {
+          "type": "integer"
+        },
+        "noxPPM": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "pm25Level": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "vehicle": {
+          "$ref": "#/definitions/Vehicle"
+        },
+        "plateNumber": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "trackingDevice": {
+          "$ref": "#/definitions/TrackingDevice"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "deletedAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        }
+      }
+    },
+    "GpsData": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "latitude": {
+          "type": "number"
+        },
+        "longitude": {
+          "type": "number"
+        },
+        "plateNumber": {
+          "type": "string"
+        },
+        "speed": {
+          "type": "number"
+        },
+        "accuracy": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "vehicle": {
+          "$ref": "#/definitions/Vehicle"
+        },
+        "trackingStatus": {
+          "type": "boolean",
+          "default": false
+        },
+        "trackingDevice": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/TrackingDevice"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "OBDData": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "rpm": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "plateNumber": {
+          "type": "string"
+        },
+        "throttlePosition": {
+          "type": "number"
+        },
+        "engineTemperature": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "engineStatus": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "faultCodes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "vehicle": {
+          "$ref": "#/definitions/Vehicle"
+        },
+        "trackingDevice": {
+          "$ref": "#/definitions/TrackingDevice"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "Alert": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "HIGH_EMISSION_ALERT",
+            "DIAGNOSTIC_FAULT_NOTIFICATION",
+            "FUEL_ANOMALY_ALERT",
+            "DEVICE_OFFLINE_WARNING",
+            "SPEED_VIOLATION_ALERT"
+          ]
+        },
+        "title": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "isRead": {
+          "type": "boolean",
+          "default": false
+        },
+        "triggerValue": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "triggerThreshold": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "vehicle": {
+          "$ref": "#/definitions/Vehicle"
+        },
+        "user": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/User"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "ConnectionState": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "vehicle": {
+          "$ref": "#/definitions/Vehicle"
+        },
+        "socketId": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "CONNECTED",
+            "DISCONNECTED"
+          ]
+        },
+        "lastUpdated": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "Report": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "title": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "format": {
+          "type": "string"
+        },
+        "filePath": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "dateFrom": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "dateTo": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "vehicleIds": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "generatedBy": {
+          "$ref": "#/definitions/User"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "MaintenanceRecord": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "type": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "recommendedAction": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cost": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "performedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "nextDueDate": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "vehicle": {
+          "$ref": "#/definitions/Vehicle"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "ActivityLog": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "user": {
+          "$ref": "#/definitions/User"
+        },
+        "action": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": [
+            "number",
+            "string",
+            "boolean",
+            "object",
+            "array",
+            "null"
+          ]
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "InventoryItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "deviceType": {
+          "type": "string"
+        },
+        "quantity": {
+          "type": "integer"
+        },
+        "threshold": {
+          "type": "integer"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "ThresholdConfig": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "parameter": {
+          "type": "string"
+        },
+        "maxValue": {
+          "type": "number"
+        },
+        "minValue": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "alertType": {
+          "type": "string",
+          "enum": [
+            "HIGH_EMISSION_ALERT",
+            "DIAGNOSTIC_FAULT_NOTIFICATION",
+            "FUEL_ANOMALY_ALERT",
+            "DEVICE_OFFLINE_WARNING",
+            "SPEED_VIOLATION_ALERT"
+          ]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "DeviceHeartbeat": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "trackingDevice": {
+          "$ref": "#/definitions/TrackingDevice"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "CONNECTED",
+            "DISCONNECTED"
+          ]
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "UserNotification": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "user": {
+          "$ref": "#/definitions/User"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "HIGH_EMISSION_ALERT",
+            "DIAGNOSTIC_FAULT_NOTIFICATION",
+            "FUEL_ANOMALY_ALERT",
+            "DEVICE_OFFLINE_WARNING",
+            "SPEED_VIOLATION_ALERT"
+          ]
+        },
+        "title": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "isRead": {
+          "type": "boolean",
+          "default": false
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  },
+  "type": "object",
+  "properties": {
+    "user": {
+      "$ref": "#/definitions/User"
+    },
+    "vehicle": {
+      "$ref": "#/definitions/Vehicle"
+    },
+    "trackingDevice": {
+      "$ref": "#/definitions/TrackingDevice"
+    },
+    "fuelData": {
+      "$ref": "#/definitions/FuelData"
+    },
+    "emissionData": {
+      "$ref": "#/definitions/EmissionData"
+    },
+    "gpsData": {
+      "$ref": "#/definitions/GpsData"
+    },
+    "oBDData": {
+      "$ref": "#/definitions/OBDData"
+    },
+    "alert": {
+      "$ref": "#/definitions/Alert"
+    },
+    "connectionState": {
+      "$ref": "#/definitions/ConnectionState"
+    },
+    "report": {
+      "$ref": "#/definitions/Report"
+    },
+    "maintenanceRecord": {
+      "$ref": "#/definitions/MaintenanceRecord"
+    },
+    "activityLog": {
+      "$ref": "#/definitions/ActivityLog"
+    },
+    "inventoryItem": {
+      "$ref": "#/definitions/InventoryItem"
+    },
+    "thresholdConfig": {
+      "$ref": "#/definitions/ThresholdConfig"
+    },
+    "deviceHeartbeat": {
+      "$ref": "#/definitions/DeviceHeartbeat"
+    },
+    "userNotification": {
+      "$ref": "#/definitions/UserNotification"
+    }
+  }
+}

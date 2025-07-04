@@ -1,6 +1,7 @@
 import prisma from '../config/db';
 import { Prisma as PrismaTypes, User, UserStatus } from '@prisma/client';
 import { PaginationMeta, UserListQueryDTO } from '../types/dtos/CreateUserDto';
+import { GetUserByIdResponse, InternalUser, UserListItemWithCounts } from '../types';
 
 class UserRepository {
   async addUser(data: PrismaTypes.UserCreateInput): Promise<User> {
@@ -30,7 +31,7 @@ class UserRepository {
     }
   }
   
-  async findUsers(query: UserListQueryDTO): Promise<{ data: User[]; meta: PaginationMeta }> {
+  async findUsers(query: UserListQueryDTO): Promise<{ users: UserListItemWithCounts[]; meta: PaginationMeta }> {
     try {
       const {
         page = 1,
@@ -64,11 +65,40 @@ class UserRepository {
 
       const totalItems = await prisma.user.count({ where });
 
-      const data = await prisma.user.findMany({
+      const users = await prisma.user.findMany({
         where,
         skip,
         take,
         orderBy: { [sortBy]: sortOrder },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          image: true,
+          gender: true,
+          phoneNumber: true,
+          location: true,
+          companyName: true,
+          businessSector: true,
+          fleetSize: true,
+          role: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
+          verified: true,
+          language: true,
+          notificationPreference: true,
+          _count: {
+            select: {
+              vehicles: true,
+              trackingDevices: true,
+              alerts: true,
+              reports: true,
+              activityLogs: true,
+              userNotifications: true,
+            },
+          },
+        },
       });
 
       const totalPages = Math.ceil(totalItems / limit);
@@ -82,21 +112,215 @@ class UserRepository {
         hasPrevPage: page > 1,
       };
 
-      return { data, meta };
+      return {users, meta };
     } catch (error) {
       throw error;
     }
   }
 
-  async getUserById(id: number): Promise<User | null> {
+  async getUserById(id: number): Promise<GetUserByIdResponse | null> {
     try {
-      return await prisma.user.findUnique({ where: { id } });
+      return await prisma.user.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          role: true,
+          status: true,
+          phoneNumber: true,
+          location: true,
+          companyName: true,
+          createdAt: true,
+          updatedAt: true,
+  
+          _count: {
+            select: {
+              vehicles: true,
+              trackingDevices: true,
+              alerts: true,
+              reports: true,
+              activityLogs: true,
+              userNotifications: true,
+            },
+          },
+  
+          vehicles: {
+            take: 3,
+            select: {
+              id: true,
+              plateNumber: true,
+              vehicleModel: true,
+              status: true,
+              emissionStatus: true,
+              deletedAt: true,
+            },
+          },
+  
+          trackingDevices: {
+            take: 3,
+            select: {
+              id: true,
+              serialNumber: true,
+              model: true,
+              deviceCategory: true,
+              status: true,
+            },
+          },
+  
+          alerts: {
+            take: 3,
+            orderBy: { createdAt: 'desc' },
+            select: {
+              id: true,
+              type: true,
+              title: true,
+              isRead: true,
+              createdAt: true,
+            },
+          },
+  
+          reports: {
+            take: 2,
+            orderBy: { createdAt: 'desc' },
+            select: {
+              id: true,
+              title: true,
+              type: true,
+              status: true,
+              createdAt: true,
+            },
+          },
+  
+          activityLogs: {
+            take: 3,
+            orderBy: { timestamp: 'desc' },
+            select: {
+              id: true,
+              action: true,
+              timestamp: true,
+            },
+          },
+  
+          userNotifications: {
+            take: 3,
+            orderBy: { createdAt: 'desc' },
+            select: {
+              id: true,
+              title: true,
+              message: true,
+              isRead: true,
+            },
+          },
+        },
+      });
     } catch (error) {
       throw error;
     }
   }
-
-  async getAllUsers(query: UserListQueryDTO): Promise<{ users: User[]; pagination: PaginationMeta }> {
+  
+  
+  async getUserByIdWithPassword(id: number): Promise<InternalUser | null> {
+    try {
+      return await prisma.user.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          role: true,
+          status: true,
+          phoneNumber: true,
+          location: true,
+          companyName: true,
+          createdAt: true,
+          updatedAt: true,
+          password: true, 
+          _count: {
+            select: {
+              vehicles: true,
+              trackingDevices: true,
+              alerts: true,
+              reports: true,
+              activityLogs: true,
+              userNotifications: true,
+            },
+          },
+  
+          vehicles: {
+            take: 3,
+            select: {
+              id: true,
+              plateNumber: true,
+              vehicleModel: true,
+              status: true,
+              emissionStatus: true,
+              deletedAt: true,
+            },
+          },
+  
+          trackingDevices: {
+            take: 3,
+            select: {
+              id: true,
+              serialNumber: true,
+              model: true,
+              deviceCategory: true,
+              status: true,
+            },
+          },
+  
+          alerts: {
+            take: 3,
+            orderBy: { createdAt: 'desc' },
+            select: {
+              id: true,
+              type: true,
+              title: true,
+              isRead: true,
+              createdAt: true,
+            },
+          },
+  
+          reports: {
+            take: 2,
+            orderBy: { createdAt: 'desc' },
+            select: {
+              id: true,
+              title: true,
+              type: true,
+              status: true,
+              createdAt: true,
+            },
+          },
+  
+          activityLogs: {
+            take: 3,
+            orderBy: { timestamp: 'desc' },
+            select: {
+              id: true,
+              action: true,
+              timestamp: true,
+            },
+          },
+  
+          userNotifications: {
+            take: 3,
+            orderBy: { createdAt: 'desc' },
+            select: {
+              id: true,
+              title: true,
+              message: true,
+              isRead: true,
+            },
+          },
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+  async getAllUsers(query: UserListQueryDTO): Promise<{ users: UserListItemWithCounts[]; pagination: PaginationMeta }> {
     try {
       const {
         page = 1,
@@ -131,6 +355,35 @@ class UserRepository {
         orderBy: { [sortBy]: sortOrder },
         skip,
         take: limit,
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          image: true,
+          gender: true,
+          phoneNumber: true,
+          location: true,
+          companyName: true,
+          businessSector: true,
+          fleetSize: true,
+          role: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
+          verified: true,
+          language: true,
+          notificationPreference: true,
+          _count: {
+            select: {
+              vehicles: true,
+              trackingDevices: true,
+              alerts: true,
+              reports: true,
+              activityLogs: true,
+              userNotifications: true,
+            },
+          },
+        },
       });
     
       const totalPages = Math.ceil(totalItems / limit);
@@ -190,20 +443,6 @@ class UserRepository {
     }
   }
 
-  async findUsersByName(name: string): Promise<User[]> {
-    try {
-      return await prisma.user.findMany({
-        where: {
-          username: {
-            contains: name,
-            mode: 'insensitive',
-          },
-        },
-      });
-    } catch (error) {
-      throw error;
-    }
-  } 
 
   async findUsersByEmail(email: string): Promise<User[]> {
     try {

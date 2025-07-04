@@ -2,6 +2,7 @@
   "name": "greenalytic-vehicle-monitoring",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "eslint.config.js",
   "scripts": {
     "generate:env": "ts-node src/utils/generateEnvTs.ts",
@@ -9,9 +10,10 @@
     "prisma:deploy": "npx prisma migrate deploy",
     "prisma:generate": "npx prisma generate",
     "tsoa:spec": "npx tsoa spec",
+    "generate:swagger-schema": "prisma generate",
     "tsoa:routes": "npx tsoa routes",
     "start": "nodemon src/index.ts",
-    "dev": " nodemon --watch src --ext ts,json --exec ts-node src/index.ts",
+"dev": "nodemon --watch src --ext ts --exec \"node --loader ts-node/esm\" src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -27,6 +29,7 @@
     "express-validator": "^7.2.1",
     "jsonwebtoken": "^9.0.2",
     "prisma": "^6.11.0",
+    "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "tsoa": "^6.6.0",
     "winston": "^3.17.0"
@@ -38,13 +41,16 @@
     "@types/dotenv": "^8.2.3",
     "@types/express": "^5.0.3",
     "@types/express-validator": "^3.0.2",
+    "@types/js-yaml": "^4.0.9",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.0.10",
+    "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
     "eslint": "^9.30.1",
     "nodemon": "^3.1.10",
     "prettier": "^3.6.2",
     "prisma-erd-generator": "^2.0.4",
+    "prisma-json-schema-generator": "^5.1.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   }

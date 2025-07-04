@@ -2,18 +2,25 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from './docs/swagger';
+import MainRouter from './routes/allroutes';
 
 
-import swaggerDocument from './swagger/swagger.json';
+
+
+
+
+
+
 
 dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-// Swagger UI at /docs
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-
+// Swagger UI at /api-docs
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/api', MainRouter);
 app.get('/', (req, res) => {
   res.send('API is running');
 });

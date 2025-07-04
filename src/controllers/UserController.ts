@@ -2,10 +2,35 @@ import { Request, Response as ExpressResponse } from 'express';
 import UserService from '../services/UserService';
 import Response  from '../utils/response';
 import { UserListQueryDTO } from '../types/dtos/CreateUserDto';
-
+declare global {
+  namespace Express {
+    interface Request {
+      userId?: number;
+    }
+  }
+}
 class UserController {
+  
+  constructor() {
+    // Remove the invalid await call from constructor
+    this.signup = this.signup.bind(this);
+    this.login = this.login.bind(this);
+    this.updateUser = this.updateUser.bind(this);
+    this.softDeleteUser = this.softDeleteUser.bind(this);
+    this.hardDeleteUser = this.hardDeleteUser.bind(this);
+    this.restoreUser = this.restoreUser.bind(this);
+    this.changePassword = this.changePassword.bind(this);
+    this.requestPasswordReset = this.requestPasswordReset.bind(this);
+    this.resetPassword = this.resetPassword.bind(this);
+    this.changeRole = this.changeRole.bind(this);
+    this.createUser = this.createUser.bind(this);
+    this.listUsers = this.listUsers.bind(this);
+  }
+
+  // Convert signup to instance method for consistency
   async signup(req: Request, res: ExpressResponse) {
     try {
+      // Add missing await keyword
       const user = await UserService.signup(req.body);
       return Response.created(res, user, 'User registered successfully');
     } catch (error: any) {
@@ -132,4 +157,4 @@ class UserController {
   }
 }
 
-export default new UserController();
+export default UserController;
