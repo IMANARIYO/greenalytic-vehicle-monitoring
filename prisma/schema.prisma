@@ -357,18 +357,14 @@ model MaintenanceRecord {
   cost                 Float?
   performedAt          DateTime
   nextDueDate          DateTime?
-
   vehicle              Vehicle      @relation(fields: [vehicleId], references: [id])
   vehicleId            Int
-
   createdAt            DateTime     @default(now())
   updatedAt            DateTime     @updatedAt
-
   @@index([vehicleId])
   @@index([performedAt])
   @@index([nextDueDate])
 }
-
 model ActivityLog {
   id                   Int          @id @default(autoincrement())
   user                 User         @relation(fields: [userId], references: [id])
@@ -376,11 +372,9 @@ model ActivityLog {
   action               String
   metadata             Json?
   timestamp            DateTime     @default(now())
-
   @@index([userId])
   @@index([timestamp])
 }
-
 model InventoryItem {
   id                   Int          @id @default(autoincrement())
   deviceType           String
@@ -388,7 +382,6 @@ model InventoryItem {
   threshold            Int
   updatedAt            DateTime     @updatedAt
 }
-
 model ThresholdConfig {
   id                   Int          @id @default(autoincrement())
   parameter            String
@@ -398,14 +391,12 @@ model ThresholdConfig {
   createdAt            DateTime     @default(now())
   updatedAt            DateTime     @updatedAt
 }
-
 model DeviceHeartbeat {
   id                   Int          @id @default(autoincrement())
   trackingDevice       TrackingDevice @relation(fields: [deviceId], references: [id])
   deviceId             Int
   status               ConnectionStatus
   timestamp            DateTime     @default(now())
-
   @@index([deviceId])
 }
 model UserNotification {
