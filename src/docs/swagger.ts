@@ -36,9 +36,9 @@ const swaggerSpec = {
     { url: 'https://greenalytic-vehicle-monitoring-api.onrender.com/api', description: 'Production' },
   ],
   tags: [
-    { name: 'User', description: 'User-related operations' },
-    { name: 'Vehicle', description: 'Vehicle operations' },
-    { name: 'Tracking', description: 'Vehicle tracking endpoints' }
+    { name: 'Users', description: 'User-related operations' },
+    { name: 'Vehicles', description: 'Vehicle operations' },
+    { name: 'TrackingDevices', description: 'Vehicle tracking endpoints' }
   ],
   components: {
     securitySchemes: {
