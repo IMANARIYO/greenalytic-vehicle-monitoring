@@ -1,7 +1,8 @@
 import prisma from '../config/db';
 import { Prisma as PrismaTypes, User, UserStatus } from '@prisma/client';
-import { PaginationMeta, UserListQueryDTO } from '../types/dtos/CreateUserDto';
+import {  UserListQueryDTO } from '../types/dtos/CreateUserDto';
 import { GetUserByIdResponse, InternalUser, UserListItemWithCounts } from '../types';
+import { PaginationMeta } from '../types/GrobalTypes';
 
 class UserRepository {
   async addUser(data: PrismaTypes.UserCreateInput): Promise<User> {
