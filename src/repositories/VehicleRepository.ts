@@ -1,11 +1,10 @@
-import { PrismaClient, VehicleStatus, EmissionStatus, Vehicle } from '@prisma/client';
+import {  VehicleStatus, EmissionStatus, Vehicle } from '@prisma/client';
 import { VehicleCreateRequest, VehicleUpdateRequest, VehicleFullDetails, VehicleListItemWithUser } from '../types/VehicleTypes';
 import logger from '../utils/logger';
 import { PaginationMeta, PaginationParams } from '../types/GrobalTypes';
+import prisma from '../config/db';
 
-const prisma = new PrismaClient();
-
-export class VehicleRepository {
+class VehicleRepository {
   async createVehicle(data: VehicleCreateRequest): Promise<Vehicle> {
     try {
       return await prisma.vehicle.create({ data });
@@ -259,6 +258,6 @@ export class VehicleRepository {
         logger.error('VehicleRepository::countVehiclesByStatus', error);
         throw error;
         }
+}     
 }
-      
-}
+export default new VehicleRepository();
