@@ -1,9 +1,9 @@
-paths:
+
   /users/signup:
     post:
       tags:
         - Users
-      summary: Signup a new user
+      summary: Signup a new user (public)
       requestBody:
         required: true
         content:
@@ -20,7 +20,7 @@ paths:
     post:
       tags:
         - Users
-      summary: Login user
+      summary: Login user (public)
       requestBody:
         required: true
         content:
@@ -30,8 +30,10 @@ paths:
               properties:
                 email:
                   type: string
+                  example: imanariyobaptiste@gmail.com
                 password:
                   type: string
+                  example: password123
       responses:
         '200':
           description: Login successful
@@ -42,7 +44,9 @@ paths:
     post:
       tags:
         - Users
-      summary: Admin creates user
+      summary: Admin creates user (protected)
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -52,10 +56,14 @@ paths:
       responses:
         '201':
           description: User created
+        '401':
+          description: Unauthorized
     get:
       tags:
         - Users
-      summary: List users
+      summary: List users (admin only)
+      security:
+        - bearerAuth: []
       parameters:
         - in: query
           name: page
@@ -68,12 +76,16 @@ paths:
       responses:
         '200':
           description: List of users
+        '401':
+          description: Unauthorized
 
   /users/{id}:
     put:
       tags:
         - Users
-      summary: Update user
+      summary: Update user (admin only)
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -96,7 +108,9 @@ paths:
     delete:
       tags:
         - Users
-      summary: Soft delete user
+      summary: Soft delete user (admin only)
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -111,7 +125,9 @@ paths:
     delete:
       tags:
         - Users
-      summary: Hard delete user
+      summary: Hard delete user (admin only)
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -126,7 +142,9 @@ paths:
     put:
       tags:
         - Users
-      summary: Restore user
+      summary: Restore user (admin only)
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -141,7 +159,9 @@ paths:
     put:
       tags:
         - Users
-      summary: Change user role
+      summary: Change user role (admin only)
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -167,6 +187,8 @@ paths:
       tags:
         - Users
       summary: Change password (authenticated)
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -181,12 +203,14 @@ paths:
       responses:
         '200':
           description: Password changed
+        '401':
+          description: Unauthorized
 
   /users/request-password-reset:
     post:
       tags:
         - Users
-      summary: Request password reset
+      summary: Request password reset (public)
       requestBody:
         required: true
         content:
@@ -204,7 +228,7 @@ paths:
     post:
       tags:
         - Users
-      summary: Reset password
+      summary: Reset password (public)
       requestBody:
         required: true
         content:
@@ -222,7 +246,13 @@ paths:
         '200':
           description: Password reset successful
 
-components:
+  components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
     CreateUserRequest:
       type: object

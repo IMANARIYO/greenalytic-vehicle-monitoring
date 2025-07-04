@@ -101,7 +101,7 @@ model User {
   language                String?     @default("English")
   notificationPreference  String     @default("Email")
   role                    UserRole   @default(USER)
-  status                  UserStatus @default(ACTIVE)
+  status                  UserStatus @default(PENDING_APPROVAL)
   otpExpiresAt            DateTime?
   otp                     String?
   token                   String?
