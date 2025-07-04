@@ -5,18 +5,26 @@
   DeviceStatus,
   CommunicationProtocol,
   ConnectionStatus,
+  Vehicle,
 } from '@prisma/client';
+import { UserBasicInfo } from './UserTypes';
 
-export interface VehicleListItem {
-  id: number;
-  plateNumber: string;
-  vehicleModel: string;
-  yearOfManufacture: number;
-  fuelType: FuelType | null;
-  status: VehicleStatus;
-  emissionStatus: EmissionStatus;
-  lastMaintenanceDate: Date | null;
-  userId: number;
+export interface VehicleListItemWithUser extends Pick<
+  Vehicle,
+  | 'id'
+  | 'plateNumber'
+  | 'vehicleModel'
+  | 'yearOfManufacture'
+  | 'vehicleType'
+  | 'usage'
+  | 'registrationNumber'
+  | 'chassisNumber'
+  | 'fuelType'
+  | 'status'
+  | 'emissionStatus'
+  | 'lastMaintenanceDate'
+> {
+  user: UserBasicInfo;
 }
 
 export interface VehicleCreateRequest {
@@ -45,29 +53,25 @@ export interface VehicleUpdateRequest {
   userId?: number;
 }
 
-export interface VehicleFullDetails {
-  id: number;
-  plateNumber: string;
-  registrationNumber?: string;
-  chassisNumber?: string;
-  vehicleType: string;
-  vehicleModel: string;
-  yearOfManufacture: number;
-  usage: string;
-  fuelType: FuelType | null;
-  status: VehicleStatus;
-  emissionStatus: EmissionStatus;
-  lastMaintenanceDate: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
-
-  user: {
-    id: number;
-    username?: string;
-    email: string;
-    role: string;
-  };
+export interface VehicleFullDetails extends Pick<
+  Vehicle,
+  | 'id'
+  | 'plateNumber'
+  | 'registrationNumber'
+  | 'chassisNumber'
+  | 'vehicleType'
+  | 'vehicleModel'
+  | 'yearOfManufacture'
+  | 'usage'
+  | 'fuelType'
+  | 'status'
+  | 'emissionStatus'
+  | 'lastMaintenanceDate'
+  | 'createdAt'
+  | 'updatedAt'
+  | 'deletedAt'
+> {
+  user: UserBasicInfo;
 
   trackingDevices: {
     id: number;
@@ -132,24 +136,4 @@ export interface VehicleFullDetails {
     socketId: string;
     lastUpdated: Date;
   };
-}
-
-export interface PaginationOptions {
-  page?: number;
-  limit?: number;
-  sortBy?: keyof VehicleListItem;
-  sortOrder?: 'asc' | 'desc';
-  filter?: {
-    status?: VehicleStatus;
-    emissionStatus?: EmissionStatus;
-    vehicleType?: string;
-    userId?: number;
-  };
-}
-
-export interface PaginatedVehicleList {
-  data: VehicleListItem[];
-  total: number;
-  page: number;
-  limit: number;
 }
