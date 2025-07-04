@@ -1,12 +1,24 @@
-﻿
-export interface User {
+﻿import { User, UserRole, UserStatus } from "@prisma/client";
+
+export interface Userr {
   id: string;
-  name: string;
+  username: string;
   email: string;
   role: 'ADMIN' | 'TECHNICIAN' | 'FLEET_MANAGER';
   createdAt: Date;
 }
 
+export type UserBasicInfo = Pick<
+  User,
+  | 'id'
+  | 'username'
+  | 'email'
+  | 'image'
+  | 'phoneNumber'
+  | 'companyName'
+  | 'role'
+  | 'status'
+>;
 
 interface CreateUserRequest {
   email: string;

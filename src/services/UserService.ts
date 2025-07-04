@@ -10,10 +10,12 @@ import {
   CreateUserDTO,
   UpdateUserDTO,
   UserListQueryDTO,
-  PaginationMeta,
+
 } from '../types/dtos/CreateUserDto';
 import { tokengenerating } from '../utils/jwtFunctions';
 import { UserListItemWithCounts } from '../types';
+import { PaginationMeta } from '../types/GrobalTypes';
+import logger from '../utils/logger';
 
 function removeNulls<T extends object>(obj: T): T {
   const cleanedObj: any = {};
@@ -39,6 +41,7 @@ class UserService {
       const cleanData = removeNulls({ ...data, password: hashedPassword });
       return await UserRepo.addUser(cleanData as PrismaTypes.UserCreateInput);
     } catch (error) {
+
       throw error;
     }
   }

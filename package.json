@@ -5,6 +5,7 @@
   "type": "module",
   "main": "eslint.config.js",
   "scripts": {
+     "generate:schemas": "npx typescript-json-schema tsconfig.swagger.json VehicleCreateRequest VehicleUpdateRequest VehicleFullDetails --required --out src/docs/components/vehicle-schemas.json",
     "generate:env": "ts-node src/utils/generateEnvTs.ts",
     "prisma:migrate": "npx prisma migrate dev --name init",
     "prisma:deploy": "npx prisma migrate deploy",
@@ -12,14 +13,14 @@
     "tsoa:spec": "npx tsoa spec",
     "generate:swagger-schema": "prisma generate",
     "tsoa:routes": "npx tsoa routes",
-      "seed": "ts-node prisma/seed.ts",
+    "seed": "ts-node prisma/seed.ts",
     "start": "nodemon src/index.ts",
-"dev": "nodemon --watch src --ext ts --exec \"node --loader ts-node/esm\" src/index.ts",
+    "dev": "nodemon --watch src --ext ts --exec \"node --loader ts-node/esm\" src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "prisma": {
-  "seed": "ts-node prisma/seed.ts"
-},
+    "seed": "ts-node prisma/seed.ts"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -56,6 +57,7 @@
     "prisma-erd-generator": "^2.0.4",
     "prisma-json-schema-generator": "^5.1.5",
     "ts-node": "^10.9.2",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "typescript-json-schema": "^0.65.1"
   }
 }
