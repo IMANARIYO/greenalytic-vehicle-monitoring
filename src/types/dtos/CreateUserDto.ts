@@ -1,4 +1,5 @@
 ﻿import { Prisma, UserRole } from '@prisma/client';
+import { PaginationParams } from '../GrobalTypes';
 
 // --- Signup DTO ---
 export interface SignupDTO {
@@ -69,18 +70,6 @@ export interface UserIdParam {
   id: string; // or number, if you parse to number in controller
 }
 
-export interface PaginationMeta {
-  page: number;        // current page number
-  limit: number;       // items per page
-  totalItems: number;  // total number of items matching the query
-  totalPages: number;  // total number of pages
-  hasNextPage: boolean; // true if there's a next page
-  hasPrevPage: boolean; // true if there's a previous page
-}
-export interface PaginationParams {
-  page?: number;
-  limit?: number;
-}
 
 export interface UserFilterParams {
   search?: string;
