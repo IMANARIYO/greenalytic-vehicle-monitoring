@@ -1,0 +1,186 @@
+/vehicles:
+  get:
+    tags:
+      - Vehicles
+    summary: List all vehicles with filters and pagination
+    parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Items per page
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: Filter by vehicle status
+      - in: query
+        name: emissionStatus
+        schema:
+          type: string
+        description: Filter by emission status
+      - in: query
+        name: sortBy
+        schema:
+          type: string
+        description: Field to sort by
+      - in: query
+        name: sortOrder
+        schema:
+          type: string
+          enum: [asc, desc]
+    responses:
+      200:
+        description: Vehicles listed successfully
+
+  post:
+    tags:
+      - Vehicles
+    summary: Create a new vehicle
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/VehicleCreateRequest'
+    responses:
+      201:
+        description: Vehicle created successfully
+
+/vehicles/{id}:
+  get:
+    tags:
+      - Vehicles
+    summary: Get full vehicle details by ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Vehicle details fetched
+
+  put:
+    tags:
+      - Vehicles
+    summary: Update vehicle by ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/VehicleUpdateRequest'
+    responses:
+      200:
+        description: Vehicle updated successfully
+
+  delete:
+    tags:
+      - Vehicles
+    summary: Permanently delete a vehicle by ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Vehicle permanently deleted
+
+/vehicles/{id}/soft-delete:
+  patch:
+    tags:
+      - Vehicles
+    summary: Soft delete a vehicle
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Vehicle soft deleted
+
+/vehicles/{id}/restore:
+  patch:
+    tags:
+      - Vehicles
+    summary: Restore a soft-deleted vehicle
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Vehicle restored
+
+/vehicles/user/{userId}:
+  get:
+    tags:
+      - Vehicles
+    summary: Get vehicles by user ID
+    parameters:
+      - in: path
+        name: userId
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: User vehicles fetched
+
+/vehicles/analytics/top-polluters:
+  get:
+    tags:
+      - Vehicles
+    summary: Get top polluting vehicles
+    parameters:
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Number of top polluters to return
+    responses:
+      200:
+        description: Top polluters fetched
+
+/vehicles/analytics/count:
+  get:
+    tags:
+      - Vehicles
+    summary: Count total number of vehicles
+    responses:
+      200:
+        description: Vehicle count returned
+
+/vehicles/analytics/count/{status}:
+  get:
+    tags:
+      - Vehicles
+    summary: Count vehicles by status
+    parameters:
+      - in: path
+        name: status
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Vehicle count by status

@@ -15,6 +15,9 @@ const schema = JSON.parse(schemaText);
 const userDocs = yaml.load(
   fs.readFileSync(path.join(__dirname, 'usersDocs.yaml'), 'utf8')
 ) as Record<string, any>;
+const vehiclesDocs = yaml.load(
+  fs.readFileSync(path.join(__dirname, 'vehiclesDocs.yaml'), 'utf8')
+) as Record<string, any>;
 
 const swaggerSpec = {
   openapi: '3.0.0',
@@ -33,9 +36,9 @@ const swaggerSpec = {
     { url: 'https://greenalytic-vehicle-monitoring-api.onrender.com/api', description: 'Production' },
   ],
   tags: [
-    { name: 'User', description: 'User-related operations' },
-    { name: 'Vehicle', description: 'Vehicle operations' },
-    { name: 'Tracking', description: 'Vehicle tracking endpoints' }
+    { name: 'Users', description: 'User-related operations' },
+    { name: 'Vehicles', description: 'Vehicle operations' },
+    { name: 'TrackingDevices', description: 'Vehicle tracking endpoints' }
   ],
   components: {
     securitySchemes: {
@@ -47,6 +50,38 @@ const swaggerSpec = {
     },
     schemas: {
       ...schema.definitions,
+      VehicleCreateRequest: {
+        "type": "object",
+        "required": ["plateNumber", "usage", "userId", "vehicleModel", "vehicleType", "yearOfManufacture"],
+        "properties": {
+          "plateNumber": { "type": "string", "example": "RAA123B" },
+          "registrationNumber": { "type": "string", "example": "REG-456" },
+          "chassisNumber": { "type": "string", "example": "CH1234567890" },
+          "vehicleType": { "type": "string", "example": "SUV" },
+          "vehicleModel": { "type": "string", "example": "Toyota Prado" },
+          "yearOfManufacture": { "type": "number", "example": 2020 },
+          "usage": { "type": "string", "example": "Commercial" },
+          "fuelType": { "type": "string", "enum": ["PETROL", "DIESEL", "ELECTRIC", "HYBRID"], "example": "DIESEL" },
+          "lastMaintenanceDate": { "type": "string", "format": "date-time", "example": "2024-05-12T00:00:00Z" },
+          "userId": { "type": "number", "example": 1 }
+        }
+      },  VehicleUpdateRequest: {
+        "type": "object",
+        "properties": {
+          "registrationNumber": { "type": "string", "example": "REG-456" },
+          "chassisNumber": { "type": "string", "example": "CH1234567890" },
+          "vehicleType": { "type": "string", "example": "SUV" },
+          "vehicleModel": { "type": "string", "example": "Toyota Land Cruiser" },
+          "usage": { "type": "string", "example": "Private" },
+          "fuelType": { "type": "string", "enum": ["PETROL", "DIESEL", "ELECTRIC", "HYBRID"], "example": "PETROL" },
+          "status": { "type": "string", "enum": ["ACTIVE", "INACTIVE", "MAINTENANCE"], "example": "ACTIVE" },
+          "emissionStatus": { "type": "string", "enum": ["GOOD", "WARNING", "CRITICAL"], "example": "GOOD" },
+          "lastMaintenanceDate": { "type": "string", "format": "date-time", "example": "2024-07-01T00:00:00Z" },
+          "userId": { "type": "number", "example": 1 }
+        }
+      }
+    
+      ,
       CreateUserRequest: {
         type: 'object',
         required: ['email', 'password'],
@@ -70,9 +105,6 @@ const swaggerSpec = {
           fleetSize: { type: 'integer', nullable: true, example: 10 },
           language: { type: 'string', example: 'English' },
           notificationPreference: { type: 'string', example: 'Email' }
-
-
-
         }
       }
     },
@@ -80,6 +112,7 @@ const swaggerSpec = {
   security: [{ bearerAuth: [] }],
   paths: {
     ...userDocs,
+    ...vehiclesDocs,
     '/__show-models': {
       get: {
         summary: 'Force schema display',
@@ -101,5 +134,5 @@ const swaggerSpec = {
   },
 };
 
-// console.log(JSON.stringify(userDocs, null, 2));
+
 export default swaggerSpec;
