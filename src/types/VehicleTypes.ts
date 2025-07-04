@@ -5,4 +5,5 @@
   manufacturer?: string;
   year?: number;
   createdAt: Date;
+  
 }
