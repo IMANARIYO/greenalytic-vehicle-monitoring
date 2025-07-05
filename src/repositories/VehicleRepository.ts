@@ -1,18 +1,39 @@
-import {  VehicleStatus, EmissionStatus, Vehicle } from '@prisma/client';
-import { VehicleCreateRequest, VehicleUpdateRequest, VehicleFullDetails, VehicleListItemWithUser } from '../types/VehicleTypes';
+import { VehicleStatus, EmissionStatus, Vehicle, Prisma } from '@prisma/client';
+import {
+  VehicleCreateRequest,
+  VehicleUpdateRequest,
+  VehicleFullDetails,
+  VehicleListItemWithUser,
+} from '../types/VehicleTypes';
 import logger from '../utils/logger';
 import { PaginationMeta, PaginationParams } from '../types/GrobalTypes';
 import prisma from '../config/db';
+import { AppError, handlePrismaError, HttpStatusCode } from '../middlewares/errorHandler';
 
 class VehicleRepository {
   async createVehicle(data: VehicleCreateRequest): Promise<Vehicle> {
     try {
       return await prisma.vehicle.create({ data });
-    } catch (error) {
-      logger.error('VehicleRepository::createVehicle', error);
-      throw error;
+    } catch (error: any) {
+      // Handle known Prisma errors with your AppError system
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        const appError = handlePrismaError(error);
+        logger.error('VehicleRepository::createVehicle', appError);
+        throw appError;
+      }
+      // For other errors, wrap or rethrow as generic AppError
+      const appError = new AppError(
+        error.message || 'Failed to create vehicle',
+        HttpStatusCode.INTERNAL_SERVER_ERROR,
+        undefined,
+        false
+      );
+      logger.error('VehicleRepository::createVehicle', appError);
+      throw appError;
     }
   }
+  
+
   async updateVehicle(id: number, data: VehicleUpdateRequest): Promise<Vehicle> {
     try {
       return await prisma.vehicle.update({
@@ -24,6 +45,7 @@ class VehicleRepository {
       throw error;
     }
   }
+
   async softDeleteVehicle(id: number): Promise<Vehicle> {
     try {
       return await prisma.vehicle.update({
@@ -35,6 +57,7 @@ class VehicleRepository {
       throw error;
     }
   }
+
   async restoreVehicle(id: number): Promise<Vehicle> {
     try {
       return await prisma.vehicle.update({
@@ -46,6 +69,7 @@ class VehicleRepository {
       throw error;
     }
   }
+
   async deleteVehiclePermanently(id: number): Promise<Vehicle> {
     try {
       return await prisma.vehicle.delete({ where: { id } });
@@ -54,6 +78,7 @@ class VehicleRepository {
       throw error;
     }
   }
+
   async getVehicleById(id: number): Promise<VehicleFullDetails> {
     try {
       const vehicle = await prisma.vehicle.findUnique({
@@ -112,6 +137,7 @@ class VehicleRepository {
       throw error;
     }
   }
+
   async listVehicles(params: PaginationParams & {
     filter?: {
       status?: VehicleStatus;
@@ -130,9 +156,9 @@ class VehicleRepository {
         sortBy = 'createdAt',
         sortOrder = 'desc',
       } = params;
-  
+
       const skip = (page - 1) * limit;
-  
+
       const [vehicles, total] = await Promise.all([
         prisma.vehicle.findMany({
           where: {
@@ -172,11 +198,11 @@ class VehicleRepository {
           },
         }),
       ]);
-  
+
       const totalPages = Math.ceil(total / limit);
       const hasNextPage = page < totalPages;
       const hasPrevPage = page > 1;
-  
+
       return {
         data: vehicles as VehicleListItemWithUser[],
         meta: {
@@ -193,6 +219,7 @@ class VehicleRepository {
       throw error;
     }
   }
+
   async getVehiclesByUser(userId: number): Promise<VehicleListItemWithUser[]> {
     try {
       const vehicles = await prisma.vehicle.findMany({
@@ -215,6 +242,7 @@ class VehicleRepository {
       throw error;
     }
   }
+
   async getTopPolluters(limit = 5): Promise<VehicleListItemWithUser[]> {
     try {
       const vehicles = await prisma.vehicle.findMany({
@@ -241,6 +269,7 @@ class VehicleRepository {
       throw error;
     }
   }
+
   async countVehicles(): Promise<number> {
     try {
       return await prisma.vehicle.count({ where: { deletedAt: null } });
@@ -249,15 +278,17 @@ class VehicleRepository {
       throw error;
     }
   }
+
   async countVehiclesByStatus(status: VehicleStatus): Promise<number> {
-        try {
-        return await prisma.vehicle.count({
-            where: { status, deletedAt: null },
-        });
-        } catch (error) {
-        logger.error('VehicleRepository::countVehiclesByStatus', error);
-        throw error;
-        }
-}     
+    try {
+      return await prisma.vehicle.count({
+        where: { status, deletedAt: null },
+      });
+    } catch (error) {
+      logger.error('VehicleRepository::countVehiclesByStatus', error);
+      throw error;
+    }
+  }
 }
+
 export default new VehicleRepository();

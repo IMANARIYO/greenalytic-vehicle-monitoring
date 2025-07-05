@@ -3,7 +3,7 @@ import { Request, Response as ExpressResponse, NextFunction } from 'express';
 import { ENV } from '../config/env';
 import { JwtPayload } from '../types/jwtPayload';
 import Response from './response';
-
+import { catchAsync } from '../middlewares/errorHandler'; // Adjust path as needed
 
 export interface AuthenticatedRequest extends Request {
   userId?: number;
@@ -22,35 +22,37 @@ export const tokengenerating = (payload: JwtPayload): string => {
   });
 };
 
-export const verifyingtoken = (
+// Create a helper function that returns a Promise for jwt.verify
+const verifyTokenAsync = (token: string): Promise<JwtPayload> => {
+  return new Promise((resolve, reject) => {
+    jwt.verify(token, ENV.JWT_SECRET as string, (err, decoded) => {
+      if (err) return reject(err);
+      resolve(decoded as JwtPayload);
+    });
+  });
+};
+
+// Now define verifyingtoken as async and wrap with catchAsync
+export const verifyingtoken = catchAsync(async (
   req: AuthenticatedRequest,
   res: ExpressResponse,
   next: NextFunction
 ) => {
-  try {
-    const auth = req.headers.authorization;
-    const token = auth?.split(' ')[1];
+  const auth = req.headers.authorization;
+  const token = auth?.split(' ')[1];
 
-    if (!token) {
-      return Response.unauthorized(res, 'No access token provided');
-    }
-
-    jwt.verify(token, ENV.JWT_SECRET, (err, decoded) => {
-      if (err) {
-        return Response.unauthorized(res, err.message);
-      }
-
-      const payload = decoded as JwtPayload;
-
-      req.userId = payload.id;
-      req.userEmail = payload.email;
-      req.username = payload.username;
-      req.userRole = payload.role;
-
-      next();
-    });
-  } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : String(err);
-    return Response.error(res, null, `Internal server error verifying token: ${errorMessage}`, 500);
+  if (!token) {
+    return Response.unauthorized(res, 'No access token provided');
   }
-};
+
+  // Await the token verification
+  const payload = await verifyTokenAsync(token);
+
+  // Attach user data to request
+  req.userId = payload.id;
+  req.userEmail = payload.email;
+  req.username = payload.username;
+  req.userRole = payload.role;
+
+  next();
+});

@@ -1,12 +1,45 @@
 
 import { VehicleCreateRequest, VehicleUpdateRequest, VehicleFullDetails, VehicleListItemWithUser } from '../types/VehicleTypes';
-import { VehicleStatus, EmissionStatus } from '@prisma/client';
+import { VehicleStatus, EmissionStatus, UserStatus, UserRole } from '@prisma/client';
 import logger from '../utils/logger';
 import VehicleRepository from '../repositories/VehicleRepository';
+import { AppError } from '../middlewares/errorHandler';
+import UserRepository from '../repositories/UserRepository';
 
 export class VehicleService {
 
+  async assignVehicle(vehicleId: number, userId: number): Promise<void> {
+    try {
+      const vehicle = await VehicleRepository.getVehicleById(vehicleId);
+      if (!vehicle || vehicle.deletedAt !== null) {
+        throw new AppError('Vehicle not found or inactive', 404);
+      }
 
+      const user = await UserRepository.getUserById(userId);
+      if (!user || user.status !== UserStatus.ACTIVE) {
+        throw new AppError('User not found or inactive', 404);
+      }
+
+      if (user.role !== UserRole.FLEET_MANAGER) {
+        throw new AppError('User is not authorized to be assigned vehicles', 403);
+      }
+
+      if (vehicle.user && vehicle.user.id && vehicle.user.id !== userId) {
+        throw new AppError('Vehicle is already assigned to another user', 409);
+      }
+
+      if (vehicle.user && vehicle.user.id === userId) {
+        throw new AppError('Vehicle is already assigned to this user', 400);
+      }
+
+      await VehicleRepository.updateVehicle(vehicleId, { userId });
+
+      logger.info(`Vehicle ${vehicleId} assigned to user ${userId}`);
+    } catch (error) {
+      logger.error('VehicleService::assignVehicle', error);
+      throw error;
+    }
+  }
   async createVehicle(data: VehicleCreateRequest): Promise<VehicleFullDetails> {
     try {
 
