@@ -223,7 +223,123 @@ const swaggerSpec = {
           details: { type: 'object', nullable: true, additionalProperties: true }
         }
       },
-      
+      DeviceCreateRequest: {
+        type: "object",
+        required: ["serialNumber", "status", "type"],
+        properties: {
+          serialNumber: { type: "string", example: "TD-123456" },
+          status: { 
+            type: "string", 
+            enum: ["ACTIVE", "INACTIVE", "MAINTENANCE", "DECOMMISSIONED"],
+            example: "ACTIVE"
+          },
+          type: { 
+            type: "string", 
+            enum: ["GPS", "OBD", "TELEMATICS"],
+            example: "GPS"
+          },
+          manufacturer: { type: "string", example: "Greenalytic Inc." },
+          model: { type: "string", example: "GT-2000" },
+          firmwareVersion: { type: "string", example: "2.3.1" },
+          installationDate: { type: "string", format: "date-time", example: "2024-01-15T00:00:00Z" },
+          lastCalibrationDate: { type: "string", format: "date-time", example: "2024-01-15T00:00:00Z" }
+        }
+      },
+      DeviceUpdateRequest: {
+        type: "object",
+        properties: {
+          status: { 
+            type: "string", 
+            enum: ["ACTIVE", "INACTIVE", "MAINTENANCE", "DECOMMISSIONED"],
+            example: "ACTIVE"
+          },
+          type: { 
+            type: "string", 
+            enum: ["GPS", "OBD", "TELEMATICS"],
+            example: "GPS"
+          },
+          manufacturer: { type: "string", example: "Greenalytic Inc." },
+          model: { type: "string", example: "GT-2000" },
+          firmwareVersion: { type: "string", example: "2.3.1" },
+          installationDate: { type: "string", format: "date-time", example: "2024-01-15T00:00:00Z" },
+          lastCalibrationDate: { type: "string", format: "date-time", example: "2024-01-15T00:00:00Z" }
+        }
+      },
+      DeviceListItem: {
+        type: "object",
+        properties: {
+          id: { type: "integer", example: 1 },
+          serialNumber: { type: "string", example: "TD-123456" },
+          status: { 
+            type: "string", 
+            enum: ["ACTIVE", "INACTIVE", "MAINTENANCE", "DECOMMISSIONED"],
+            example: "ACTIVE"
+          },
+          type: { 
+            type: "string", 
+            enum: ["GPS", "OBD", "TELEMATICS"],
+            example: "GPS"
+          },
+          assignedVehicle: { 
+            type: "object",
+            nullable: true,
+            properties: {
+              id: { type: "integer", example: 1 },
+              plateNumber: { type: "string", example: "RAA123A" }
+            }
+          },
+          createdAt: { type: "string", format: "date-time", example: "2024-01-15T00:00:00Z" }
+        }
+      },
+      DeviceFullDetails: {
+        allOf: [
+          { $ref: '#/components/schemas/DeviceListItem' },
+          {
+            type: "object",
+            properties: {
+              manufacturer: { type: "string", example: "Greenalytic Inc." },
+              model: { type: "string", example: "GT-2000" },
+              firmwareVersion: { type: "string", example: "2.3.1" },
+              installationDate: { type: "string", format: "date-time", example: "2024-01-15T00:00:00Z" },
+              lastCalibrationDate: { type: "string", format: "date-time", example: "2024-01-15T00:00:00Z" },
+              updatedAt: { type: "string", format: "date-time", example: "2024-01-20T00:00:00Z" },
+              locationHistory: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    latitude: { type: "number", format: "float", example: -1.9398 },
+                    longitude: { type: "number", format: "float", example: 30.0645 },
+                    timestamp: { type: "string", format: "date-time", example: "2024-01-20T08:30:00Z" }
+                  }
+                }
+              },
+              telemetryData: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    speed: { type: "number", format: "float", example: 60.5 },
+                    batteryLevel: { type: "number", format: "float", example: 85.2 },
+                    signalStrength: { type: "number", format: "float", example: 92.0 },
+                    timestamp: { type: "string", format: "date-time", example: "2024-01-20T08:30:00Z" }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      PaginatedDeviceResponse: {
+        type: "object",
+        properties: {
+          data: {
+            type: "array",
+            items: { $ref: "#/components/schemas/DeviceListItem" }
+          },
+          meta: { $ref: "#/components/schemas/PaginationMeta" }
+        }
+      },
       // User Schema
       CreateUserRequest: {
         type: 'object',
@@ -252,6 +368,15 @@ const swaggerSpec = {
       }
     },
     parameters: {
+      deviceId: {
+        in: "path",
+        name: "id",
+        required: true,
+        schema: {
+          type: "integer"
+        },
+        description: "ID of the tracking device"
+      },
       page: {
         in: 'query',
         name: 'page',
