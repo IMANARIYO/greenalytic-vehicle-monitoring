@@ -8,7 +8,7 @@ import swaggerDocument from './swagger/swagger.json';
 import passport from './utils/passport';
 import authRoutes from './routes/authRoutes';
 import session from 'express-session';
-
+import { globalErrorHandler, handleNotFoundRoutes } from './middlewares/errorHandler';
 dotenv.config();
 
 const app = express();
@@ -17,6 +17,8 @@ app.use(express.json());
 // Swagger UI at /api-docs
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api', MainRouter);
+app.use(handleNotFoundRoutes);
+app.use(globalErrorHandler);
 app.use(
   session({
     secret: process.env.SESSION_SECRET!,

@@ -18,6 +18,9 @@ const userDocs = yaml.load(
 const vehiclesDocs = yaml.load(
   fs.readFileSync(path.join(__dirname, 'vehiclesDocs.yaml'), 'utf8')
 ) as Record<string, any>;
+const trackingDevicesDocs = yaml.load(
+  fs.readFileSync(path.join(__dirname, 'trackingDevicesDocs.yaml'), 'utf8')
+) as Record<string, any>;
 
 const swaggerSpec = {
   openapi: '3.0.0',
@@ -50,38 +53,178 @@ const swaggerSpec = {
     },
     schemas: {
       ...schema.definitions,
+      // Vehicle Request Schemas
       VehicleCreateRequest: {
-        "type": "object",
-        "required": ["plateNumber", "usage", "userId", "vehicleModel", "vehicleType", "yearOfManufacture"],
-        "properties": {
-          "plateNumber": { "type": "string", "example": "RAA123B" },
-          "registrationNumber": { "type": "string", "example": "REG-456" },
-          "chassisNumber": { "type": "string", "example": "CH1234567890" },
-          "vehicleType": { "type": "string", "example": "SUV" },
-          "vehicleModel": { "type": "string", "example": "Toyota Prado" },
-          "yearOfManufacture": { "type": "number", "example": 2020 },
-          "usage": { "type": "string", "example": "Commercial" },
-          "fuelType": { "type": "string", "enum": ["PETROL", "DIESEL", "ELECTRIC", "HYBRID"], "example": "DIESEL" },
-          "lastMaintenanceDate": { "type": "string", "format": "date-time", "example": "2024-05-12T00:00:00Z" },
-          "userId": { "type": "number", "example": 1 }
+        type: "object",
+        required: ["plateNumber", "usage", "userId", "vehicleModel", "vehicleType", "yearOfManufacture"],
+        properties: {
+          plateNumber: { type: "string", example: "RAA123B" },
+          registrationNumber: { type: "string", example: "REG-456" },
+          chassisNumber: { type: "string", example: "CH1234567890" },
+          vehicleType: { type: "string", example: "SUV" },
+          vehicleModel: { type: "string", example: "Toyota Prado" },
+          yearOfManufacture: { type: "number", example: 2020 },
+          usage: { type: "string", example: "Commercial" },
+          fuelType: { type: "string", enum: ["PETROL", "DIESEL", "ELECTRIC", "HYBRID"], example: "DIESEL" },
+          lastMaintenanceDate: { type: "string", format: "date-time", example: "2024-05-12T00:00:00Z" },
+          userId: { type: "number", example: 1 }
         }
-      },  VehicleUpdateRequest: {
-        "type": "object",
-        "properties": {
-          "registrationNumber": { "type": "string", "example": "REG-456" },
-          "chassisNumber": { "type": "string", "example": "CH1234567890" },
-          "vehicleType": { "type": "string", "example": "SUV" },
-          "vehicleModel": { "type": "string", "example": "Toyota Land Cruiser" },
-          "usage": { "type": "string", "example": "Private" },
-          "fuelType": { "type": "string", "enum": ["PETROL", "DIESEL", "ELECTRIC", "HYBRID"], "example": "PETROL" },
-          "status": { "type": "string", "enum": ["ACTIVE", "INACTIVE", "MAINTENANCE"], "example": "ACTIVE" },
-          "emissionStatus": { "type": "string", "enum": ["GOOD", "WARNING", "CRITICAL"], "example": "GOOD" },
-          "lastMaintenanceDate": { "type": "string", "format": "date-time", "example": "2024-07-01T00:00:00Z" },
-          "userId": { "type": "number", "example": 1 }
+      },
+      VehicleUpdateRequest: {
+        type: "object",
+        properties: {
+          registrationNumber: { type: "string", example: "REG-456" },
+          chassisNumber: { type: "string", example: "CH1234567890" },
+          vehicleType: { type: "string", example: "SUV" },
+          vehicleModel: { type: "string", example: "Toyota Land Cruiser" },
+          usage: { type: "string", example: "Private" },
+          fuelType: { type: "string", enum: ["PETROL", "DIESEL", "ELECTRIC", "HYBRID"], example: "PETROL" },
+          status: { type: "string", enum: ["ACTIVE", "INACTIVE", "MAINTENANCE"], example: "ACTIVE" },
+          emissionStatus: { type: "string", enum: ["GOOD", "WARNING", "CRITICAL"], example: "GOOD" },
+          lastMaintenanceDate: { type: "string", format: "date-time", example: "2024-07-01T00:00:00Z" },
+          userId: { type: "number", example: 1 }
         }
-      }
-    
-      ,
+      },
+      
+      // Vehicle Response Schemas
+      VehicleListItem: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', example: 1 },
+          plateNumber: { type: 'string', example: 'RAA123A' },
+          vehicleType: { type: 'string', example: 'CAR' },
+          vehicleModel: { type: 'string', example: 'Toyota RAV4' },
+          status: { type: 'string', example: 'ACTIVE' },
+          emissionStatus: { type: 'string', example: 'MEDIUM' },
+          user: { $ref: '#/components/schemas/UserBasicInfo' }
+        }
+      },
+      VehicleFullDetails: {
+        allOf: [
+          { $ref: '#/components/schemas/VehicleListItem' },
+          {
+            type: 'object',
+            properties: {
+              registrationNumber: { type: 'string', example: 'REG456789' },
+              chassisNumber: { type: 'string', example: 'CHS987654321' },
+              yearOfManufacture: { type: 'integer', example: 2020 },
+              fuelType: { type: 'string', example: 'PETROL' },
+              createdAt: { type: 'string', format: 'date-time', example: '2023-01-15T12:00:00Z' },
+              updatedAt: { type: 'string', format: 'date-time', example: '2023-01-20T08:30:00Z' },
+              trackingDevices: {
+                type: 'array',
+                items: { $ref: '#/components/schemas/TrackingDeviceInfo' }
+              },
+              emissionData: {
+                type: 'array',
+                items: { $ref: '#/components/schemas/EmissionData' }
+              },
+              maintenanceRecords: {
+                type: 'array',
+                items: { $ref: '#/components/schemas/MaintenanceRecord' }
+              }
+            }
+          }
+        ]
+      },
+      VehicleEmissionItem: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', example: 1 },
+          plateNumber: { type: 'string', example: 'RAA123A' },
+          vehicleType: { type: 'string', example: 'TRUCK' },
+          emissionStatus: { type: 'string', example: 'HIGH' },
+          lastEmissionReading: { type: 'number', format: 'float', example: 245.67 },
+          lastReadingDate: { type: 'string', format: 'date-time', example: '2023-01-20T08:30:00Z' }
+        }
+      },
+      PaginatedVehicleResponse: {
+        type: 'object',
+        properties: {
+          data: {
+            type: 'array',
+            items: { $ref: '#/components/schemas/VehicleListItem' }
+          },
+          meta: { $ref: '#/components/schemas/PaginationMeta' }
+        }
+      },
+      
+      // Supporting Schemas
+      UserBasicInfo: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', example: 1 },
+          username: { type: 'string', example: 'john_doe' },
+          email: { type: 'string', example: 'john@example.com' },
+          role: { type: 'string', example: 'FLEET_MANAGER' },
+          status: { type: 'string', example: 'ACTIVE' }
+        }
+      },
+      TrackingDeviceInfo: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', example: 1 },
+          serialNumber: { type: 'string', example: 'TD-123456' },
+          status: { type: 'string', example: 'ACTIVE' }
+        }
+      },
+      EmissionData: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', example: 1 },
+          value: { type: 'number', format: 'float', example: 210.5 },
+          timestamp: { type: 'string', format: 'date-time', example: '2023-01-20T08:30:00Z' }
+        }
+      },
+      MaintenanceRecord: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', example: 1 },
+          serviceType: { type: 'string', example: 'OIL_CHANGE' },
+          datePerformed: { type: 'string', format: 'date-time', example: '2023-01-10T00:00:00Z' }
+        }
+      },
+      PaginationMeta: {
+        type: 'object',
+        properties: {
+          page: { type: 'integer', example: 1 },
+          limit: { type: 'integer', example: 10 },
+          totalItems: { type: 'integer', example: 100 },
+          totalPages: { type: 'integer', example: 10 },
+          hasNextPage: { type: 'boolean', example: true },
+          hasPrevPage: { type: 'boolean', example: false },
+          nextPage: { type: 'integer', nullable: true, example: 2 },
+          prevPage: { type: 'integer', nullable: true, example: null },
+          sortBy: { type: 'string', example: 'createdAt' },
+          sortOrder: { type: 'string', example: 'desc' }
+        }
+      },
+      SuccessResponse: {
+        type: 'object',
+        properties: {
+          success: { type: 'boolean', example: true },
+          message: { type: 'string', example: 'Operation completed successfully' }
+        }
+      },
+      CountResponse: {
+        type: 'object',
+        properties: {
+          count: { type: 'integer', example: 42 }
+        }
+      },
+      ErrorResponse: {
+        type: 'object',
+        properties: {
+          success: { type: 'boolean', example: false },
+          status: { type: 'string', example: 'error' },
+          message: { type: 'string', example: 'Error message' },
+          timestamp: { type: 'string', format: 'date-time', example: '2023-01-20T08:30:00Z' },
+          error: { type: 'string', nullable: true, example: 'Detailed error description' },
+          details: { type: 'object', nullable: true, additionalProperties: true }
+        }
+      },
+      
+      // User Schema
       CreateUserRequest: {
         type: 'object',
         required: ['email', 'password'],
@@ -108,11 +251,136 @@ const swaggerSpec = {
         }
       }
     },
+    parameters: {
+      page: {
+        in: 'query',
+        name: 'page',
+        schema: {
+          type: 'integer',
+          default: 1,
+          minimum: 1
+        },
+        description: 'Page number for pagination'
+      },
+      limit: {
+        in: 'query',
+        name: 'limit',
+        schema: {
+          type: 'integer',
+          default: 10,
+          minimum: 1,
+          maximum: 100
+        },
+        description: 'Number of items per page'
+      },
+      sortBy: {
+        in: 'query',
+        name: 'sortBy',
+        schema: {
+          type: 'string',
+          enum: ['id', 'plateNumber', 'registrationNumber', 'chassisNumber', 'vehicleType', 'vehicleModel', 'yearOfManufacture', 'status', 'emissionStatus', 'createdAt', 'updatedAt'],
+          default: 'createdAt'
+        },
+        description: 'Field to sort by'
+      },
+      sortOrder: {
+        in: 'query',
+        name: 'sortOrder',
+        schema: {
+          type: 'string',
+          enum: ['asc', 'desc'],
+          default: 'desc'
+        },
+        description: 'Sort direction'
+      },
+      vehicleId: {
+        in: 'path',
+        name: 'id',
+        required: true,
+        schema: {
+          type: 'integer'
+        },
+        description: 'ID of the vehicle'
+      }
+    },
+    responses: {
+      BadRequest: {
+        description: 'Bad request - invalid parameters',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse'
+            }
+          }
+        }
+      },
+      Unauthorized: {
+        description: 'Unauthorized - authentication required',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse'
+            }
+          }
+        }
+      },
+      Forbidden: {
+        description: 'Forbidden - insufficient permissions',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse'
+            }
+          }
+        }
+      },
+      NotFound: {
+        description: 'Resource not found',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse'
+            }
+          }
+        }
+      },
+      Conflict: {
+        description: 'Conflict - resource already exists',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse'
+            }
+          }
+        }
+      },
+      ValidationError: {
+        description: 'Validation error - invalid input data',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse'
+            }
+          }
+        }
+      },
+      ServerError: {
+        description: 'Internal server error',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse'
+            }
+          }
+        }
+      }
+    }
   },
   security: [{ bearerAuth: [] }],
   paths: {
     ...userDocs,
     ...vehiclesDocs,
+    ...trackingDevicesDocs,
     '/__show-models': {
       get: {
         summary: 'Force schema display',
@@ -131,8 +399,7 @@ const swaggerSpec = {
         }
       }
     }
-  },
+  }
 };
-
 
 export default swaggerSpec;

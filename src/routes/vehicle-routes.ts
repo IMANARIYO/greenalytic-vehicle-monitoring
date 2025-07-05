@@ -1,102 +1,97 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import VehicleController from '../controllers/VehicleController';
 import { AuthenticatedRequest, verifyingtoken } from '../utils/jwtFunctions';
 import { hasRole } from '../middlewares/hasRole';
 import { UserRole } from '@prisma/client';
 import { isLoggedIn } from '../middlewares/isLoggedIn';
 
-
 const VehiclesRouter = Router();
-
 
 VehiclesRouter.post(
   '/',
-  hasRole([UserRole.ADMIN, UserRole.FLEET_MANAGER]),
-  (req: AuthenticatedRequest, res: Response) => {
-    VehicleController.createVehicle(req, res);
-  }
-);
-VehiclesRouter.put(
-  '/:id',
-  hasRole([UserRole.ADMIN, UserRole.FLEET_MANAGER]),
-  (req: AuthenticatedRequest, res: Response) => {
-    VehicleController.updateVehicle(req, res);
+  // hasRole([UserRole.ADMIN, UserRole.FLEET_MANAGER]),
+  (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    VehicleController.createVehicle(req, res, next);
   }
 );
 
+VehiclesRouter.put(
+  '/:id',
+  hasRole([UserRole.ADMIN, UserRole.FLEET_MANAGER]),
+  (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    VehicleController.updateVehicle(req, res, next);
+  }
+);
 
 VehiclesRouter.patch(
   '/:id/soft-delete',
   hasRole([UserRole.ADMIN]),
-  (req: AuthenticatedRequest, res: Response) => {
-    VehicleController.softDeleteVehicle(req, res);
+  (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    VehicleController.softDeleteVehicle(req, res, next);
   }
 );
 
 VehiclesRouter.patch(
   '/:id/restore',
   hasRole([UserRole.ADMIN]),
-  (req: AuthenticatedRequest, res: Response) => {
-    VehicleController.restoreVehicle(req, res);
+  (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    VehicleController.restoreVehicle(req, res, next);
   }
 );
-
 
 VehiclesRouter.delete(
   '/:id',
   hasRole([UserRole.ADMIN]),
-  (req: AuthenticatedRequest, res: Response) => {
-    VehicleController.deleteVehiclePermanently(req, res);
+  (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    VehicleController.deleteVehiclePermanently(req, res, next);
   }
 );
 
 VehiclesRouter.get(
   '/:id',
   isLoggedIn,
-  (req: AuthenticatedRequest, res: Response) => {
-    VehicleController.getVehicleById(req, res);
+  (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    VehicleController.getVehicleById(req, res, next);
   }
 );
 
-
 VehiclesRouter.get(
   '/',
-  isLoggedIn,
-  (req: AuthenticatedRequest, res: Response) => {
-    VehicleController.listVehicles(req, res);
+  // isLoggedIn,
+  (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    VehicleController.listVehicles(req, res, next);
   }
 );
 
 VehiclesRouter.get(
   '/user/:userId',
   isLoggedIn,
-  (req: AuthenticatedRequest, res: Response) => {
-    VehicleController.getVehiclesByUser(req, res);
+  (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    VehicleController.getVehiclesByUser(req, res, next);
   }
 );
 
 VehiclesRouter.get(
   '/analytics/top-polluters',
   isLoggedIn,
-  (req: AuthenticatedRequest, res: Response) => {
-    VehicleController.getTopPolluters(req, res);
+  (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    VehicleController.getTopPolluters(req, res, next);
   }
 );
 
 VehiclesRouter.get(
   '/analytics/count',
   isLoggedIn,
-  (req: AuthenticatedRequest, res: Response) => {
-    VehicleController.countVehicles(req, res);
+  (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    VehicleController.countVehicles(req, res, next);
   }
 );
 
-
 VehiclesRouter.get(
   '/analytics/count/:status',
-isLoggedIn,
-  (req: AuthenticatedRequest, res: Response) => {
-    VehicleController.countVehiclesByStatus(req, res);
+  isLoggedIn,
+  (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    VehicleController.countVehiclesByStatus(req, res, next);
   }
 );
 

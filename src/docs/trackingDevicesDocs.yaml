@@ -1,8 +1,9 @@
-/vehicles:
+/tracking-devices:
   get:
-    tags: [Vehicles]
-    summary: List all vehicles with filters and pagination
-    description: Returns a paginated list of vehicles with optional filtering and sorting
+    tags: [TrackingDevices]
+    summary: List all tracking devices with filters and pagination
+    security:
+      - bearerAuth: []
     parameters:
       - $ref: '#/components/parameters/page'
       - $ref: '#/components/parameters/limit'
@@ -10,30 +11,35 @@
         name: search
         schema:
           type: string
-        description: Search term to filter vehicles
+        description: Search term to filter devices
       - in: query
         name: status
         schema:
           type: string
-          enum: [ACTIVE, INACTIVE, MAINTENANCE, DECOMMISSIONED]
-        description: Filter by vehicle status
+          enum: [ACTIVE, INACTIVE, PENDING, DISCONNECTED, MAINTENANCE]
+        description: Filter by device status
       - in: query
-        name: emissionStatus
+        name: deviceCategory
         schema:
           type: string
-          enum: [LOW, MEDIUM, HIGH, CRITICAL]
-        description: Filter by emission status
+          enum: [MOTORCYCLE, CAR, TRUCK, TRICYCLE, OTHER]
+        description: Filter by device category
       - in: query
-        name: vehicleType
+        name: protocol
         schema:
           type: string
-          enum: [CAR, TRUCK, BUS, MOTORCYCLE, OTHER]
-        description: Filter by vehicle type
+          enum: [MQTT, HTTP, SMS]
+        description: Filter by communication protocol
       - in: query
         name: userId
         schema:
           type: integer
-        description: Filter by user ID (admin/fleet manager only)
+        description: Filter by user ID
+      - in: query
+        name: vehicleId
+        schema:
+          type: integer
+        description: Filter by vehicle ID
       - $ref: '#/components/parameters/sortBy'
       - $ref: '#/components/parameters/sortOrder'
     responses:
@@ -42,7 +48,7 @@
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PaginatedVehicleResponse'
+              $ref: '#/components/schemas/PaginatedDeviceResponse'
       400:
         $ref: '#/components/responses/BadRequest'
       401:
@@ -53,22 +59,23 @@
         $ref: '#/components/responses/ServerError'
 
   post:
-    tags: [Vehicles]
-    summary: Create a new vehicle
-    description: Create a new vehicle record (admin/fleet manager only)
+    tags: [TrackingDevices]
+    summary: Create a new tracking device
+    security:
+      - bearerAuth: []
     requestBody:
       required: true
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/VehicleCreateRequest'
+            $ref: '#/components/schemas/DeviceCreateRequest'
     responses:
       201:
-        description: Vehicle created successfully
+        description: Device created successfully
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/VehicleFullDetails'
+              $ref: '#/components/schemas/DeviceFullDetails'
       400:
         $ref: '#/components/responses/BadRequest'
       401:
@@ -82,20 +89,21 @@
       500:
         $ref: '#/components/responses/ServerError'
 
-/vehicles/{id}:
+/tracking-devices/{id}:
   get:
-    tags: [Vehicles]
-    summary: Get full vehicle details by ID
-    description: Returns complete details for a specific vehicle
+    tags: [TrackingDevices]
+    summary: Get full device details by ID
+    security:
+      - bearerAuth: []
     parameters:
-      - $ref: '#/components/parameters/vehicleId'
+      - $ref: '#/components/parameters/deviceId'
     responses:
       200:
         description: Successful operation
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/VehicleFullDetails'
+              $ref: '#/components/schemas/DeviceFullDetails'
       401:
         $ref: '#/components/responses/Unauthorized'
       403:
@@ -106,24 +114,25 @@
         $ref: '#/components/responses/ServerError'
 
   put:
-    tags: [Vehicles]
-    summary: Update vehicle by ID
-    description: Update all fields of a vehicle (admin/fleet manager only)
+    tags: [TrackingDevices]
+    summary: Update device by ID
+    security:
+      - bearerAuth: []
     parameters:
-      - $ref: '#/components/parameters/vehicleId'
+      - $ref: '#/components/parameters/deviceId'
     requestBody:
       required: true
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/VehicleUpdateRequest'
+            $ref: '#/components/schemas/DeviceUpdateRequest'
     responses:
       200:
-        description: Vehicle updated successfully
+        description: Device updated successfully
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/VehicleFullDetails'
+              $ref: '#/components/schemas/DeviceFullDetails'
       400:
         $ref: '#/components/responses/BadRequest'
       401:
@@ -138,14 +147,15 @@
         $ref: '#/components/responses/ServerError'
 
   delete:
-    tags: [Vehicles]
-    summary: Permanently delete a vehicle by ID
-    description: Hard delete a vehicle record (admin only)
+    tags: [TrackingDevices]
+    summary: Permanently delete a device by ID
+    security:
+      - bearerAuth: []
     parameters:
-      - $ref: '#/components/parameters/vehicleId'
+      - $ref: '#/components/parameters/deviceId'
     responses:
       200:
-        description: Vehicle permanently deleted
+        description: Device permanently deleted
         content:
           application/json:
             schema:
@@ -159,16 +169,17 @@
       500:
         $ref: '#/components/responses/ServerError'
 
-/vehicles/{id}/soft-delete:
+/tracking-devices/{id}/soft-delete:
   patch:
-    tags: [Vehicles]
-    summary: Soft delete a vehicle
-    description: Mark a vehicle as deleted without removing from database (admin/fleet manager only)
+    tags: [TrackingDevices]
+    summary: Soft delete a device
+    security:
+      - bearerAuth: []
     parameters:
-      - $ref: '#/components/parameters/vehicleId'
+      - $ref: '#/components/parameters/deviceId'
     responses:
       200:
-        description: Vehicle soft deleted
+        description: Device soft deleted
         content:
           application/json:
             schema:
@@ -182,16 +193,17 @@
       500:
         $ref: '#/components/responses/ServerError'
 
-/vehicles/{id}/restore:
+/tracking-devices/{id}/restore:
   patch:
-    tags: [Vehicles]
-    summary: Restore a soft-deleted vehicle
-    description: Restore a previously soft-deleted vehicle (admin/fleet manager only)
+    tags: [TrackingDevices]
+    summary: Restore a soft-deleted device
+    security:
+      - bearerAuth: []
     parameters:
-      - $ref: '#/components/parameters/vehicleId'
+      - $ref: '#/components/parameters/deviceId'
     responses:
       200:
-        description: Vehicle restored
+        description: Device restored
         content:
           application/json:
             schema:
@@ -205,26 +217,27 @@
       500:
         $ref: '#/components/responses/ServerError'
 
-/vehicles/{id}/assign/{userId}:
+/tracking-devices/{deviceId}/assign/{vehicleId}:
   patch:
-    tags: [Vehicles]
-    summary: Assign vehicle to user
-    description: Assign a vehicle to a specific user (admin/fleet manager only)
+    tags: [TrackingDevices]
+    summary: Assign device to vehicle
+    security:
+      - bearerAuth: []
     parameters:
-      - $ref: '#/components/parameters/vehicleId'
+      - $ref: '#/components/parameters/deviceId'
       - in: path
-        name: userId
+        name: vehicleId
         required: true
         schema:
           type: integer
-        description: ID of user to assign vehicle to
+        description: ID of vehicle to assign device to
     responses:
       200:
-        description: Vehicle assigned successfully
+        description: Device assigned successfully
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SuccessResponse'
+              $ref: '#/components/schemas/DeviceFullDetails'
       400:
         $ref: '#/components/responses/BadRequest'
       401:
@@ -238,27 +251,23 @@
       500:
         $ref: '#/components/responses/ServerError'
 
-/vehicles/user/{userId}:
-  get:
-    tags: [Vehicles]
-    summary: Get vehicles by user ID
-    description: Returns all vehicles assigned to a specific user
+/tracking-devices/{deviceId}/unassign:
+  patch:
+    tags: [TrackingDevices]
+    summary: Unassign device from vehicle
+    security:
+      - bearerAuth: []
     parameters:
-      - in: path
-        name: userId
-        required: true
-        schema:
-          type: integer
-        description: ID of user to get vehicles for
+      - $ref: '#/components/parameters/deviceId'
     responses:
       200:
-        description: Successful operation
+        description: Device unassigned successfully
         content:
           application/json:
             schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/VehicleListItem'
+              $ref: '#/components/schemas/DeviceFullDetails'
+      400:
+        $ref: '#/components/responses/BadRequest'
       401:
         $ref: '#/components/responses/Unauthorized'
       403:
@@ -268,20 +277,28 @@
       500:
         $ref: '#/components/responses/ServerError'
 
-/vehicles/analytics/top-polluters:
+/tracking-devices/analytics/top/{status}:
   get:
-    tags: [Vehicles]
-    summary: Get top polluting vehicles
-    description: Returns vehicles with highest emission levels
+    tags: [TrackingDevices]
+    summary: Get top devices by status
+    security:
+      - bearerAuth: []
     parameters:
+      - in: path
+        name: status
+        required: true
+        schema:
+          type: string
+          enum: [ACTIVE, INACTIVE, PENDING, DISCONNECTED, MAINTENANCE]
+        description: Device status to filter by
       - in: query
         name: limit
         schema:
           type: integer
           default: 5
           minimum: 1
-          maximum: 50
-        description: Number of top polluters to return
+          maximum: 20
+        description: Number of devices to return
     responses:
       200:
         description: Successful operation
@@ -290,7 +307,9 @@
             schema:
               type: array
               items:
-                $ref: '#/components/schemas/VehicleEmissionItem'
+                $ref: '#/components/schemas/DeviceListItem'
+      400:
+        $ref: '#/components/responses/BadRequest'
       401:
         $ref: '#/components/responses/Unauthorized'
       403:
@@ -298,38 +317,19 @@
       500:
         $ref: '#/components/responses/ServerError'
 
-/vehicles/analytics/count:
+/tracking-devices/analytics/count:
   get:
-    tags: [Vehicles]
-    summary: Count total number of vehicles
-    description: Returns total count of active vehicles
-    responses:
-      200:
-        description: Successful operation
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CountResponse'
-      401:
-        $ref: '#/components/responses/Unauthorized'
-      403:
-        $ref: '#/components/responses/Forbidden'
-      500:
-        $ref: '#/components/responses/ServerError'
-
-/vehicles/analytics/count/{status}:
-  get:
-    tags: [Vehicles]
-    summary: Count vehicles by status
-    description: Returns count of vehicles filtered by status
+    tags: [TrackingDevices]
+    summary: Count total number of devices
+    security:
+      - bearerAuth: []
     parameters:
-      - in: path
+      - in: query
         name: status
-        required: true
         schema:
           type: string
-          enum: [ACTIVE, INACTIVE, MAINTENANCE, DECOMMISSIONED]
-        description: Vehicle status to filter by
+          enum: [ACTIVE, INACTIVE, PENDING, DISCONNECTED, MAINTENANCE]
+        description: Filter by device status
     responses:
       200:
         description: Successful operation
