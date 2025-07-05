@@ -25,8 +25,23 @@ class UserController {
     this.changeRole = this.changeRole.bind(this);
     this.createUser = this.createUser.bind(this);
     this.listUsers = this.listUsers.bind(this);
+    this.getUserById = this.getUserById.bind(this);
   }
-
+  async changeUserStatus(req: Request, res: ExpressResponse) {
+    try {
+      const userId = Number(req.params.id);
+      const { status } = req.body;  // expect status in body
+      if (!status) return Response.badRequest(res, 'Status is required');
+  
+      const updatedUser = await UserService.changeUserStatus(userId, status);
+      if (!updatedUser) return Response.notFound(res, 'User');
+  
+      return Response.success(res, updatedUser, 'User status updated successfully');
+    } catch (error: any) {
+      return Response.badRequest(res, error.message || 'Change user status failed');
+    }
+  }
+  
   // Convert signup to instance method for consistency
   async signup(req: Request, res: ExpressResponse) {
     try {
@@ -37,7 +52,17 @@ class UserController {
       return Response.badRequest(res, error.message || 'Signup failed');
     }
   }
-
+  async getUserById(req: Request, res: ExpressResponse) {
+    try {
+      const userId = Number(req.params.id);
+      const user = await UserService.getUserById(userId);
+      if (!user) return Response.notFound(res, 'User');
+      return Response.success(res, user, 'User retrieved successfully');
+    } catch (error: any) {
+      return Response.badRequest(res, error.message || 'Get user failed');
+    }
+  }
+  
   async login(req: Request, res: ExpressResponse) {
     try {
       const { user, token } = await UserService.login(req.body);
@@ -51,7 +76,7 @@ class UserController {
     try {
       const userId = Number(req.params.id);
       const user = await UserService.updateUser(userId, req.body);
-      if (!user) return Response.notFound(res, 'User not found');
+      if (!user) return Response.notFound(res, 'User');
       return Response.success(res, user, 'User updated successfully');
     } catch (error: any) {
       return Response.badRequest(res, error.message || 'Update failed');
@@ -62,7 +87,7 @@ class UserController {
     try {
       const userId = Number(req.params.id);
       const user = await UserService.softDeleteUser(userId);
-      if (!user) return Response.notFound(res, 'User not found');
+      if (!user) return Response.notFound(res, 'User');
       return Response.success(res, user, 'User soft deleted');
     } catch (error: any) {
       return Response.badRequest(res, error.message || 'Soft delete failed');
@@ -73,7 +98,7 @@ class UserController {
     try {
       const userId = Number(req.params.id);
       const user = await UserService.hardDeleteUser(userId);
-      if (!user) return Response.notFound(res, 'User not found');
+      if (!user) return Response.notFound(res, 'User');
       return Response.success(res, user, 'User permanently deleted');
     } catch (error: any) {
       return Response.badRequest(res, error.message || 'Hard delete failed');
@@ -84,7 +109,7 @@ class UserController {
     try {
       const userId = Number(req.params.id);
       const user = await UserService.restoreUser(userId);
-      if (!user) return Response.notFound(res, 'User not found');
+      if (!user) return Response.notFound(res, 'User');
       return Response.success(res, user, 'User restored');
     } catch (error: any) {
       return Response.badRequest(res, error.message || 'Restore failed');
@@ -108,8 +133,9 @@ class UserController {
   async requestPasswordReset(req: Request, res: ExpressResponse) {
     try {
       const { email } = req.body;
-      const result = await UserService.requestPasswordReset(email);
-      return Response.success(res, result, 'OTP sent to email');
+      await UserService.requestPasswordReset(email);
+      return Response.success(res, null, 'OTP sent to registered email');
+      
     } catch (error: any) {
       return Response.badRequest(res, error.message || 'Request password reset failed');
     }
@@ -130,7 +156,7 @@ class UserController {
       const userId = Number(req.params.id);
       const { role } = req.body;
       const user = await UserService.changeRole(userId, role);
-      if (!user) return Response.notFound(res, 'User not found');
+      if (!user) return Response.notFound(res, 'User');
       return Response.success(res, user, 'User role changed');
     } catch (error: any) {
       return Response.badRequest(res, error.message || 'Change role failed');

@@ -3,6 +3,7 @@ import { Request, Response as ExpressResponse } from 'express';
 import logger from '../utils/logger';
 import { VehicleService } from '../services/VehicleService';
 import Response from '../utils/response';
+import { AuthenticatedRequest } from '../utils/jwtFunctions';
 
  class VehicleController {
   static async createVehicle(req: Request, res: ExpressResponse) {
@@ -59,10 +60,16 @@ import Response from '../utils/response';
     }
   }
 
-  static async getVehicleById(req: Request, res: ExpressResponse) {
+  static async getVehicleById(req: AuthenticatedRequest, res: ExpressResponse) {
+    
     try {
       const id = parseInt(req.params.id);
       const vehicle = await new VehicleService().getVehicleById(id);
+      const isAdmin = req.userRole === 'ADMIN' || req.userRole === 'FLEET_MANAGER';
+      if (!isAdmin && vehicle.user.id !== req.userId) {
+        return Response.unauthorized(res, 'You are not allowed to view this vehicle');
+      }
+  
       return Response.success(res, vehicle, 'Vehicle details fetched');
     } catch (error) {
       logger.error('VehicleController::getVehicleById', error);
@@ -70,7 +77,8 @@ import Response from '../utils/response';
     }
   }
 
-  static async listVehicles(req: Request, res: ExpressResponse) {
+  static async listVehicles(req: AuthenticatedRequest, res: ExpressResponse) {
+    const isAdmin = req.userRole === 'ADMIN' || req.userRole === 'FLEET_MANAGER';
     try {
       const params = {
         page: parseInt(req.query.page as string) || 1,
@@ -79,7 +87,12 @@ import Response from '../utils/response';
           status: req.query.status as any,
           emissionStatus: req.query.emissionStatus as any,
           vehicleType: req.query.vehicleType as string,
-          userId: req.query.userId ? parseInt(req.query.userId as string) : undefined,
+          userId: isAdmin
+          ? req.query.userId
+            ? parseInt(req.query.userId as string)
+            : undefined
+          : req.userId, // 👈 force filtering by logged-in user's ID
+
         },
         sortBy: req.query.sortBy as any,
         sortOrder: req.query.sortOrder as 'asc' | 'desc' || 'desc',
@@ -93,10 +106,18 @@ import Response from '../utils/response';
     }
   }
 
-  static async getVehiclesByUser(req: Request, res: ExpressResponse) {
+  static async getVehiclesByUser(req: AuthenticatedRequest, res: ExpressResponse) {
+    const requestedUserId = parseInt(req.params.userId);
+
+    const isAdmin = req.userRole === 'ADMIN' || req.userRole === 'FLEET_MANAGER';
+
+    if (!isAdmin && requestedUserId !== req.userId) {
+      return Response.unauthorized(res, 'You are not allowed to access other users\' vehicles');
+    }
+
     try {
-      const userId = parseInt(req.params.userId);
-      const vehicles = await new VehicleService().getVehiclesByUser(userId);
+  
+      const vehicles = await new VehicleService().getVehiclesByUser(requestedUserId);
       return Response.success(res, vehicles, 'User vehicles fetched');
     } catch (error) {
       logger.error('VehicleController::getVehiclesByUser', error);

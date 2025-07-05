@@ -1,4 +1,4 @@
-﻿import { Prisma, UserRole } from '@prisma/client';
+﻿import { Prisma, User, UserRole } from '@prisma/client';
 import { PaginationParams } from '../GrobalTypes';
 
 // --- Signup DTO ---
@@ -63,7 +63,27 @@ export type CreateUserDTO = Omit<
 > & { password: string }; // password required
 
 // --- Update User DTO ---
-export type UpdateUserDTO = Prisma.UserUpdateInput;
+
+
+export type UpdateUserDTO = Partial<
+  Omit<
+    User,
+    | 'id'
+    | 'password'
+    | 'role'
+    | 'status'
+    | 'otp'
+    | 'otpExpiresAt'
+    | 'token'
+    | 'verified'
+    | 'deletedAt'
+    | 'createdAt'
+    | 'updatedAt'
+    | 'companyRegistrationNumber'
+    | 'fleetSize'
+  >
+>;
+
 
 // --- Params for methods that require userId ---
 export interface UserIdParam {

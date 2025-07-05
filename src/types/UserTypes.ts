@@ -20,18 +20,6 @@ export type UserBasicInfo = Pick<
   | 'status'
 >;
 
-interface CreateUserRequest {
-  email: string;
-  password: string;
-  name?: string;
-}
-
-interface UserResponse {
-  id: string;
-  email: string;
-  name?: string;
-  createdAt: Date;
-}
 
 export interface GetUserByIdResponse {
   id: number;

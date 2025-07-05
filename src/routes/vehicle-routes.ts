@@ -1,63 +1,103 @@
 import { Router, Request, Response } from 'express';
 import VehicleController from '../controllers/VehicleController';
-import { AuthenticatedRequest } from '../utils/jwtFunctions';
-// import { isLoggedIn, hasRole } from '../middlewares/auth'; // (Optional if you need)
+import { AuthenticatedRequest, verifyingtoken } from '../utils/jwtFunctions';
+import { hasRole } from '../middlewares/hasRole';
+import { UserRole } from '@prisma/client';
+import { isLoggedIn } from '../middlewares/isLoggedIn';
+
 
 const VehiclesRouter = Router();
 
-// CREATE
-VehiclesRouter.post('/', (req: AuthenticatedRequest, res: Response) => {
-  VehicleController.createVehicle(req, res);
-});
 
-// UPDATE
-VehiclesRouter.put('/:id', (req: AuthenticatedRequest, res: Response) => {
-  VehicleController.updateVehicle(req, res);
-});
+VehiclesRouter.post(
+  '/',
+  hasRole([UserRole.ADMIN, UserRole.FLEET_MANAGER]),
+  (req: AuthenticatedRequest, res: Response) => {
+    VehicleController.createVehicle(req, res);
+  }
+);
+VehiclesRouter.put(
+  '/:id',
+  hasRole([UserRole.ADMIN, UserRole.FLEET_MANAGER]),
+  (req: AuthenticatedRequest, res: Response) => {
+    VehicleController.updateVehicle(req, res);
+  }
+);
 
-// SOFT DELETE
-VehiclesRouter.patch('/:id/soft-delete', (req: AuthenticatedRequest, res: Response) => {
-  VehicleController.softDeleteVehicle(req, res);
-});
 
-// RESTORE
-VehiclesRouter.patch('/:id/restore', (req: AuthenticatedRequest, res: Response) => {
-  VehicleController.restoreVehicle(req, res);
-});
+VehiclesRouter.patch(
+  '/:id/soft-delete',
+  hasRole([UserRole.ADMIN]),
+  (req: AuthenticatedRequest, res: Response) => {
+    VehicleController.softDeleteVehicle(req, res);
+  }
+);
 
-// PERMANENT DELETE
-VehiclesRouter.delete('/:id', (req: AuthenticatedRequest, res: Response) => {
-  VehicleController.deleteVehiclePermanently(req, res);
-});
+VehiclesRouter.patch(
+  '/:id/restore',
+  hasRole([UserRole.ADMIN]),
+  (req: AuthenticatedRequest, res: Response) => {
+    VehicleController.restoreVehicle(req, res);
+  }
+);
 
-// GET BY ID
-VehiclesRouter.get('/:id', (req: AuthenticatedRequest, res: Response) => {
-  VehicleController.getVehicleById(req, res);
-});
 
-// LIST WITH PAGINATION, FILTER, SORT
-VehiclesRouter.get('/', (req: AuthenticatedRequest, res: Response) => {
-  VehicleController.listVehicles(req, res);
-});
+VehiclesRouter.delete(
+  '/:id',
+  hasRole([UserRole.ADMIN]),
+  (req: AuthenticatedRequest, res: Response) => {
+    VehicleController.deleteVehiclePermanently(req, res);
+  }
+);
 
-// GET VEHICLES BY USER
-VehiclesRouter.get('/user/:userId', (req: AuthenticatedRequest, res: Response) => {
-  VehicleController.getVehiclesByUser(req, res);
-});
+VehiclesRouter.get(
+  '/:id',
+  isLoggedIn,
+  (req: AuthenticatedRequest, res: Response) => {
+    VehicleController.getVehicleById(req, res);
+  }
+);
 
-// TOP POLLUTERS
-VehiclesRouter.get('/analytics/top-polluters', (req: AuthenticatedRequest, res: Response) => {
-  VehicleController.getTopPolluters(req, res);
-});
 
-// COUNT TOTAL
-VehiclesRouter.get('/analytics/count', (req: AuthenticatedRequest, res: Response) => {
-  VehicleController.countVehicles(req, res);
-});
+VehiclesRouter.get(
+  '/',
+  isLoggedIn,
+  (req: AuthenticatedRequest, res: Response) => {
+    VehicleController.listVehicles(req, res);
+  }
+);
 
-// COUNT BY STATUS
-VehiclesRouter.get('/analytics/count/:status', (req: AuthenticatedRequest, res: Response) => {
-  VehicleController.countVehiclesByStatus(req, res);
-});
+VehiclesRouter.get(
+  '/user/:userId',
+  isLoggedIn,
+  (req: AuthenticatedRequest, res: Response) => {
+    VehicleController.getVehiclesByUser(req, res);
+  }
+);
+
+VehiclesRouter.get(
+  '/analytics/top-polluters',
+  isLoggedIn,
+  (req: AuthenticatedRequest, res: Response) => {
+    VehicleController.getTopPolluters(req, res);
+  }
+);
+
+VehiclesRouter.get(
+  '/analytics/count',
+  isLoggedIn,
+  (req: AuthenticatedRequest, res: Response) => {
+    VehicleController.countVehicles(req, res);
+  }
+);
+
+
+VehiclesRouter.get(
+  '/analytics/count/:status',
+isLoggedIn,
+  (req: AuthenticatedRequest, res: Response) => {
+    VehicleController.countVehiclesByStatus(req, res);
+  }
+);
 
 export default VehiclesRouter;
