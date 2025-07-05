@@ -100,7 +100,7 @@
         },
         "status": {
           "type": "string",
-          "default": "ACTIVE",
+          "default": "PENDING_APPROVAL",
           "enum": [
             "ACTIVE",
             "PENDING_APPROVAL",
@@ -145,6 +145,18 @@
         "updatedAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "oauthProvider": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "oauthProviderId": {
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "vehicles": {
           "type": "array",

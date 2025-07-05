@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './docs/swagger';
 import MainRouter from './routes/allroutes';
+<<<<<<< Updated upstream
 
 
 
@@ -12,6 +13,10 @@ import MainRouter from './routes/allroutes';
 
 
 
+=======
+import passport from './utils/passport';
+import session from 'express-session';
+>>>>>>> Stashed changes
 
 dotenv.config();
 
@@ -21,6 +26,19 @@ app.use(express.json());
 // Swagger UI at /api-docs
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api', MainRouter);
+<<<<<<< Updated upstream
+=======
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET!,
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
+>>>>>>> Stashed changes
 app.get('/', (req, res) => {
   res.send('API is running');
 });
