@@ -2,6 +2,7 @@ import { Request, Response as ExpressResponse } from 'express';
 import UserService from '../services/UserService';
 import Response  from '../utils/response';
 import { UserListQueryDTO } from '../types/dtos/CreateUserDto';
+import { tokengenerating } from '../utils/jwtFunctions';
 declare global {
   namespace Express {
     interface Request {
@@ -10,11 +11,11 @@ declare global {
   }
 }
 class UserController {
-  
   constructor() {
     // Remove the invalid await call from constructor
     this.signup = this.signup.bind(this);
     this.login = this.login.bind(this);
+    this.googleAuth = this.googleAuth.bind(this);
     this.updateUser = this.updateUser.bind(this);
     this.softDeleteUser = this.softDeleteUser.bind(this);
     this.hardDeleteUser = this.hardDeleteUser.bind(this);
@@ -47,9 +48,9 @@ class UserController {
     try {
       // Add missing await keyword
       const user = await UserService.signup(req.body);
-      return Response.created(res, user, 'User registered successfully');
+      return Response.created(res, user, "User registered successfully");
     } catch (error: any) {
-      return Response.badRequest(res, error.message || 'Signup failed');
+      return Response.badRequest(res, error.message || "Signup failed");
     }
   }
   async getUserById(req: Request, res: ExpressResponse) {
@@ -66,9 +67,27 @@ class UserController {
   async login(req: Request, res: ExpressResponse) {
     try {
       const { user, token } = await UserService.login(req.body);
-      return Response.success(res, { user, token }, 'Login successful');
+      return Response.success(res, { user, token }, "Login successful");
     } catch (error: any) {
-      return Response.badRequest(res, error.message || 'Login failed');
+      return Response.badRequest(res, error.message || "Login failed");
+    }
+  }
+
+  async googleAuth(req: Request, res: ExpressResponse) {
+    try {
+      const user = req.user as any;
+      if (!user) return res.redirect("/login");
+
+      const token = tokengenerating({
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        username: user.username || "",
+      });
+
+      return res.redirect(`/dashboard?token=${token}`);
+    } catch (error: any) {
+      return res.redirect("/login");
     }
   }
 
@@ -79,7 +98,7 @@ class UserController {
       if (!user) return Response.notFound(res, 'User');
       return Response.success(res, user, 'User updated successfully');
     } catch (error: any) {
-      return Response.badRequest(res, error.message || 'Update failed');
+      return Response.badRequest(res, error.message || "Update failed");
     }
   }
 
@@ -90,7 +109,7 @@ class UserController {
       if (!user) return Response.notFound(res, 'User');
       return Response.success(res, user, 'User soft deleted');
     } catch (error: any) {
-      return Response.badRequest(res, error.message || 'Soft delete failed');
+      return Response.badRequest(res, error.message || "Soft delete failed");
     }
   }
 
@@ -101,7 +120,7 @@ class UserController {
       if (!user) return Response.notFound(res, 'User');
       return Response.success(res, user, 'User permanently deleted');
     } catch (error: any) {
-      return Response.badRequest(res, error.message || 'Hard delete failed');
+      return Response.badRequest(res, error.message || "Hard delete failed");
     }
   }
 
@@ -112,7 +131,7 @@ class UserController {
       if (!user) return Response.notFound(res, 'User');
       return Response.success(res, user, 'User restored');
     } catch (error: any) {
-      return Response.badRequest(res, error.message || 'Restore failed');
+      return Response.badRequest(res, error.message || "Restore failed");
     }
   }
 
@@ -120,13 +139,16 @@ class UserController {
     try {
       // assuming user id is in req.user (after auth middleware)
       const userId = req.userId;
-      if (!userId) return Response.unauthorized(res, 'Unauthorized');
+      if (!userId) return Response.unauthorized(res, "Unauthorized");
 
       const user = await UserService.changePassword(userId, req.body);
-      if (!user) return Response.badRequest(res, 'Password change failed');
-      return Response.success(res, user, 'Password changed successfully');
+      if (!user) return Response.badRequest(res, "Password change failed");
+      return Response.success(res, user, "Password changed successfully");
     } catch (error: any) {
-      return Response.badRequest(res, error.message || 'Change password failed');
+      return Response.badRequest(
+        res,
+        error.message || "Change password failed"
+      );
     }
   }
 
@@ -137,17 +159,20 @@ class UserController {
       return Response.success(res, null, 'OTP sent to registered email');
       
     } catch (error: any) {
-      return Response.badRequest(res, error.message || 'Request password reset failed');
+      return Response.badRequest(
+        res,
+        error.message || "Request password reset failed"
+      );
     }
   }
 
   async resetPassword(req: Request, res: ExpressResponse) {
     try {
       const user = await UserService.resetPassword(req.body);
-      if (!user) return Response.badRequest(res, 'Password reset failed');
-      return Response.success(res, user, 'Password reset successful');
+      if (!user) return Response.badRequest(res, "Password reset failed");
+      return Response.success(res, user, "Password reset successful");
     } catch (error: any) {
-      return Response.badRequest(res, error.message || 'Reset password failed');
+      return Response.badRequest(res, error.message || "Reset password failed");
     }
   }
 
@@ -159,16 +184,16 @@ class UserController {
       if (!user) return Response.notFound(res, 'User');
       return Response.success(res, user, 'User role changed');
     } catch (error: any) {
-      return Response.badRequest(res, error.message || 'Change role failed');
+      return Response.badRequest(res, error.message || "Change role failed");
     }
   }
 
   async createUser(req: Request, res: ExpressResponse) {
     try {
       const user = await UserService.createUser(req.body);
-      return Response.created(res, user, 'User created successfully');
+      return Response.created(res, user, "User created successfully");
     } catch (error: any) {
-      return Response.badRequest(res, error.message || 'Create user failed');
+      return Response.badRequest(res, error.message || "Create user failed");
     }
   }
 
@@ -176,9 +201,9 @@ class UserController {
     try {
       const query = req.query as unknown as UserListQueryDTO;
       const result = await UserService.listUsers(query);
-      return Response.success(res, result, 'Users retrieved successfully');
+      return Response.success(res, result, "Users retrieved successfully");
     } catch (error: any) {
-      return Response.badRequest(res, error.message || 'List users failed');
+      return Response.badRequest(res, error.message || "List users failed");
     }
   }
 }
