@@ -175,7 +175,6 @@ model TrackingDevice {
   isActive             Boolean              @default(true)
   status               DeviceStatus         @default(ACTIVE)
   lastPing             DateTime?
-
   gpsData              GpsData[]
   fuelData             FuelData[]
   emissionData         EmissionData[]
