@@ -5,7 +5,7 @@
   "type": "module",
   "main": "eslint.config.js",
   "scripts": {
-     "generate:schemas": "npx typescript-json-schema tsconfig.swagger.json VehicleCreateRequest VehicleUpdateRequest VehicleFullDetails --required --out src/docs/components/vehicle-schemas.json",
+    "generate:schemas": "npx typescript-json-schema tsconfig.swagger.json VehicleCreateRequest VehicleUpdateRequest VehicleFullDetails --required --out src/docs/components/vehicle-schemas.json",
     "generate:env": "ts-node src/utils/generateEnvTs.ts",
     "prisma:migrate": "npx prisma migrate dev --name init",
     "prisma:deploy": "npx prisma migrate deploy",
