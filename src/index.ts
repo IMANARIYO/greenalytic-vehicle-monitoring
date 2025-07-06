@@ -5,14 +5,6 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './docs/swagger';
 import MainRouter from './routes/allroutes';
 
-
-
-
-
-
-
-
-
 dotenv.config();
 
 const app = express();
@@ -30,3 +22,4 @@ app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
   console.log(`Swagger docs available at http://localhost:${PORT}/docs`);
 });
+
