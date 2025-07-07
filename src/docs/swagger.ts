@@ -18,6 +18,9 @@ const userDocs = yaml.load(
 const vehiclesDocs = yaml.load(
   fs.readFileSync(path.join(__dirname, 'vehiclesDocs.yaml'), 'utf8')
 ) as Record<string, any>;
+const emissionDataDocs = yaml.load(
+  fs.readFileSync(path.join(__dirname, 'emissionDataDocs.yaml'), 'utf8')
+) as Record<string, any>;
 
 const swaggerSpec = {
   openapi: '3.0.0',
@@ -38,7 +41,9 @@ const swaggerSpec = {
   tags: [
     { name: 'Users', description: 'User-related operations' },
     { name: 'Vehicles', description: 'Vehicle operations' },
-    { name: 'TrackingDevices', description: 'Vehicle tracking endpoints' }
+    { name: 'TrackingDevices', description: 'Vehicle tracking endpoints' },
+    { name: 'Emissions', description: 'Emission data endpoints' },
+
   ],
   components: {
     securitySchemes: {
@@ -106,13 +111,46 @@ const swaggerSpec = {
           language: { type: 'string', example: 'English' },
           notificationPreference: { type: 'string', example: 'Email' }
         }
+      },
+      CreateEmissionDataRequest: {
+      type: 'object',
+      required: ['vehicleId', 'co2Percentage', 'coPercentage', 'o2Percentage', 'hcPPM', 'trackingDeviceId'],
+      properties: {
+        vehicleId: { type: 'integer', example: 1 },
+        co2Percentage: { type: 'number', minimum: 0, maximum: 20, example: 0.8 },
+        coPercentage: { type: 'number', minimum: 0, maximum: 10, example: 0.4 },
+        o2Percentage: { type: 'number', minimum: 0, maximum: 25, example: 20.5 },
+        hcPPM: { type: 'integer', minimum: 0, maximum: 10000, example: 150 },
+        noxPPM: { type: 'number', minimum: 0, maximum: 5000, example: 80, nullable: true },
+        pm25Level: { type: 'number', minimum: 0, maximum: 500, example: 30, nullable: true },
+        trackingDeviceId: { type: 'integer', example: 1 },
+        plateNumber: { type: 'string', example: 'ABC-123', nullable: true },
+        timestamp: { type: 'string', format: 'date-time', example: '2024-01-15T10:30:00Z', nullable: true }
       }
+    },
+
+    UpdateEmissionDataRequest: {
+      type: 'object',
+      properties: {
+        co2Percentage: { type: 'number', minimum: 0, maximum: 20, example: 1.2 },
+        coPercentage: { type: 'number', minimum: 0, maximum: 10, example: 0.6 },
+        o2Percentage: { type: 'number', minimum: 0, maximum: 25, example: 19.8 },
+        hcPPM: { type: 'integer', minimum: 0, maximum: 10000, example: 200 },
+        noxPPM: { type: 'number', minimum: 0, maximum: 5000, example: 120, nullable: true },
+        pm25Level: { type: 'number', minimum: 0, maximum: 500, example: 35, nullable: true },
+        plateNumber: { type: 'string', example: 'XYZ-789', nullable: true },
+        timestamp: { type: 'string', format: 'date-time', example: '2024-01-15T11:00:00Z', nullable: true },
+        deletedAt: { type: 'string', format: 'date-time', nullable: true }
+      }
+    }
+
     },
   },
   security: [{ bearerAuth: [] }],
   paths: {
     ...userDocs,
     ...vehiclesDocs,
+    ...emissionDataDocs,
     '/__show-models': {
       get: {
         summary: 'Force schema display',

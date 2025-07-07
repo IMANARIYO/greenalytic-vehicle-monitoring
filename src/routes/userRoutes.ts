@@ -3,6 +3,7 @@ import UserController from '../controllers/UserController';
 import { hasRole } from '../middlewares/hasRole';
 import { AuthenticatedRequest } from '../utils/jwtFunctions';
 import { isLoggedIn } from '../middlewares/isLoggedIn';
+
 export const UserRouter = Router();
 const userController = new UserController();
 UserRouter.post('/signup', (req: Request, res: Response) => {

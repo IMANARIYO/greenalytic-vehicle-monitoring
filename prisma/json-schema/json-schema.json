@@ -100,7 +100,7 @@
         },
         "status": {
           "type": "string",
-          "default": "ACTIVE",
+          "default": "PENDING_APPROVAL",
           "enum": [
             "ACTIVE",
             "PENDING_APPROVAL",
