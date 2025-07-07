@@ -47,7 +47,7 @@ Apply them to routes where needed using Express middleware or TSOA route guards.
 ```typescript
 try {
   const user = await this.userRepo.findByEmail(dto.email);
-  if (!user) throw new Error("User not found");
+  if (!user) throw new Error("User");
   return user;
 } catch (error) {
   logger.error("UserService::findUser", error);
