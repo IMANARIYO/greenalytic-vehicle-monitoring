@@ -1,6 +1,6 @@
 import { EmissionData, Prisma } from '@prisma/client';
 import logger from '../utils/logger';
-import { PaginationMeta, PaginationParams } from '../types/GrobalTypes';
+import { PaginationMeta, PaginationParams } from '../types/GlobalTypes';
 import prisma from '../config/db';
 
 interface EmissionDataWithRelations extends EmissionData {

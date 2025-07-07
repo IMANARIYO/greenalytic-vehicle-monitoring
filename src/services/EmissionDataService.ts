@@ -12,7 +12,7 @@ import {
 } from '../types/dtos/EmissionDataDto';
 import EmissionDataRepository from '../repositories/EmissionDataRepository';
 import VehicleRepository from '../repositories/VehicleRepository';
-import TrackingDeviceRepository from '../repositories/TrackingDeviceRepository';
+import { TrackingDeviceRepository } from '../repositories/TrackingDeviceRepository';
 import { AlertRepository } from '../repositories/AlertRepository';
 import logger from '../utils/logger';
 
@@ -169,7 +169,7 @@ class EmissionDataService {
       // Verify vehicle and tracking device exist
       const [vehicle, device] = await Promise.all([
         VehicleRepository.getVehicleById(dto.vehicleId),
-        new TrackingDeviceRepository().findById(dto.trackingDeviceId)
+        TrackingDeviceRepository.getDeviceById(dto.trackingDeviceId)
       ]);
 
       if (!vehicle) {
@@ -194,7 +194,7 @@ class EmissionDataService {
       });
 
       // Update tracking device status
-    await new TrackingDeviceRepository().updateDevice(dto.trackingDeviceId, { lastPing: new Date() });
+    TrackingDeviceRepository.updateDevice(dto.trackingDeviceId, { lastPing: new Date() });
 
       // Analyze emission levels and generate alerts
       const alerts = await this.analyzeEmissionLevels(

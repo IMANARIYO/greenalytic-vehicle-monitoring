@@ -18,13 +18,12 @@ const userDocs = yaml.load(
 const vehiclesDocs = yaml.load(
   fs.readFileSync(path.join(__dirname, 'vehiclesDocs.yaml'), 'utf8')
 ) as Record<string, any>;
-<<<<<<< HEAD
 const emissionDataDocs = yaml.load(
   fs.readFileSync(path.join(__dirname, 'emissionDataDocs.yaml'), 'utf8')
-=======
+) as Record<string, any>;
+
 const trackingDevicesDocs = yaml.load(
   fs.readFileSync(path.join(__dirname, 'trackingDevicesDocs.yaml'), 'utf8')
->>>>>>> 5f95b1a81ad70e7a55b51098de14b9d3e85a1912
 ) as Record<string, any>;
 
 const swaggerSpec = {
@@ -389,7 +388,6 @@ const swaggerSpec = {
         timestamp: { type: 'string', format: 'date-time', example: '2024-01-15T10:30:00Z', nullable: true }
       }
     },
-<<<<<<< HEAD
 
     UpdateEmissionDataRequest: {
       type: 'object',
@@ -407,7 +405,6 @@ const swaggerSpec = {
     }
 
     },
-=======
     parameters: {
       deviceId: {
         in: "path",
@@ -541,17 +538,13 @@ const swaggerSpec = {
         }
       }
     }
->>>>>>> 5f95b1a81ad70e7a55b51098de14b9d3e85a1912
   },
   security: [{ bearerAuth: [] }],
   paths: {
     ...userDocs,
     ...vehiclesDocs,
-<<<<<<< HEAD
     ...emissionDataDocs,
-=======
     ...trackingDevicesDocs,
->>>>>>> 5f95b1a81ad70e7a55b51098de14b9d3e85a1912
     '/__show-models': {
       get: {
         summary: 'Force schema display',
