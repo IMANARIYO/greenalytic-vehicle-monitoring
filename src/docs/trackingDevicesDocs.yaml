@@ -1,0 +1,722 @@
+openapi: 3.0.0
+info:
+  title: Tracking Devices API
+  version: 1.0.0
+  description: API for managing vehicle tracking devices
+
+paths:
+  /tracking-devices:
+    get:
+      tags: [TrackingDevices]
+      summary: List all tracking devices with filters and pagination
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Search term to filter devices
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [ACTIVE, INACTIVE, PENDING, DISCONNECTED, MAINTENANCE]
+          description: Filter by device status
+        - in: query
+          name: deviceCategory
+          schema:
+            type: string
+            enum: [MOTORCYCLE, CAR, TRUCK, TRICYCLE, OTHER]
+          description: Filter by device category
+        - in: query
+          name: protocol
+          schema:
+            type: string
+            enum: [MQTT, HTTP, SMS]
+          description: Filter by communication protocol
+        - in: query
+          name: userId
+          schema:
+            type: integer
+          description: Filter by user ID
+        - in: query
+          name: vehicleId
+          schema:
+            type: integer
+          description: Filter by vehicle ID
+        - $ref: '#/components/parameters/sortBy'
+        - $ref: '#/components/parameters/sortOrder'
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDeviceResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+    post:
+      tags: [TrackingDevices]
+      summary: Create a new tracking device
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceCreateRequest'
+      responses:
+        201:
+          description: Device created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceFullDetails'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        409:
+          $ref: '#/components/responses/Conflict'
+        422:
+          $ref: '#/components/responses/ValidationError'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /tracking-devices/bulk:
+    post:
+      tags: [TrackingDevices]
+      summary: Create multiple tracking devices in bulk
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/DeviceCreateRequest'
+      responses:
+        201:
+          description: Devices created successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DeviceFullDetails'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        409:
+          $ref: '#/components/responses/Conflict'
+        422:
+          $ref: '#/components/responses/ValidationError'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /tracking-devices/{id}:
+    get:
+      tags: [TrackingDevices]
+      summary: Get full device details by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/deviceId'
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceFullDetails'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+    put:
+      tags: [TrackingDevices]
+      summary: Update device by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/deviceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceUpdateRequest'
+      responses:
+        200:
+          description: Device updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceFullDetails'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        422:
+          $ref: '#/components/responses/ValidationError'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      tags: [TrackingDevices]
+      summary: Permanently delete a device by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/deviceId'
+      responses:
+        200:
+          description: Device permanently deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /tracking-devices/{id}/soft-delete:
+    patch:
+      tags: [TrackingDevices]
+      summary: Soft delete a device
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/deviceId'
+      responses:
+        200:
+          description: Device soft deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /tracking-devices/{id}/restore:
+    patch:
+      tags: [TrackingDevices]
+      summary: Restore a soft-deleted device
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/deviceId'
+      responses:
+        200:
+          description: Device restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /tracking-devices/serial/{serialNumber}:
+    get:
+      tags: [TrackingDevices]
+      summary: Get device by serial number
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: serialNumber
+          required: true
+          schema:
+            type: string
+          description: Device serial number
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceFullDetails'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /tracking-devices/{deviceId}/assign/{vehicleId}:
+    patch:
+      tags: [TrackingDevices]
+      summary: Assign device to vehicle
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/deviceId'
+        - in: path
+          name: vehicleId
+          required: true
+          schema:
+            type: integer
+          description: ID of vehicle to assign device to
+      responses:
+        200:
+          description: Device assigned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceFullDetails'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        409:
+          $ref: '#/components/responses/Conflict'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /tracking-devices/{deviceId}/unassign:
+    patch:
+      tags: [TrackingDevices]
+      summary: Unassign device from vehicle
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/deviceId'
+      responses:
+        200:
+          description: Device unassigned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceFullDetails'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /tracking-devices/{deviceId}/status:
+    patch:
+      tags: [TrackingDevices]
+      summary: Update device status
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/deviceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [ACTIVE, INACTIVE, PENDING, DISCONNECTED, MAINTENANCE]
+                  description: New status for the device
+                force:
+                  type: boolean
+                  default: false
+                  description: Force status change bypassing state machine rules
+                disableMonitoring:
+                  type: boolean
+                  default: true
+                  description: Disable monitoring features when status is not ACTIVE
+              required:
+                - status
+      responses:
+        200:
+          description: Device status updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceFullDetails'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /tracking-devices/batch/status:
+    post:
+      tags: [TrackingDevices]
+      summary: Batch update device statuses
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deviceIds:
+                  type: array
+                  items:
+                    type: integer
+                  description: Array of device IDs to update
+                status:
+                  type: string
+                  enum: [ACTIVE, INACTIVE, PENDING, DISCONNECTED, MAINTENANCE]
+                  description: New status for the devices
+                force:
+                  type: boolean
+                  default: false
+                  description: Force status change bypassing state machine rules
+                disableMonitoring:
+                  type: boolean
+                  default: true
+                  description: Disable monitoring features when status is not ACTIVE
+              required:
+                - deviceIds
+                - status
+      responses:
+        200:
+          description: Batch status update completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchUpdateResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /tracking-devices/{deviceId}/monitoring-features:
+    patch:
+      tags: [TrackingDevices]
+      summary: Toggle monitoring features
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/deviceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                obd:
+                  type: boolean
+                  description: Enable/disable OBD monitoring
+                gps:
+                  type: boolean
+                  description: Enable/disable GPS tracking
+                emission:
+                  type: boolean
+                  description: Enable/disable emission monitoring
+                fuel:
+                  type: boolean
+                  description: Enable/disable fuel monitoring
+                ignoreStatusCheck:
+                  type: boolean
+                  default: false
+                  description: Allow changes even when device is not ACTIVE
+      responses:
+        200:
+          description: Monitoring features updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceFullDetails'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+    get:
+      tags: [TrackingDevices]
+      summary: Get current monitoring features status
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/deviceId'
+      responses:
+        200:
+          description: Monitoring features status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitoringFeaturesStatus'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /tracking-devices/{deviceId}/reset-monitoring-features:
+    patch:
+      tags: [TrackingDevices]
+      summary: Reset all monitoring features to disabled
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/deviceId'
+      responses:
+        200:
+          description: Monitoring features reset
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceFullDetails'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /tracking-devices/{deviceId}/heartbeat:
+    post:
+      tags: [TrackingDevices]
+      summary: Record device heartbeat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                batteryLevel:
+                  type: number
+                  minimum: 0
+                  maximum: 100
+                  description: Current battery percentage
+                signalStrength:
+                  type: number
+                  description: Signal strength in dBm
+                status:
+                  type: string
+                  enum: [CONNECTED, DISCONNECTED]
+                  description: Current connection status
+              required:
+                - status
+      responses:
+        200:
+          description: Heartbeat recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceHeartbeat'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /tracking-devices/{deviceId}/health:
+    get:
+      tags: [TrackingDevices]
+      summary: Get device health report
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/deviceId'
+        - in: query
+          name: hoursBack
+          schema:
+            type: integer
+            default: 24
+            minimum: 1
+            maximum: 720
+          description: Hours of history to include in report
+      responses:
+        200:
+          description: Device health report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceHealthReport'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /tracking-devices/analytics/top/{status}:
+    get:
+      tags: [TrackingDevices]
+      summary: Get top devices by status
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: status
+          required: true
+          schema:
+            type: string
+            enum: [ACTIVE, INACTIVE, PENDING, DISCONNECTED, MAINTENANCE]
+          description: Device status to filter by
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 5
+            minimum: 1
+            maximum: 20
+          description: Number of devices to return
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DeviceListItem'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /tracking-devices/analytics/count:
+    get:
+      tags: [TrackingDevices]
+      summary: Count total number of devices
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [ACTIVE, INACTIVE, PENDING, DISCONNECTED, MAINTENANCE]
+          description: Filter by device status
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CountResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /tracking-devices/{deviceId}/history/status:
+    get:
+      tags: [TrackingDevices]
+      summary: Get device status history
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/deviceId'
+        - in: query
+          name: daysBack
+          schema:
+            type: integer
+            default: 30
+            minimum: 1
+            maximum: 365
+          description: Days of history to retrieve
+      responses:
+        200:
+          description: Status history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StatusHistoryEntry'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'

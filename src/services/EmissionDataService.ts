@@ -194,7 +194,7 @@ class EmissionDataService {
       });
 
       // Update tracking device status
-      await new TrackingDeviceRepository().updateLastPing(dto.trackingDeviceId);
+    await new TrackingDeviceRepository().updateDevice(dto.trackingDeviceId, { lastPing: new Date() });
 
       // Analyze emission levels and generate alerts
       const alerts = await this.analyzeEmissionLevels(

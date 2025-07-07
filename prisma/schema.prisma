@@ -109,6 +109,8 @@ model User {
   deletedAt               DateTime?
   createdAt               DateTime   @default(now())
   updatedAt               DateTime   @updatedAt
+  oauthProvider     String?   
+  oauthProviderId   String?   
 
   vehicles                Vehicle[]
   trackingDevices         TrackingDevice[]
@@ -175,7 +177,6 @@ model TrackingDevice {
   isActive             Boolean              @default(true)
   status               DeviceStatus         @default(ACTIVE)
   lastPing             DateTime?
-
   gpsData              GpsData[]
   fuelData             FuelData[]
   emissionData         EmissionData[]

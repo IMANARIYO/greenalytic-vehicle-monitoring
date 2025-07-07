@@ -25,22 +25,30 @@ UserRouter.put(
     userController.changePassword(req, res);
   }
 );
+UserRouter.get(
+  '/:id',
+  hasRole(['ADMIN', 'USER', 'TECHNICIAN', 'MANAGER', 'FLEET_MANAGER', 'ANALYST', 'SUPPORT_AGENT']),
+  (req: AuthenticatedRequest, res: Response) => {
+    userController.getUserById(req, res);
+  }
+);
+
 UserRouter.put(
-  '/users/:id',
+  '/:id',
   isLoggedIn,
   (req: AuthenticatedRequest, res: Response) => {
     userController.updateUser(req, res);
   }
 );
 UserRouter.delete(
-  '/users/:id/soft',
+  '/:id/soft',
   hasRole(['ADMIN']),
   (req: AuthenticatedRequest, res: Response) => {
     userController.softDeleteUser(req, res);
   }
 );
 UserRouter.delete(
-  '/users/:id/hard',
+  '/:id/hard',
   hasRole(['ADMIN']),
   (req: AuthenticatedRequest, res: Response) => {
     userController.hardDeleteUser(req, res);
@@ -48,7 +56,7 @@ UserRouter.delete(
 );
 
 UserRouter.put(
-  '/users/:id/restore',
+  '/:id/restore',
   hasRole(['ADMIN']),
   (req: AuthenticatedRequest, res: Response) => {
     userController.restoreUser(req, res);
@@ -56,7 +64,7 @@ UserRouter.put(
 );
 
 UserRouter.put(
-  '/users/:id/role',
+  '/:id/role',
   hasRole(['ADMIN']),
   (req: AuthenticatedRequest, res: Response) => {
     userController.changeRole(req, res);
@@ -64,7 +72,7 @@ UserRouter.put(
 );
 
 UserRouter.post(
-  '/users',
+  '',
   hasRole(['ADMIN']),
   (req: AuthenticatedRequest, res: Response) => {
     userController.createUser(req, res);
@@ -72,7 +80,7 @@ UserRouter.post(
 );
 
 UserRouter.get(
-  '/users',
+  '',
   hasRole(['ADMIN']),
   (req: AuthenticatedRequest, res: Response) => {
     userController.listUsers(req, res);

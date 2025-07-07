@@ -1,47 +1,61 @@
 /vehicles:
   get:
-    tags:
-      - Vehicles
+    tags: [Vehicles]
     summary: List all vehicles with filters and pagination
+    description: Returns a paginated list of vehicles with optional filtering and sorting
     parameters:
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/limit'
       - in: query
-        name: page
+        name: search
         schema:
-          type: integer
-        description: Page number
-      - in: query
-        name: limit
-        schema:
-          type: integer
-        description: Items per page
+          type: string
+        description: Search term to filter vehicles
       - in: query
         name: status
         schema:
           type: string
+          enum: [ACTIVE, INACTIVE, MAINTENANCE, DECOMMISSIONED]
         description: Filter by vehicle status
       - in: query
         name: emissionStatus
         schema:
           type: string
+          enum: [LOW, MEDIUM, HIGH, CRITICAL]
         description: Filter by emission status
       - in: query
-        name: sortBy
+        name: vehicleType
         schema:
           type: string
-        description: Field to sort by
+          enum: [CAR, TRUCK, BUS, MOTORCYCLE, OTHER]
+        description: Filter by vehicle type
       - in: query
-        name: sortOrder
+        name: userId
         schema:
-          type: string
-          enum: [asc, desc]
+          type: integer
+        description: Filter by user ID (admin/fleet manager only)
+      - $ref: '#/components/parameters/sortBy'
+      - $ref: '#/components/parameters/sortOrder'
     responses:
       200:
-        description: Vehicles listed successfully
+        description: Successful operation
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaginatedVehicleResponse'
+      400:
+        $ref: '#/components/responses/BadRequest'
+      401:
+        $ref: '#/components/responses/Unauthorized'
+      403:
+        $ref: '#/components/responses/Forbidden'
+      500:
+        $ref: '#/components/responses/ServerError'
 
   post:
-    tags:
-      - Vehicles
+    tags: [Vehicles]
     summary: Create a new vehicle
+    description: Create a new vehicle record (admin/fleet manager only)
     requestBody:
       required: true
       content:
@@ -51,32 +65,52 @@
     responses:
       201:
         description: Vehicle created successfully
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleFullDetails'
+      400:
+        $ref: '#/components/responses/BadRequest'
+      401:
+        $ref: '#/components/responses/Unauthorized'
+      403:
+        $ref: '#/components/responses/Forbidden'
+      409:
+        $ref: '#/components/responses/Conflict'
+      422:
+        $ref: '#/components/responses/ValidationError'
+      500:
+        $ref: '#/components/responses/ServerError'
 
 /vehicles/{id}:
   get:
-    tags:
-      - Vehicles
+    tags: [Vehicles]
     summary: Get full vehicle details by ID
+    description: Returns complete details for a specific vehicle
     parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: integer
+      - $ref: '#/components/parameters/vehicleId'
     responses:
       200:
-        description: Vehicle details fetched
+        description: Successful operation
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleFullDetails'
+      401:
+        $ref: '#/components/responses/Unauthorized'
+      403:
+        $ref: '#/components/responses/Forbidden'
+      404:
+        $ref: '#/components/responses/NotFound'
+      500:
+        $ref: '#/components/responses/ServerError'
 
   put:
-    tags:
-      - Vehicles
+    tags: [Vehicles]
     summary: Update vehicle by ID
+    description: Update all fields of a vehicle (admin/fleet manager only)
     parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: integer
+      - $ref: '#/components/parameters/vehicleId'
     requestBody:
       required: true
       content:
@@ -86,101 +120,228 @@
     responses:
       200:
         description: Vehicle updated successfully
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleFullDetails'
+      400:
+        $ref: '#/components/responses/BadRequest'
+      401:
+        $ref: '#/components/responses/Unauthorized'
+      403:
+        $ref: '#/components/responses/Forbidden'
+      404:
+        $ref: '#/components/responses/NotFound'
+      422:
+        $ref: '#/components/responses/ValidationError'
+      500:
+        $ref: '#/components/responses/ServerError'
 
   delete:
-    tags:
-      - Vehicles
+    tags: [Vehicles]
     summary: Permanently delete a vehicle by ID
+    description: Hard delete a vehicle record (admin only)
     parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: integer
+      - $ref: '#/components/parameters/vehicleId'
     responses:
       200:
         description: Vehicle permanently deleted
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SuccessResponse'
+      401:
+        $ref: '#/components/responses/Unauthorized'
+      403:
+        $ref: '#/components/responses/Forbidden'
+      404:
+        $ref: '#/components/responses/NotFound'
+      500:
+        $ref: '#/components/responses/ServerError'
 
 /vehicles/{id}/soft-delete:
   patch:
-    tags:
-      - Vehicles
+    tags: [Vehicles]
     summary: Soft delete a vehicle
+    description: Mark a vehicle as deleted without removing from database (admin/fleet manager only)
     parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: integer
+      - $ref: '#/components/parameters/vehicleId'
     responses:
       200:
         description: Vehicle soft deleted
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SuccessResponse'
+      401:
+        $ref: '#/components/responses/Unauthorized'
+      403:
+        $ref: '#/components/responses/Forbidden'
+      404:
+        $ref: '#/components/responses/NotFound'
+      500:
+        $ref: '#/components/responses/ServerError'
 
 /vehicles/{id}/restore:
   patch:
-    tags:
-      - Vehicles
+    tags: [Vehicles]
     summary: Restore a soft-deleted vehicle
+    description: Restore a previously soft-deleted vehicle (admin/fleet manager only)
     parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: integer
+      - $ref: '#/components/parameters/vehicleId'
     responses:
       200:
         description: Vehicle restored
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SuccessResponse'
+      401:
+        $ref: '#/components/responses/Unauthorized'
+      403:
+        $ref: '#/components/responses/Forbidden'
+      404:
+        $ref: '#/components/responses/NotFound'
+      500:
+        $ref: '#/components/responses/ServerError'
+
+/vehicles/{id}/assign/{userId}:
+  patch:
+    tags: [Vehicles]
+    summary: Assign vehicle to user
+    description: Assign a vehicle to a specific user (admin/fleet manager only)
+    parameters:
+      - $ref: '#/components/parameters/vehicleId'
+      - in: path
+        name: userId
+        required: true
+        schema:
+          type: integer
+        description: ID of user to assign vehicle to
+    responses:
+      200:
+        description: Vehicle assigned successfully
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SuccessResponse'
+      400:
+        $ref: '#/components/responses/BadRequest'
+      401:
+        $ref: '#/components/responses/Unauthorized'
+      403:
+        $ref: '#/components/responses/Forbidden'
+      404:
+        $ref: '#/components/responses/NotFound'
+      409:
+        $ref: '#/components/responses/Conflict'
+      500:
+        $ref: '#/components/responses/ServerError'
 
 /vehicles/user/{userId}:
   get:
-    tags:
-      - Vehicles
+    tags: [Vehicles]
     summary: Get vehicles by user ID
+    description: Returns all vehicles assigned to a specific user
     parameters:
       - in: path
         name: userId
         required: true
         schema:
           type: integer
+        description: ID of user to get vehicles for
     responses:
       200:
-        description: User vehicles fetched
+        description: Successful operation
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/VehicleListItem'
+      401:
+        $ref: '#/components/responses/Unauthorized'
+      403:
+        $ref: '#/components/responses/Forbidden'
+      404:
+        $ref: '#/components/responses/NotFound'
+      500:
+        $ref: '#/components/responses/ServerError'
 
 /vehicles/analytics/top-polluters:
   get:
-    tags:
-      - Vehicles
+    tags: [Vehicles]
     summary: Get top polluting vehicles
+    description: Returns vehicles with highest emission levels
     parameters:
       - in: query
         name: limit
         schema:
           type: integer
+          default: 5
+          minimum: 1
+          maximum: 50
         description: Number of top polluters to return
     responses:
       200:
-        description: Top polluters fetched
+        description: Successful operation
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/VehicleEmissionItem'
+      401:
+        $ref: '#/components/responses/Unauthorized'
+      403:
+        $ref: '#/components/responses/Forbidden'
+      500:
+        $ref: '#/components/responses/ServerError'
 
 /vehicles/analytics/count:
   get:
-    tags:
-      - Vehicles
+    tags: [Vehicles]
     summary: Count total number of vehicles
+    description: Returns total count of active vehicles
     responses:
       200:
-        description: Vehicle count returned
+        description: Successful operation
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CountResponse'
+      401:
+        $ref: '#/components/responses/Unauthorized'
+      403:
+        $ref: '#/components/responses/Forbidden'
+      500:
+        $ref: '#/components/responses/ServerError'
 
 /vehicles/analytics/count/{status}:
   get:
-    tags:
-      - Vehicles
+    tags: [Vehicles]
     summary: Count vehicles by status
+    description: Returns count of vehicles filtered by status
     parameters:
       - in: path
         name: status
         required: true
         schema:
           type: string
+          enum: [ACTIVE, INACTIVE, MAINTENANCE, DECOMMISSIONED]
+        description: Vehicle status to filter by
     responses:
       200:
-        description: Vehicle count by status
+        description: Successful operation
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CountResponse'
+      400:
+        $ref: '#/components/responses/BadRequest'
+      401:
+        $ref: '#/components/responses/Unauthorized'
+      403:
+        $ref: '#/components/responses/Forbidden'
+      500:
+        $ref: '#/components/responses/ServerError'

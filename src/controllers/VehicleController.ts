@@ -1,139 +1,119 @@
 import { Request, Response as ExpressResponse } from 'express';
-
-import logger from '../utils/logger';
-import { VehicleService } from '../services/VehicleService';
+import { AuthenticatedRequest } from '../utils/jwtFunctions';
+import { catchAsync } from '../middlewares/errorHandler';
 import Response from '../utils/response';
+import { VehicleService } from '../services/VehicleService';
+import logger from '../utils/logger';
 
- class VehicleController {
-  static async createVehicle(req: Request, res: ExpressResponse) {
-    try {
-      const vehicle = await new VehicleService().createVehicle(req.body);
-      return Response.created(res, vehicle, 'Vehicle created successfully');
-    } catch (error) {
-      logger.error('VehicleController::createVehicle', error);
-      return Response.error(res, error, 'Failed to create vehicle');
-    }
+class VehicleController {
+  private vehicleService: VehicleService;
+
+  constructor() {
+    this.vehicleService = new VehicleService();
   }
 
-  static async updateVehicle(req: Request, res: ExpressResponse) {
-    try {
-      const id = parseInt(req.params.id);
-      const updated = await new VehicleService().updateVehicle(id, req.body);
-      return Response.success(res, updated, 'Vehicle updated successfully');
-    } catch (error) {
-      logger.error('VehicleController::updateVehicle', error);
-      return Response.error(res, error, 'Failed to update vehicle');
-    }
-  }
+  createVehicle = catchAsync(async (req: Request, res: ExpressResponse) => {
+    const vehicle = await this.vehicleService.createVehicle(req.body);
+    return Response.created(res, vehicle, 'Vehicle created successfully');
+  });
 
-  static async softDeleteVehicle(req: Request, res: ExpressResponse) {
-    try {
-      const id = parseInt(req.params.id);
-      await new VehicleService().softDeleteVehicle(id);
-      return Response.success(res, null, 'Vehicle soft deleted');
-    } catch (error) {
-      logger.error('VehicleController::softDeleteVehicle', error);
-      return Response.error(res, error, 'Failed to delete vehicle');
-    }
-  }
+  updateVehicle = catchAsync(async (req: Request, res: ExpressResponse) => {
+    const id = parseInt(req.params.id);
+    const updated = await this.vehicleService.updateVehicle(id, req.body);
+    return Response.success(res, updated, 'Vehicle updated successfully');
+  });
 
-  static async restoreVehicle(req: Request, res: ExpressResponse) {
-    try {
-      const id = parseInt(req.params.id);
-      await new VehicleService().restoreVehicle(id);
-      return Response.success(res, null, 'Vehicle restored');
-    } catch (error) {
-      logger.error('VehicleController::restoreVehicle', error);
-      return Response.error(res, error, 'Failed to restore vehicle');
-    }
-  }
+  softDeleteVehicle = catchAsync(async (req: Request, res: ExpressResponse) => {
+    const id = parseInt(req.params.id);
+    await this.vehicleService.softDeleteVehicle(id);
+    return Response.success(res, null, 'Vehicle soft deleted');
+  });
 
-  static async deleteVehiclePermanently(req: Request, res: ExpressResponse) {
-    try {
-      const id = parseInt(req.params.id);
-      await new VehicleService().deleteVehiclePermanently(id);
-      return Response.success(res, null, 'Vehicle permanently deleted');
-    } catch (error) {
-      logger.error('VehicleController::deleteVehiclePermanently', error);
-      return Response.error(res, error, 'Failed to permanently delete vehicle');
-    }
-  }
+  restoreVehicle = catchAsync(async (req: Request, res: ExpressResponse) => {
+    const id = parseInt(req.params.id);
+    await this.vehicleService.restoreVehicle(id);
+    return Response.success(res, null, 'Vehicle restored');
+  });
 
-  static async getVehicleById(req: Request, res: ExpressResponse) {
-    try {
-      const id = parseInt(req.params.id);
-      const vehicle = await new VehicleService().getVehicleById(id);
-      return Response.success(res, vehicle, 'Vehicle details fetched');
-    } catch (error) {
-      logger.error('VehicleController::getVehicleById', error);
-      return Response.error(res, error, 'Failed to fetch vehicle details');
-    }
-  }
+  deleteVehiclePermanently = catchAsync(async (req: Request, res: ExpressResponse) => {
+    const id = parseInt(req.params.id);
+    await this.vehicleService.deleteVehiclePermanently(id);
+    return Response.success(res, null, 'Vehicle permanently deleted');
+  });
 
-  static async listVehicles(req: Request, res: ExpressResponse) {
-    try {
-      const params = {
-        page: parseInt(req.query.page as string) || 1,
-        limit: parseInt(req.query.limit as string) || 10,
-        filter: {
-          status: req.query.status as any,
-          emissionStatus: req.query.emissionStatus as any,
-          vehicleType: req.query.vehicleType as string,
-          userId: req.query.userId ? parseInt(req.query.userId as string) : undefined,
-        },
-        sortBy: req.query.sortBy as any,
-        sortOrder: req.query.sortOrder as 'asc' | 'desc' || 'desc',
-      };
-
-      const result = await new VehicleService().listVehicles(params);
-      return Response.success(res, result, 'Vehicles listed successfully');
-    } catch (error) {
-      logger.error('VehicleController::listVehicles', error);
-      return Response.error(res, error, 'Failed to list vehicles');
+  getVehicleById = catchAsync(async (req: AuthenticatedRequest, res: ExpressResponse) => {
+    const id = parseInt(req.params.id);
+    const vehicle = await this.vehicleService.getVehicleById(id);
+    
+    const isAdmin = req.userRole === 'ADMIN' || req.userRole === 'FLEET_MANAGER';
+    if (!isAdmin && vehicle.user.id !== req.userId) {
+      return Response.unauthorized(res, 'You are not allowed to view this vehicle');
     }
-  }
 
-  static async getVehiclesByUser(req: Request, res: ExpressResponse) {
-    try {
-      const userId = parseInt(req.params.userId);
-      const vehicles = await new VehicleService().getVehiclesByUser(userId);
-      return Response.success(res, vehicles, 'User vehicles fetched');
-    } catch (error) {
-      logger.error('VehicleController::getVehiclesByUser', error);
-      return Response.error(res, error, 'Failed to fetch user vehicles');
-    }
-  }
+    return Response.success(res, vehicle, 'Vehicle details fetched');
+  });
 
-  static async getTopPolluters(req: Request, res: ExpressResponse) {
-    try {
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
-      const topVehicles = await new VehicleService().getTopPolluters(limit);
-      return Response.success(res, topVehicles, 'Top polluting vehicles fetched');
-    } catch (error) {
-      logger.error('VehicleController::getTopPolluters', error);
-      return Response.error(res, error, 'Failed to fetch top polluters');
-    }
-  }
+  listVehicles = catchAsync(async (req: AuthenticatedRequest, res: ExpressResponse) => {
+    const isAdmin = req.userRole === 'ADMIN' || req.userRole === 'FLEET_MANAGER';
+    
+    const params = {
+      page: parseInt(req.query.page as string) || 1,
+      limit: parseInt(req.query.limit as string) || 10,
+      filters: {
+        status: req.query.status as any,
+        emissionStatus: req.query.emissionStatus as any,
+        vehicleType: req.query.vehicleType as string,
+        userId: isAdmin
+          ? req.query.userId
+            ? parseInt(req.query.userId as string)
+            : undefined
+          : req.userId,
+      },
+      sortBy: req.query.sortBy as any,
+      sortOrder: req.query.sortOrder as 'asc' | 'desc' || 'desc',
+      search: req.query.search as string,
+    };
 
-  static async countVehicles(req: Request, res: ExpressResponse) {
-    try {
-      const count = await new VehicleService().countVehicles();
-      return Response.success(res, { count }, 'Total vehicles counted');
-    } catch (error) {
-      logger.error('VehicleController::countVehicles', error);
-      return Response.error(res, error, 'Failed to count vehicles');
-    }
-  }
+    const result = await this.vehicleService.listVehicles(params);
+    return Response.success(res, result, 'Vehicles listed successfully');
+  });
 
-  static async countVehiclesByStatus(req: Request, res: ExpressResponse) {
-    try {
-      const status = req.params.status as any;
-      const count = await new VehicleService().countVehiclesByStatus(status);
-      return Response.success(res, { count }, 'Vehicle count by status');
-    } catch (error) {
-      logger.error('VehicleController::countVehiclesByStatus', error);
-      return Response.error(res, error, 'Failed to count vehicles by status');
+  getVehiclesByUser = catchAsync(async (req: AuthenticatedRequest, res: ExpressResponse) => {
+    const requestedUserId = parseInt(req.params.userId);
+    const isAdmin = req.userRole === 'ADMIN' || req.userRole === 'FLEET_MANAGER';
+
+    if (!isAdmin && requestedUserId !== req.userId) {
+      return Response.unauthorized(res, 'You are not allowed to access other users\' vehicles');
     }
-  }
+
+    const vehicles = await this.vehicleService.getVehiclesByUser(requestedUserId);
+    return Response.success(res, vehicles, 'User vehicles fetched');
+  });
+
+  getTopPolluters = catchAsync(async (req: Request, res: ExpressResponse) => {
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
+    const topVehicles = await this.vehicleService.getTopPolluters(limit);
+    return Response.success(res, topVehicles, 'Top polluting vehicles fetched');
+  });
+
+  countVehicles = catchAsync(async (req: Request, res: ExpressResponse) => {
+    const count = await this.vehicleService.countVehicles();
+    return Response.success(res, { count }, 'Total vehicles counted');
+  });
+
+  countVehiclesByStatus = catchAsync(async (req: Request, res: ExpressResponse) => {
+    const status = req.params.status as any;
+    const count = await this.vehicleService.countVehiclesByStatus(status);
+    return Response.success(res, { count }, 'Vehicle count by status');
+  });
+
+  assignVehicle = catchAsync(async (req: AuthenticatedRequest, res: ExpressResponse) => {
+    const vehicleId = parseInt(req.params.vehicleId);
+    const userId = parseInt(req.params.userId);
+    
+    await this.vehicleService.assignVehicle(vehicleId, userId);
+    return Response.success(res, null, 'Vehicle assigned successfully');
+  });
 }
-export default  VehicleController;
+
+export default new VehicleController();

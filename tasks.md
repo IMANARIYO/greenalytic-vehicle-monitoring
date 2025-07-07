@@ -210,12 +210,12 @@ Real-time monitoring, analytics, and management of fleet vehicles and IoT tracki
 ### 👤 Developer 1: IMANARIYO BAPTISTE – *Vehicle Management Lead*
 
 #### 🔧 Vehicle Operations
-- [x] Create new vehicle (with validation)
-- [x] Update vehicle details
-- [x] Soft delete & restore vehicle
-- [x] Hard delete vehicle permanently
-- [x] Fetch vehicle by ID (include related stats)
-- [x] List all vehicles with:
+- [ ✅] Create new vehicle (with validation)
+- [ ✅] Update vehicle details
+- [ ✅] Soft delete & restore vehicle
+- [ ✅] Hard delete vehicle permanently
+- [ ✅] Fetch vehicle by ID (include related stats)
+- [ ✅] List all vehicles with:
   - Pagination
   - Search
   - Filter by status, category, etc.
