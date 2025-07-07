@@ -5,5 +5,5 @@ import TrackingdevicesRouter from './trackingdevice-routes';
 const MainRouter = Router();
 MainRouter.use('/users', UserRouter)
 MainRouter.use('/vehicles', VehiclesRouter)
-MainRouter.use('/trackingDevices', TrackingdevicesRouter)
+MainRouter.use('/tracking-devices', TrackingdevicesRouter)
 export default MainRouter;

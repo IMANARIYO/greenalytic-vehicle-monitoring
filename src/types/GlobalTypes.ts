@@ -17,4 +17,6 @@ export interface PaginationParams {
   sortOrder?: 'asc' | 'desc';    // default = 'desc'
   search?: string;               // optional search term
   filters?: Record<string, any>; // optional: key-value filters (e.g., { status: 'ACTIVE' })
+  includeDeleted?: boolean;      // optional: include soft-deleted items (default = false)
+  deletedOnly?: boolean;         // optional: only return soft-deleted items (default = false)
 }

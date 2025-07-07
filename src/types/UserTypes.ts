@@ -1,13 +1,9 @@
-﻿import { User, UserRole, UserStatus } from "@prisma/client";
+﻿import { Prisma, User, UserRole, UserStatus } from '@prisma/client';
+import { PaginationMeta, PaginationParams } from './GlobalTypes';
 
-export interface Userr {
-  id: string;
-  username: string;
-  email: string;
-  role: 'ADMIN' | 'TECHNICIAN' | 'FLEET_MANAGER';
-  createdAt: Date;
-}
 
+
+// --- Core User Types ---
 export type UserBasicInfo = Pick<
   User,
   | 'id'
@@ -21,170 +17,10 @@ export type UserBasicInfo = Pick<
 >;
 
 
-export interface GetUserByIdResponse {
-  id: number;
-  username: string | null;
-  email: string;
-  role: 'ADMIN' | 'USER' | 'TECHNICIAN' | 'MANAGER' | 'FLEET_MANAGER' | 'ANALYST' | 'SUPPORT_AGENT';
-  status: 'ACTIVE' | 'PENDING_APPROVAL' | 'SUSPENDED' | 'DEACTIVATED';
-  phoneNumber: string | null;
-  location: string | null;
-  companyName: string | null;
+
+export interface UserListItemWithCounts extends UserBasicInfo {
   createdAt: Date;
   updatedAt: Date;
-
-  _count: {
-    vehicles: number;
-    trackingDevices: number;
-    alerts: number;
-    reports: number;
-    activityLogs: number;
-    userNotifications: number;
-  };
-
-  vehicles: {
-    id: number;
-    plateNumber: string;
-    vehicleModel: string;
-    status: string;
-    emissionStatus: string;
-    deletedAt: Date | null;
-  }[];
-
-  trackingDevices: {
-    id: number;
-    serialNumber: string;
-    model: string;
-    deviceCategory: string;
-    status: string;
-  }[];
-
-  alerts: {
-    id: number;
-    type: string;
-    title: string;
-    isRead: boolean;
-    createdAt: Date;
-  }[];
-
-  reports: {
-    id: number;
-    title: string;
-    type: string;
-    status: string | null;
-    createdAt: Date;
-  }[];
-
-  activityLogs: {
-    id: number;
-    action: string;
-    timestamp: Date;
-  }[];
-
-  userNotifications: {
-    id: number;
-    title: string;
-    message: string;
-    isRead: boolean;
-  }[];
-}
-
-
-export interface UserDetailResponse {
-  id: number;
-  username?: string;
-  email: string;
-  phoneNumber?: string;
-  location?: string;
-  companyName?: string;
-  role: string;
-  status: string;
-  createdAt: Date;
-  updatedAt: Date;
-
-  counts: {
-    vehicles: number;
-    trackingDevices: number;
-    alerts: number;
-    reports: number;
-    activityLogs: number;
-    userNotifications: number;
-  };
-
-  vehiclesPreview: {
-    id: number;
-    plateNumber: string;
-    vehicleModel: string;
-    status: string;
-    emissionStatus: string;
-    deletedAt: Date | null;
-  }[];
-
-  trackingDevicesPreview: {
-    id: number;
-    serialNumber: string;
-    model: string;
-    deviceCategory: string;
-    status: string;
-  }[];
-
-  alertsPreview: {
-    id: number;
-    type: string;
-    title: string;
-    isRead: boolean;
-    createdAt: Date;
-  }[];
-
-  reportsPreview: {
-    id: number;
-    title: string;
-    type: string;
-    status?: string;
-    createdAt: Date;
-  }[];
-
-  activityLogsPreview: {
-    id: number;
-    action: string;
-    timestamp: Date;
-  }[];
-
-  userNotificationsPreview: {
-    id: number;
-    title: string;
-    message: string;
-    isRead: boolean;
-  }[];
-}
-export interface UserSummaryResponse {
-  id: number;
-  username?: string;
-  email: string;
-  role: 'ADMIN' | 'USER' | 'TECHNICIAN' | 'MANAGER' | 'FLEET_MANAGER' | 'ANALYST' | 'SUPPORT_AGENT';
-  status: 'ACTIVE' | 'PENDING_APPROVAL' | 'SUSPENDED' | 'DEACTIVATED';
-  createdAt: Date;
-}
-
-export interface UserListItemWithCounts {
-  id: number;
-  username: string | null;
-  email: string;
-  image: string | null;
-  gender: string | null;
-  phoneNumber: string | null;
-  location: string | null;
-  companyName: string | null;
-  businessSector: string | null;
-  fleetSize: number | null;
-  role: string;
-  status: string;
-  createdAt: Date;
-  updatedAt: Date;
-  verified: boolean;
-  language: string | null;
-  notificationPreference: string;
-
   _count: {
     vehicles: number;
     trackingDevices: number;
@@ -194,6 +30,148 @@ export interface UserListItemWithCounts {
     userNotifications: number;
   };
 }
-export interface InternalUser extends GetUserByIdResponse {
+
+export interface InternalUser extends UserBasicInfo {
   password: string;
 }
+export type GetUserByIdResponse = Pick<
+  User,
+  | 'id'
+  | 'username'
+  | 'email'
+  | 'image'
+  | 'phoneNumber'
+  | 'companyName'
+  | 'role'
+  | 'status'
+  | 'location'
+  | 'createdAt'
+  | 'updatedAt'
+> & {
+  _count: {
+    vehicles: number;
+    trackingDevices: number;
+    alerts: number;
+    reports: number;
+    activityLogs: number;
+    userNotifications: number;
+  };
+  vehicles: Array<{
+    id: number;
+    plateNumber: string;
+    vehicleModel: string;
+    status: string;
+    emissionStatus: string;
+  }>;
+  trackingDevices: Array<{
+    id: number;
+    serialNumber: string;
+    model: string;
+    deviceCategory: string;
+    status: string;
+  }>;
+  alerts: Array<{
+    id: number;
+    type: string;
+    title: string;
+    isRead: boolean;
+    createdAt: Date;
+  }>;
+
+};
+// --- Auth DTOs ---
+export interface SignupDTO {
+  email: string;
+  password: string;
+  username?: string | null;
+  image?: string | null;
+  nationalId?: string | null;
+  gender?: string | null;
+  phoneNumber?: string | null;
+  location?: string | null;
+  companyName?: string | null;
+  companyRegistrationNumber?: string | null;
+  businessSector?: string | null;
+  fleetSize?: number | null;
+  language?: string | null;
+  notificationPreference?: string | null;
+  role?: UserRole;
+  status?: UserStatus;
+}
+
+export interface LoginDTO {
+  email: string;
+  password: string;
+}
+
+export interface ChangePasswordDTO {
+  oldPassword: string;
+  newPassword: string;
+}
+
+export interface RequestPasswordResetDTO {
+  email: string;
+}
+
+export interface ResetPasswordDTO {
+  email: string;
+  otp: string;
+  newPassword: string;
+}
+
+// --- User Management DTOs ---
+export interface ChangeRoleDTO {
+  role: UserRole;
+}
+
+export type CreateUserDTO = Omit<
+  Prisma.UserCreateInput,
+  | 'vehicles'
+  | 'trackingDevices'
+  | 'alerts'
+  | 'reports'
+  | 'activityLogs'
+  | 'userNotifications'
+> & { password: string };
+
+
+export type UpdateUserDTO = Partial<
+  Omit<
+    User,
+    | 'id'
+    | 'password'
+    | 'role'
+    | 'status'
+    | 'otp'
+    | 'otpExpiresAt'
+    | 'token'
+    | 'verified'
+    | 'deletedAt'
+    | 'createdAt'
+    | 'updatedAt'
+    | 'companyRegistrationNumber'
+    | 'fleetSize'
+  >
+>;
+// --- Query Params ---
+export interface UserIdParam {
+  id: string;
+}
+
+export interface UserListQueryDTO extends PaginationParams {
+  filters?: {
+    status?: UserStatus;
+    role?: UserRole;
+    verified?: boolean;
+  };
+  includeDeleted?: boolean;
+  deletedOnly?: boolean;
+}
+
+// --- Response Types ---
+export interface UserListResponse {
+  data: UserListItemWithCounts[];
+  meta: PaginationMeta;
+}
+
+export interface UserWithRelationsResponse extends GetUserByIdResponse {}

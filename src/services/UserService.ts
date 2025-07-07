@@ -2,22 +2,14 @@ import { Prisma as PrismaTypes, User, UserRole, UserStatus } from '@prisma/clien
 import UserRepo from '../repositories/UserRepository';
 import { generateOTP, isOTPValid, passComparer, passHashing } from '../utils/passwordFunctions';
 
-import {
-  SignupDTO,
-  LoginDTO,
-  ChangePasswordDTO,
-  ResetPasswordDTO,
-  CreateUserDTO,
-  UpdateUserDTO,
-  UserListQueryDTO,
 
-} from '../types/dtos/CreateUserDto';
 import { tokengenerating } from '../utils/jwtFunctions';
-import { GetUserByIdResponse, UserBasicInfo, UserListItemWithCounts } from '../types';
-import { PaginationMeta } from '../types/GrobalTypes';
+import { ChangePasswordDTO, CreateUserDTO, GetUserByIdResponse, LoginDTO, ResetPasswordDTO, SignupDTO, UpdateUserDTO, UserBasicInfo, UserListItemWithCounts, UserListQueryDTO } from '../types';
+
 import logger from '../utils/logger';
 import { AppError, HttpStatusCode, NotFoundError } from '../middlewares/errorHandler';
 import { sendEmail } from '../emailUtils';
+import { PaginationMeta } from '../types/GlobalTypes';
 
 function removeNulls<T extends object>(obj: T): T {
   const cleanedObj: any = {};
@@ -77,9 +69,10 @@ class UserService {
     }
   }
 
+
   async listUsers(query: UserListQueryDTO): Promise<{ users: UserListItemWithCounts[]; pagination: PaginationMeta }> {
     try {
-      return await UserRepo.getAllUsers(query);
+      return await  UserRepo.listUsers(query);
     } catch (error) {
       throw error;
     }

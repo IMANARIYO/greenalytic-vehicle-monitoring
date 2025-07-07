@@ -1,6 +1,6 @@
 import { VehicleCreateRequest, VehicleUpdateRequest, VehicleFullDetails, VehicleListItemWithUser } from '../types/VehicleTypes';
 import { VehicleStatus, EmissionStatus, UserStatus, UserRole } from '@prisma/client';
-import { PaginationMeta, PaginationParams } from '../types/GrobalTypes';
+import { PaginationMeta, PaginationParams } from '../types/GlobalTypes';
 import logger from '../utils/logger';
 import VehicleRepository from '../repositories/VehicleRepository';
 import { AppError, HttpStatusCode, NotFoundError } from '../middlewares/errorHandler';

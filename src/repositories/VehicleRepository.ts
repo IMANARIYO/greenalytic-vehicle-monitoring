@@ -6,7 +6,7 @@ import {
   VehicleListItemWithUser,
 } from '../types/VehicleTypes';
 import logger from '../utils/logger';
-import { PaginationMeta, PaginationParams } from '../types/GrobalTypes';
+import { PaginationMeta, PaginationParams } from '../types/GlobalTypes';
 import prisma from '../config/db';
 import { AppError, handlePrismaError, HttpStatusCode, NotFoundError } from '../middlewares/errorHandler';
 

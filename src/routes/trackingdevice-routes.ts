@@ -1,9 +1,8 @@
 import { Router } from 'express';
 import { TrackingDeviceController } from '../controllers/TrackingDeviceController';
-import { AuthenticatedRequest, verifyingtoken } from '../utils/jwtFunctions';
+import { isLoggedIn } from '../middlewares/isLoggedIn';
 import { hasRole } from '../middlewares/hasRole';
 import { UserRole } from '@prisma/client';
-import { isLoggedIn } from '../middlewares/isLoggedIn';
 import { catchAsync } from '../middlewares/errorHandler';
 
 const TrackingDeviceRouter = Router();
@@ -16,10 +15,23 @@ TrackingDeviceRouter.post(
   catchAsync(TrackingDeviceController.createDevice)
 );
 
+TrackingDeviceRouter.post(
+  '/bulk',
+  isLoggedIn,
+  hasRole([UserRole.ADMIN]),
+  catchAsync(TrackingDeviceController.bulkCreateDevices)
+);
+
 TrackingDeviceRouter.get(
   '/:id',
   isLoggedIn,
   catchAsync(TrackingDeviceController.getDeviceById)
+);
+
+TrackingDeviceRouter.get(
+  '/serial/:serialNumber',
+  isLoggedIn,
+  catchAsync(TrackingDeviceController.getDeviceBySerialNumber)
 );
 
 TrackingDeviceRouter.put(
@@ -72,7 +84,55 @@ TrackingDeviceRouter.patch(
   catchAsync(TrackingDeviceController.unassignFromVehicle)
 );
 
-// Analytics
+// Status management
+TrackingDeviceRouter.patch(
+  '/:deviceId/status',
+  isLoggedIn,
+  hasRole([UserRole.ADMIN, UserRole.FLEET_MANAGER]),
+  catchAsync(TrackingDeviceController.updateDeviceStatus)
+);
+
+TrackingDeviceRouter.post(
+  '/batch/status',
+  isLoggedIn,
+  hasRole([UserRole.ADMIN]),
+  catchAsync(TrackingDeviceController.batchUpdateStatuses)
+);
+
+// Monitoring features
+TrackingDeviceRouter.patch(
+  '/:deviceId/monitoring-features',
+  isLoggedIn,
+  hasRole([UserRole.ADMIN, UserRole.FLEET_MANAGER]),
+  catchAsync(TrackingDeviceController.toggleMonitoringFeature)
+);
+
+TrackingDeviceRouter.get(
+  '/:deviceId/monitoring-features',
+  isLoggedIn,
+  catchAsync(TrackingDeviceController.getMonitoringFeatures)
+);
+
+TrackingDeviceRouter.patch(
+  '/:deviceId/reset-monitoring-features',
+  isLoggedIn,
+  hasRole([UserRole.ADMIN, UserRole.FLEET_MANAGER]),
+  catchAsync(TrackingDeviceController.resetAllMonitoringFeatures)
+);
+
+// Heartbeat and health
+TrackingDeviceRouter.post(
+  '/:deviceId/heartbeat',
+  catchAsync(TrackingDeviceController.recordHeartbeat)
+);
+
+TrackingDeviceRouter.get(
+  '/:deviceId/health',
+  isLoggedIn,
+  catchAsync(TrackingDeviceController.getDeviceHealth)
+);
+
+// Analytics and reporting
 TrackingDeviceRouter.get(
   '/analytics/top/:status',
   isLoggedIn,
@@ -82,7 +142,13 @@ TrackingDeviceRouter.get(
 TrackingDeviceRouter.get(
   '/analytics/count',
   isLoggedIn,
-  catchAsync(TrackingDeviceController.countDevices)
+  catchAsync(TrackingDeviceController.countDevicesByStatus)
+);
+
+TrackingDeviceRouter.get(
+  '/:deviceId/history/status',
+  isLoggedIn,
+  catchAsync(TrackingDeviceController.getStatusHistory)
 );
 
 export default TrackingDeviceRouter;

@@ -1,8 +1,9 @@
 import { Request, Response as ExpressResponse } from 'express';
 import UserService from '../services/UserService';
 import Response  from '../utils/response';
-import { UserListQueryDTO } from '../types/dtos/CreateUserDto';
+
 import { tokengenerating } from '../utils/jwtFunctions';
+import { PaginationParams } from '../types/GlobalTypes';
 declare global {
   namespace Express {
     interface Request {
@@ -199,7 +200,7 @@ class UserController {
 
   async listUsers(req: Request, res: ExpressResponse) {
     try {
-      const query = req.query as unknown as UserListQueryDTO;
+      const query = req.query as unknown as PaginationParams;
       const result = await UserService.listUsers(query);
       return Response.success(res, result, "Users retrieved successfully");
     } catch (error: any) {

@@ -16,7 +16,10 @@
     "seed": "ts-node prisma/seed.ts",
     "start": "nodemon src/index.ts",
     "dev": "nodemon --watch src --ext ts --exec \"node --loader ts-node/esm\" src/index.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc --project tsconfig.json",
+"start:prod": "node dist/index.js"
+
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
