@@ -7,7 +7,7 @@ import EmissionDataController from '../controllers/EmissionDataController';
 
 export const EmissionRouter = Router();
 
-const emissionDataController = new EmissionDataController();
+const emissionDataController = EmissionDataController;
 // const vehicleDataController = new VehicleDataController();
 
 // Apply pagination middleware to routes that need it
@@ -24,8 +24,8 @@ const emissionDataController = new EmissionDataController();
 // Create emission data
 EmissionRouter.post(
   '/',
-  (req: Request, res: Response) => {
-    emissionDataController.createEmissionData(req, res);
+  (req: Request, res: Response, next: NextFunction) => {
+    emissionDataController.createEmissionData(req, res, next);
   }
 );
 
@@ -33,8 +33,8 @@ EmissionRouter.post(
 // Get all emission data - No restrictions based on original
 EmissionRouter.get(
   '/',
-  (req: Request, res: Response) => {
-    emissionDataController.getAllEmissionData(req, res);
+  (req: Request, res: Response,next: NextFunction) => {
+    emissionDataController.getAllEmissionData(req, res, next);
   }
 );
 
@@ -43,8 +43,8 @@ EmissionRouter.get(
   '/statistics',
 //   isLoggedIn,
 //   hasRole(['ADMIN']),
-  (req: AuthenticatedRequest, res: Response) => {
-    emissionDataController.getEmissionStatistics(req, res);
+  (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    emissionDataController.getEmissionStatistics(req, res, next);
   }
 );
 
@@ -62,16 +62,16 @@ EmissionRouter.get('/health', (req: Request, res: Response) => {
 EmissionRouter.get(
   '/:id',
 //   isLoggedIn,
-  (req: AuthenticatedRequest, res: Response) => {
-    emissionDataController.getEmissionDataById(req, res);
+  (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    emissionDataController.getEmissionDataById(req, res, next);
   }
 );
 
 // Get emission data by vehicle - No restrictions based on original
 EmissionRouter.get(
   '/vehicle/:vehicleId',
-  (req: Request, res: Response) => {
-    emissionDataController.getEmissionDataByVehicle(req, res);
+  (req: Request, res: Response, next: NextFunction) => {
+    emissionDataController.getEmissionDataByVehicle(req, res, next);
   }
 );
 
@@ -86,8 +86,8 @@ EmissionRouter.get(
 // Get emission data by vehicle interval - Original route
 EmissionRouter.get(
   '/vehicle/:vehicleId/interval',
-  (req: Request, res: Response) => {
-    emissionDataController.getEmissionDataByVehicleInterval(req, res);
+  (req: Request, res: Response, next: NextFunction) => {
+    emissionDataController.getEmissionDataByVehicleInterval(req, res, next);
   }
 );
 
@@ -96,8 +96,8 @@ EmissionRouter.get(
   '/plate/:plateNumber',
 //   isLoggedIn,
 //   hasRole(['ADMIN']),
-  (req: AuthenticatedRequest, res: Response) => {
-    emissionDataController.getEmissionDataByPlateNumber(req, res);
+  (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    emissionDataController.getEmissionDataByPlateNumber(req, res, next);
   }
 );
 
@@ -107,8 +107,8 @@ EmissionRouter.put(
   '/:id',
 //   isLoggedIn,
 //   hasRole(['ADMIN']),
-  (req: AuthenticatedRequest, res: Response) => {
-    emissionDataController.updateEmissionData(req, res);
+  (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    emissionDataController.updateEmissionData(req, res, next);
   }
 );
 
@@ -117,8 +117,8 @@ EmissionRouter.patch(
   '/:id',
 //   isLoggedIn,
 //   hasRole(['ADMIN']),
-  (req: AuthenticatedRequest, res: Response) => {
-    emissionDataController.updateEmissionData(req, res);
+  (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    emissionDataController.updateEmissionData(req, res, next);
   }
 );
 
@@ -128,8 +128,8 @@ EmissionRouter.delete(
   '/:id',
 //   isLoggedIn,
 //   hasRole(['ADMIN']),
-  (req: AuthenticatedRequest, res: Response) => {
-    emissionDataController.deleteEmissionData(req, res);
+  (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    emissionDataController.deleteEmissionData(req, res, next);
   }
 );
 
@@ -142,8 +142,8 @@ EmissionRouter.patch(
     req.body = { deletedAt: new Date() };
     next();
   },
-  (req: AuthenticatedRequest, res: Response) => {
-    emissionDataController.updateEmissionData(req, res);
+  (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    emissionDataController.updateEmissionData(req, res, next);
   }
 );
 

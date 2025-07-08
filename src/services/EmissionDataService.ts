@@ -10,10 +10,12 @@ import {
   EmissionThresholds,
   EmissionDataWithAnalysisDTO
 } from '../types/dtos/EmissionDataDto';
+import { PaginationMeta, PaginationParams } from '../types/GlobalTypes';
 import EmissionDataRepository from '../repositories/EmissionDataRepository';
 import VehicleRepository from '../repositories/VehicleRepository';
-import { TrackingDeviceRepository } from '../repositories/TrackingDeviceRepository';
+import {TrackingDeviceRepository} from '../repositories/TrackingDeviceRepository';
 import { AlertRepository } from '../repositories/AlertRepository';
+import { AppError, HttpStatusCode } from '../middlewares/errorHandler';
 import logger from '../utils/logger';
 
 // Emission thresholds - These need to be confirmed with Emmanuel
@@ -34,7 +36,7 @@ interface AlertData {
   vehicleId: number;
 }
 
-class EmissionDataService {
+export class EmissionDataService {
   
   // Helper function to analyze emission levels and generate alerts
   private static async analyzeEmissionLevels(
@@ -134,7 +136,7 @@ class EmissionDataService {
       const newStatus = exceedsThresholds ? 'TOP_POLLUTING' : 'NORMAL_EMISSION';
 
       // Update vehicle status
-    await VehicleRepository.updateVehicle(vehicleId, { status: newStatus });
+      await VehicleRepository.updateVehicle(vehicleId, { status: newStatus });
 
       return newStatus;
     } catch (error) {
@@ -164,19 +166,56 @@ class EmissionDataService {
     return 'NORMAL';
   }
 
-  static async createEmissionData(dto: CreateEmissionDataDTO): Promise<CreateEmissionDataResponseDTO> {
+  async createEmissionData(dto: CreateEmissionDataDTO): Promise<CreateEmissionDataResponseDTO> {
     try {
+      // Validate required fields
+      const requiredFields = ['vehicleId', 'co2Percentage', 'coPercentage', 'o2Percentage', 'hcPPM', 'trackingDeviceId'];
+      const missingFields = requiredFields.filter(field => 
+        dto[field as keyof CreateEmissionDataDTO] === undefined || dto[field as keyof CreateEmissionDataDTO] === null
+      );
+      
+      if (missingFields.length > 0) {
+        throw new AppError(`Missing required fields: ${missingFields.join(', ')}`, HttpStatusCode.BAD_REQUEST);
+      }
+
+      // Validate IDs
+      if (isNaN(dto.vehicleId) || dto.vehicleId <= 0) {
+        throw new AppError('Invalid vehicle ID. Must be a positive integer.', HttpStatusCode.BAD_REQUEST);
+      }
+
+      if (isNaN(dto.trackingDeviceId) || dto.trackingDeviceId <= 0) {
+        throw new AppError('Invalid tracking device ID. Must be a positive integer.', HttpStatusCode.BAD_REQUEST);
+      }
+
+      // Validate emission values ranges
+      const validations = [
+        { field: 'co2Percentage', value: dto.co2Percentage, min: 0, max: 20 },
+        { field: 'coPercentage', value: dto.coPercentage, min: 0, max: 10 },
+        { field: 'o2Percentage', value: dto.o2Percentage, min: 0, max: 25 },
+        { field: 'hcPPM', value: dto.hcPPM, min: 0, max: 10000 },
+        { field: 'noxPPM', value: dto.noxPPM, min: 0, max: 5000 },
+        { field: 'pm25Level', value: dto.pm25Level, min: 0, max: 500 }
+      ];
+
+      for (const validation of validations) {
+        if (validation.value !== undefined && validation.value !== null) {
+          if (isNaN(validation.value) || validation.value < validation.min || validation.value > validation.max) {
+            throw new AppError(
+              `${validation.field} must be a number between ${validation.min} and ${validation.max}`,
+              HttpStatusCode.BAD_REQUEST
+            );
+          }
+        }
+      }
+
       // Verify vehicle and tracking device exist
       const [vehicle, device] = await Promise.all([
         VehicleRepository.getVehicleById(dto.vehicleId),
         TrackingDeviceRepository.getDeviceById(dto.trackingDeviceId)
       ]);
 
-      if (!vehicle) {
-        throw new Error('Vehicle not found');
-      }
       if (!device) {
-        throw new Error('Tracking device not found');
+        throw new AppError('Tracking device not found', HttpStatusCode.NOT_FOUND);
       }
 
       // Create emission data
@@ -194,10 +233,10 @@ class EmissionDataService {
       });
 
       // Update tracking device status
-    TrackingDeviceRepository.updateDevice(dto.trackingDeviceId, { lastPing: new Date() });
+      TrackingDeviceRepository.updateDevice(dto.trackingDeviceId, { lastPing: new Date() });
 
       // Analyze emission levels and generate alerts
-      const alerts = await this.analyzeEmissionLevels(
+      const alerts = await EmissionDataService.analyzeEmissionLevels(
         emissionData, 
         dto.vehicleId, 
         dto.plateNumber || vehicle.plateNumber
@@ -215,7 +254,7 @@ class EmissionDataService {
       }
 
       // Update vehicle emission status
-      const vehicleStatus = await this.updateVehicleEmissionStatus(dto.vehicleId, emissionData);
+      const vehicleStatus = await EmissionDataService.updateVehicleEmissionStatus(dto.vehicleId, emissionData);
 
       logger.info('EmissionDataService::createEmissionData success', { 
         emissionDataId: emissionData.id,
@@ -234,37 +273,99 @@ class EmissionDataService {
           severity: alert.title.includes('Critical') ? 'CRITICAL' : 'WARNING'
         }))
       };
-    } catch (error) {
-      logger.error('EmissionDataService::createEmissionData failed', error);
-      throw error;
+    } catch (error: any) {
+      // If it's already an AppError (from repository or business logic), rethrow
+      if (error instanceof AppError) {
+        logger.error('EmissionDataService::createEmissionData', error);
+        throw error;
+      }
+
+      // For unexpected errors, wrap as generic AppError
+      const appError = new AppError(
+        error.message || 'Failed to create emission data',
+        HttpStatusCode.INTERNAL_SERVER_ERROR,
+        undefined,
+        false
+      );
+      logger.error('EmissionDataService::createEmissionData', appError);
+      throw appError;
     }
   }
 
-  static async getAllEmissionData(query: EmissionDataQueryDTO): Promise<EmissionDataListResponseDTO> {
+  async getAllEmissionData(params: PaginationParams & {
+    startTime?: Date;
+    endTime?: Date;
+    vehicleStatus?: string;
+    emissionLevel?: string;
+    deviceCategory?: string;
+  }): Promise<{ data: EmissionDataResponseDTO[]; meta: PaginationMeta }> {
     try {
+      // Business logic validations for pagination parameters
+      const {
+        page = 1,
+        limit = 10,
+        search,
+        sortBy = 'timestamp',
+        sortOrder = 'desc',
+        startTime,
+        endTime,
+        vehicleStatus,
+        emissionLevel,
+        deviceCategory
+      } = params;
+
+      // Validate pagination parameters
+      if (page < 1) {
+        throw new AppError('Page number must be greater than 0', HttpStatusCode.BAD_REQUEST);
+      }
+      
+      if (limit < 1 || limit > 100) {
+        throw new AppError('Limit must be between 1 and 100', HttpStatusCode.BAD_REQUEST);
+      }
+
+      // Validate sortOrder
+      if (sortOrder && !['asc', 'desc'].includes(sortOrder)) {
+        throw new AppError('Sort order must be either "asc" or "desc"', HttpStatusCode.BAD_REQUEST);
+      }
+
+      // Validate emission level filter
+      if (emissionLevel && !['NORMAL', 'HIGH', 'CRITICAL'].includes(emissionLevel)) {
+        throw new AppError('Invalid emission level. Must be NORMAL, HIGH, or CRITICAL', HttpStatusCode.BAD_REQUEST);
+      }
+
+      // Validate sortBy field
+      const allowedSortFields = [
+        'id', 'timestamp', 'co2Percentage', 'coPercentage', 'o2Percentage', 
+        'hcPPM', 'noxPPM', 'pm25Level', 'vehicleId', 'plateNumber', 'createdAt'
+      ];
+      
+      if (sortBy && !allowedSortFields.includes(sortBy)) {
+        throw new AppError(`Invalid sort field. Allowed fields: ${allowedSortFields.join(', ')}`, HttpStatusCode.BAD_REQUEST);
+      }
+
       // Build where clause for filtering
       const whereClause: any = {};
 
       // Date filtering
-      if (query.startTime && query.endTime) {
+      if (startTime && endTime) {
         whereClause.timestamp = {
-          gte: query.startTime,
-          lte: query.endTime
+          gte: startTime,
+          lte: endTime
         };
-      } else if (query.startTime) {
-        whereClause.timestamp = { gte: query.startTime };
-      } else if (query.endTime) {
-        whereClause.timestamp = { lte: query.endTime };
+      } else if (startTime) {
+        whereClause.timestamp = { gte: startTime };
+      } else if (endTime) {
+        whereClause.timestamp = { lte: endTime };
       }
 
-      if (query.vehicleStatus) {
+      if (vehicleStatus) {
         whereClause.vehicle = {
-          status: query.vehicleStatus
+          status: vehicleStatus
         };
       }
 
       // Filter by emission level
-      if (query.emissionLevel === 'HIGH') {
+      if (emissionLevel === 'HIGH') {
         whereClause.OR = [
           { co2Percentage: { gte: EMISSION_THRESHOLDS.co2.warning } },
           { coPercentage: { gte: EMISSION_THRESHOLDS.co.warning } },
@@ -272,7 +373,7 @@ class EmissionDataService {
           { noxPPM: { gte: EMISSION_THRESHOLDS.nox.warning } },
           { pm25Level: { gte: EMISSION_THRESHOLDS.pm25.warning } }
         ];
-      } else if (query.emissionLevel === 'CRITICAL') {
+      } else if (emissionLevel === 'CRITICAL') {
         whereClause.OR = [
           { co2Percentage: { gte: EMISSION_THRESHOLDS.co2.critical } },
           { coPercentage: { gte: EMISSION_THRESHOLDS.co.critical } },
@@ -283,20 +384,17 @@ class EmissionDataService {
       }
 
       // Filter by device category
-      if (query.deviceCategory) {
+      if (deviceCategory) {
         whereClause.trackingDevice = {
-          deviceCategory: query.deviceCategory
+          deviceCategory: deviceCategory
         };
       }
-
-      const page = query.page || 1;
-      const limit = query.limit || 10;
 
       const result = await EmissionDataRepository.findManyWithFilters(whereClause, page, limit);
 
       // Add emission level classification to each record
       const enhancedData = result.data.map(data => {
-        const emissionLevel = this.classifyEmissionLevel(data);
+        const emissionLevel = EmissionDataService.classifyEmissionLevel(data);
         
         return {
           ...data,
@@ -311,6 +409,8 @@ class EmissionDataService {
         };
       });
 
+      const totalPages = Math.ceil(result.totalCount / limit);
+
       logger.info('EmissionDataService::getAllEmissionData success', { 
         totalCount: result.totalCount,
         page,
@@ -322,36 +422,50 @@ class EmissionDataService {
         meta: {
           page,
           limit,
-          totalCount: result.totalCount,
-          totalPages: Math.ceil(result.totalCount / limit),
-          hasNextPage: page < Math.ceil(result.totalCount / limit),
+          totalItems: result.totalCount,
+          totalPages,
+          hasNextPage: page < totalPages,
           hasPrevPage: page > 1,
-          filters: {
-            applied: { 
-              vehicleStatus: query.vehicleStatus, 
-              emissionLevel: query.emissionLevel, 
-              deviceCategory: query.deviceCategory 
-            },
-            thresholds: EMISSION_THRESHOLDS
-          }
+          nextPage: page < totalPages ? page + 1 : undefined,
+          prevPage: page > 1 ? page - 1 : undefined,
+          sortBy,
+          sortOrder
         }
       };
-    } catch (error) {
-      logger.error('EmissionDataService::getAllEmissionData failed', error);
-      throw error;
+    } catch (error: any) {
+      // If it's already an AppError (from repository or business logic), rethrow
+      if (error instanceof AppError) {
+        logger.error('EmissionDataService::getAllEmissionData', error);
+        throw error;
+      }
+
+      // For unexpected errors, wrap as generic AppError
+      const appError = new AppError(
+        error.message || 'Failed to fetch emission data',
+        HttpStatusCode.INTERNAL_SERVER_ERROR,
+        undefined,
+        false
+      );
+      logger.error('EmissionDataService::getAllEmissionData', appError);
+      throw appError;
     }
   }
 
-  static async getEmissionDataById(id: number): Promise<EmissionDataWithAnalysisDTO | null> {
+  async getEmissionDataById(id: number): Promise<EmissionDataWithAnalysisDTO> {
     try {
+      // Validate ID
+      if (isNaN(id) || id <= 0) {
+        throw new AppError('Invalid emission data ID. Must be a positive integer.', HttpStatusCode.BAD_REQUEST);
+      }
+
       const emissionData = await EmissionDataRepository.findByIdWithRelations(id);
 
       if (!emissionData) {
-        return null;
+        throw new AppError('Emission data not found', HttpStatusCode.NOT_FOUND);
       }
 
       // Add emission level analysis
-      const emissionLevel = this.classifyEmissionLevel(emissionData);
+      const emissionLevel = EmissionDataService.classifyEmissionLevel(emissionData);
 
       const enhancedData: EmissionDataWithAnalysisDTO = {
         ...emissionData,
@@ -388,75 +502,143 @@ class EmissionDataService {
 
       logger.info('EmissionDataService::getEmissionDataById success', { id });
       return enhancedData;
-    } catch (error) {
-      logger.error('EmissionDataService::getEmissionDataById failed', error);
-      throw error;
+    } catch (error: any) {
+      // If it's already an AppError (from repository or business logic), rethrow
+      if (error instanceof AppError) {
+        logger.error('EmissionDataService::getEmissionDataById', error);
+        throw error;
+      }
+
+      // For unexpected errors, wrap as generic AppError
+      const appError = new AppError(
+        error.message || 'Failed to fetch emission data',
+        HttpStatusCode.INTERNAL_SERVER_ERROR,
+        undefined,
+        false
+      );
+      logger.error('EmissionDataService::getEmissionDataById', appError);
+      throw appError;
     }
   }
 
-  static async getEmissionDataByVehicle(query: EmissionDataQueryDTO): Promise<VehicleEmissionDataResponseDTO> {
+  async getEmissionDataByVehicle(params: PaginationParams & {
+    vehicleId: number;
+    startTime?: Date;
+    endTime?: Date;
+  }): Promise<{ data: EmissionDataResponseDTO[]; meta: PaginationMeta }> {
     try {
-      if (!query.vehicleId) {
-        throw new Error('Vehicle ID is required');
+      const { vehicleId, page = 1, limit = 10, startTime, endTime } = params;
+
+      // Validate vehicle ID
+      if (isNaN(vehicleId) || vehicleId <= 0) {
+        throw new AppError('Invalid vehicle ID. Must be a positive integer.', HttpStatusCode.BAD_REQUEST);
       }
 
-      const page = query.page || 1;
-      const limit = query.limit || 10;
+      // Validate pagination parameters
+      if (page < 1) {
+        throw new AppError('Page number must be greater than 0', HttpStatusCode.BAD_REQUEST);
+      }
+      
+      if (limit < 1 || limit > 100) {
+        throw new AppError('Limit must be between 1 and 100', HttpStatusCode.BAD_REQUEST);
+      }
 
-      const whereClause: any = { vehicleId: query.vehicleId };
+      const whereClause: any = { vehicleId };
 
-      if (query.startTime && query.endTime) {
+      if (startTime && endTime) {
         whereClause.timestamp = {
-          gte: query.startTime,
-          lte: query.endTime
+          gte: startTime,
+          lte: endTime
         };
-      } else if (query.startTime) {
-        whereClause.timestamp = { gte: query.startTime };
-      } else if (query.endTime) {
-        whereClause.timestamp = { lte: query.endTime };
+      } else if (startTime) {
+        whereClause.timestamp = { gte: startTime };
+      } else if (endTime) {
+        whereClause.timestamp = { lte: endTime };
       }
 
       const result = await EmissionDataRepository.findManyWithFilters(whereClause, page, limit);
+      const totalPages = Math.ceil(result.totalCount / limit);
 
       logger.info('EmissionDataService::getEmissionDataByVehicle success', { 
-        vehicleId: query.vehicleId,
+        vehicleId,
         totalCount: result.totalCount 
       });
 
       return {
         data: result.data,
         meta: {
-          currentPage: page,
-          totalPages: Math.ceil(result.totalCount / limit),
-          remainingItems: Math.max(0, result.totalCount - page * limit),
+          page,
+          limit,
           totalItems: result.totalCount,
-          limit
+          totalPages,
+          hasNextPage: page < totalPages,
+          hasPrevPage: page > 1,
+          nextPage: page < totalPages ? page + 1 : undefined,
+          prevPage: page > 1 ? page - 1 : undefined
         }
       };
-    } catch (error) {
-      logger.error('EmissionDataService::getEmissionDataByVehicle failed', error);
-      throw error;
+    } catch (error: any) {
+      // If it's already an AppError (from repository or business logic), rethrow
+      if (error instanceof AppError) {
+        logger.error('EmissionDataService::getEmissionDataByVehicle', error);
+        throw error;
+      }
+
+      // For unexpected errors, wrap as generic AppError
+      const appError = new AppError(
+        error.message || 'Failed to fetch emission data',
+        HttpStatusCode.INTERNAL_SERVER_ERROR,
+        undefined,
+        false
+      );
+      logger.error('EmissionDataService::getEmissionDataByVehicle', appError);
+      throw appError;
     }
   }
 
-  static async getEmissionDataByVehicleInterval(query: EmissionDataQueryDTO): Promise<VehicleEmissionDataResponseDTO> {
+  async getEmissionDataByVehicleInterval(params: PaginationParams & {
+    vehicleId: number;
+    interval: string;
+    intervalValue: string;
+  }): Promise<{ data: EmissionDataResponseDTO[]; meta: PaginationMeta }> {
     try {
-      if (!query.vehicleId || !query.interval || !query.intervalValue) {
-        throw new Error('Vehicle ID, interval, and interval value are required');
+      const { vehicleId, interval, intervalValue, page = 1, limit = 10 } = params;
+
+      // Validate vehicle ID
+      if (isNaN(vehicleId) || vehicleId <= 0) {
+        throw new AppError('Invalid vehicle ID. Must be a positive integer.', HttpStatusCode.BAD_REQUEST);
       }
 
-      const whereClause: any = { vehicleId: query.vehicleId };
+      // Validate interval parameters
+      if (!interval || !intervalValue) {
+        throw new AppError('Interval and interval value are required', HttpStatusCode.BAD_REQUEST);
+      }
+
+      // Validate interval type
+      if (!['hours', 'days', 'daytime'].includes(interval)) {
+        throw new AppError('Invalid interval. Must be hours, days, or daytime', HttpStatusCode.BAD_REQUEST);
+      }
+
+      // Validate value for hours and days
+      if (interval !== 'daytime') {
+        const numValue = parseInt(intervalValue);
+        if (isNaN(numValue) || numValue <= 0) {
+          throw new AppError('Interval value must be a positive integer for hours and days', HttpStatusCode.BAD_REQUEST);
+        }
+      }
+
+      const whereClause: any = { vehicleId };
       const now = new Date();
       let startTime: Date, endTime: Date | undefined;
 
-      switch (query.interval) {
+      switch (interval) {
         case 'hours':
           startTime = new Date(now);
-          startTime.setHours(now.getHours() - parseInt(query.intervalValue));
+          startTime.setHours(now.getHours() - parseInt(intervalValue));
           break;
         case 'days':
           startTime = new Date(now);
-          startTime.setDate(now.getDate() - parseInt(query.intervalValue));
+          startTime.setDate(now.getDate() - parseInt(intervalValue));
           break;
         case 'daytime':
           startTime = new Date(now);
@@ -465,93 +647,167 @@ class EmissionDataService {
           endTime.setHours(17, 0, 0, 0);
           break;
         default:
-          throw new Error('Invalid interval. Use hours, days, or daytime');
+          throw new AppError('Invalid interval. Use hours, days, or daytime', HttpStatusCode.BAD_REQUEST);
       }
 
-      if (query.interval === 'daytime') {
+      if (interval === 'daytime') {
         whereClause.timestamp = { gte: startTime, lte: endTime };
       } else {
         whereClause.timestamp = { gte: startTime };
       }
 
-      const page = query.page || 1;
-      const limit = query.limit || 10;
-
       const result = await EmissionDataRepository.findManyWithFilters(whereClause, page, limit);
+      const totalPages = Math.ceil(result.totalCount / limit);
 
       logger.info('EmissionDataService::getEmissionDataByVehicleInterval success', { 
-        vehicleId: query.vehicleId,
-        interval: query.interval,
+        vehicleId,
+        interval,
         totalCount: result.totalCount 
       });
 
       return {
         data: result.data,
         meta: {
-          currentPage: page,
-          totalPages: Math.ceil(result.totalCount / limit),
-          remainingItems: Math.max(0, result.totalCount - page * limit),
-          totalItems: result.totalCount,
+          page,
           limit,
-          interval: query.interval,
-          value: query.interval === 'daytime' ? 'working hours (9AM-5PM)' : query.intervalValue,
-          timeRange: { from: startTime, to: endTime || now }
+          totalItems: result.totalCount,
+          totalPages,
+          hasNextPage: page < totalPages,
+          hasPrevPage: page > 1,
+          nextPage: page < totalPages ? page + 1 : undefined,
+          prevPage: page > 1 ? page - 1 : undefined
         }
       };
-    } catch (error) {
-      logger.error('EmissionDataService::getEmissionDataByVehicleInterval failed', error);
-      throw error;
+    } catch (error: any) {
+      // If it's already an AppError (from repository or business logic), rethrow
+      if (error instanceof AppError) {
+        logger.error('EmissionDataService::getEmissionDataByVehicleInterval', error);
+        throw error;
+      }
+
+      // For unexpected errors, wrap as generic AppError
+      const appError = new AppError(
+        error.message || 'Failed to fetch emission data by interval',
+        HttpStatusCode.INTERNAL_SERVER_ERROR,
+        undefined,
+        false
+      );
+      logger.error('EmissionDataService::getEmissionDataByVehicleInterval', appError);
+      throw appError;
     }
   }
 
-  static async getEmissionDataByPlateNumber(query: EmissionDataQueryDTO): Promise<VehicleEmissionDataResponseDTO> {
+  async getEmissionDataByPlateNumber(params: PaginationParams & {
+    plateNumber: string;
+    startTime?: Date;
+    endTime?: Date;
+  }): Promise<{ data: EmissionDataResponseDTO[]; meta: PaginationMeta }> {
     try {
-      if (!query.plateNumber) {
-        throw new Error('Plate number is required');
+      const { plateNumber, page = 1, limit = 10, startTime, endTime } = params;
+
+      // Validate plate number
+      if (!plateNumber || plateNumber.trim().length === 0) {
+        throw new AppError('Plate number is required and cannot be empty', HttpStatusCode.BAD_REQUEST);
       }
 
-      const whereClause: any = { plateNumber: query.plateNumber };
+      const whereClause: any = { plateNumber: plateNumber.trim() };
 
-      if (query.startTime && query.endTime) {
-        whereClause.timestamp = { gte: query.startTime, lte: query.endTime };
-      } else if (query.startTime) {
-        whereClause.timestamp = { gte: query.startTime };
-      } else if (query.endTime) {
-        whereClause.timestamp = { lte: query.endTime };
+      if (startTime && endTime) {
+        whereClause.timestamp = { gte: startTime, lte: endTime };
+      } else if (startTime) {
+        whereClause.timestamp = { gte: startTime };
+      } else if (endTime) {
+        whereClause.timestamp = { lte: endTime };
       }
-
-      const page = query.page || 1;
-      const limit = query.limit || 10;
 
       const result = await EmissionDataRepository.findManyWithFilters(whereClause, page, limit);
+      const totalPages = Math.ceil(result.totalCount / limit);
 
       logger.info('EmissionDataService::getEmissionDataByPlateNumber success', { 
-        plateNumber: query.plateNumber,
+        plateNumber,
         totalCount: result.totalCount 
       });
 
       return {
         data: result.data,
         meta: {
-          currentPage: page,
-          totalPages: Math.ceil(result.totalCount / limit),
-          remainingItems: Math.max(0, result.totalCount - page * limit),
+          page,
+          limit,
           totalItems: result.totalCount,
-          limit
+          totalPages,
+          hasNextPage: page < totalPages,
+          hasPrevPage: page > 1,
+          nextPage: page < totalPages ? page + 1 : undefined,
+          prevPage: page > 1 ? page - 1 : undefined
         }
       };
-    } catch (error) {
-      logger.error('EmissionDataService::getEmissionDataByPlateNumber failed', error);
-      throw error;
+    } catch (error: any) {
+      // If it's already an AppError (from repository or business logic), rethrow
+      if (error instanceof AppError) {
+        logger.error('EmissionDataService::getEmissionDataByPlateNumber', error);
+        throw error;
+      }
+
+      // For unexpected errors, wrap as generic AppError
+      const appError = new AppError(
+        error.message || 'Failed to fetch emission data',
+        HttpStatusCode.INTERNAL_SERVER_ERROR,
+        undefined,
+        false
+      );
+      logger.error('EmissionDataService::getEmissionDataByPlateNumber', appError);
+      throw appError;
     }
   }
 
-  static async updateEmissionData(id: number, dto: UpdateEmissionDataDTO): Promise<EmissionDataResponseDTO | null> {
+  async updateEmissionData(id: number, dto: UpdateEmissionDataDTO): Promise<EmissionDataResponseDTO> {
     try {
+      // Validate ID
+      if (isNaN(id) || id <= 0) {
+        throw new AppError('Invalid emission data ID. Must be a positive integer.', HttpStatusCode.BAD_REQUEST);
+      }
+
+      // Validate emission values if they are being updated
+      if (dto.co2Percentage !== undefined) {
+        if (isNaN(dto.co2Percentage) || dto.co2Percentage < 0 || dto.co2Percentage > 20) {
+          throw new AppError('CO2 percentage must be between 0 and 20', HttpStatusCode.BAD_REQUEST);
+        }
+      }
+
+      if (dto.coPercentage !== undefined) {
+        if (isNaN(dto.coPercentage) || dto.coPercentage < 0 || dto.coPercentage > 10) {
+          throw new AppError('CO percentage must be between 0 and 10', HttpStatusCode.BAD_REQUEST);
+        }
+      }
+
+      if (dto.o2Percentage !== undefined) {
+        if (isNaN(dto.o2Percentage) || dto.o2Percentage < 0 || dto.o2Percentage > 25) {
+          throw new AppError('O2 percentage must be between 0 and 25', HttpStatusCode.BAD_REQUEST);
+        }
+      }
+
+      if (dto.hcPPM !== undefined) {
+        if (isNaN(dto.hcPPM) || dto.hcPPM < 0 || dto.hcPPM > 10000) {
+          throw new AppError('HC PPM must be between 0 and 10000', HttpStatusCode.BAD_REQUEST);
+        }
+      }
+
+      if (dto.noxPPM !== undefined && dto.noxPPM !== null) {
+        if (isNaN(dto.noxPPM) || dto.noxPPM < 0 || dto.noxPPM > 5000) {
+          throw new AppError('NOx PPM must be between 0 and 5000', HttpStatusCode.BAD_REQUEST);
+        }
+      }
+
+      if (dto.pm25Level !== undefined && dto.pm25Level !== null) {
+        if (isNaN(dto.pm25Level) || dto.pm25Level < 0 || dto.pm25Level > 500) {
+          throw new AppError('PM2.5 level must be between 0 and 500', HttpStatusCode.BAD_REQUEST);
+        }
+      }
+
       const existingRecord = await EmissionDataRepository.findByIdWithRelations(id);
 
       if (!existingRecord) {
-        return null;
+        throw new AppError('Emission data not found', HttpStatusCode.NOT_FOUND);
       }
 
       const updatedEmissionData = await EmissionDataRepository.update(id, dto);
@@ -564,50 +820,98 @@ class EmissionDataService {
         dto.noxPPM !== undefined || 
         dto.pm25Level !== undefined;
 
-      if (emissionFieldsUpdated && dto.vehicleId) {
-        await this.updateVehicleEmissionStatus(dto.vehicleId, updatedEmissionData);
+      if (emissionFieldsUpdated && existingRecord.vehicleId) {
+        await EmissionDataService.updateVehicleEmissionStatus(existingRecord.vehicleId, updatedEmissionData);
       }
 
       logger.info('EmissionDataService::updateEmissionData success', { id });
       return updatedEmissionData;
-    } catch (error) {
-      logger.error('EmissionDataService::updateEmissionData failed', error);
-      throw error;
+    } catch (error: any) {
+      // If it's already an AppError (from repository or business logic), rethrow
+      if (error instanceof AppError) {
+        logger.error('EmissionDataService::updateEmissionData', error);
+        throw error;
+      }
+
+      // For unexpected errors, wrap as generic AppError
+      const appError = new AppError(
+        error.message || 'Failed to update emission data',
+        HttpStatusCode.INTERNAL_SERVER_ERROR,
+        undefined,
+        false
+      );
+      logger.error('EmissionDataService::updateEmissionData', appError);
+      throw appError;
     }
   }
 
-  static async deleteEmissionData(id: number): Promise<boolean> {
+  async deleteEmissionData(id: number): Promise<boolean> {
     try {
+      // Validate ID
+      if (isNaN(id) || id <= 0) {
+        throw new AppError('Invalid emission data ID. Must be a positive integer.', HttpStatusCode.BAD_REQUEST);
+      }
+
       const existingRecord = await EmissionDataRepository.findById(id);
 
       if (!existingRecord) {
-        return false;
+        throw new AppError('Emission data not found', HttpStatusCode.NOT_FOUND);
       }
 
       await EmissionDataRepository.delete(id);
 
       logger.info('EmissionDataService::deleteEmissionData success', { id });
       return true;
-    } catch (error) {
-      logger.error('EmissionDataService::deleteEmissionData failed', error);
-      throw error;
+    } catch (error: any) {
+      // If it's already an AppError (from repository or business logic), rethrow
+      if (error instanceof AppError) {
+        logger.error('EmissionDataService::deleteEmissionData', error);
+        throw error;
+      }
+
+      // For unexpected errors, wrap as generic AppError
+      const appError = new AppError(
+        error.message || 'Failed to delete emission data',
+        HttpStatusCode.INTERNAL_SERVER_ERROR,
+        undefined,
+        false
+      );
+      logger.error('EmissionDataService::deleteEmissionData', appError);
+      throw appError;
     }
   }
 
-  static async getEmissionStatistics(query: EmissionDataQueryDTO): Promise<EmissionStatisticsResponseDTO> {
+  async getEmissionStatistics(params: {
+    vehicleId?: number;
+    interval?: string;
+    startTime?: Date;
+    endTime?: Date;
+  }): Promise<EmissionStatisticsResponseDTO> {
     try {
+      const { vehicleId, interval, startTime, endTime } = params;
+
+      // Validate interval if provided
+      if (interval && !['day', 'week', 'month'].includes(interval)) {
+        throw new AppError('Invalid interval. Must be day, week, or month', HttpStatusCode.BAD_REQUEST);
+      }
+
+      // Validate vehicleId if provided
+      if (vehicleId && (isNaN(vehicleId) || vehicleId <= 0)) {
+        throw new AppError('Invalid vehicle ID. Must be a positive integer.', HttpStatusCode.BAD_REQUEST);
+      }
+
       let whereClause: any = {};
 
-      if (query.vehicleId) {
-        whereClause.vehicleId = query.vehicleId;
+      if (vehicleId) {
+        whereClause.vehicleId = vehicleId;
       }
 
       // Handle date filtering
       let intervalStartTime: Date | undefined;
-      if (query.interval) {
+      if (interval) {
         const now = new Date();
 
-        switch (query.interval) {
+        switch (interval) {
           case 'day':
             intervalStartTime = new Date(now);
             intervalStartTime.setDate(now.getDate() - 1);
@@ -625,12 +929,12 @@ class EmissionDataService {
         if (intervalStartTime) {
           whereClause.timestamp = { gte: intervalStartTime };
         }
-      } else if (query.startTime && query.endTime) {
-        whereClause.timestamp = { gte: query.startTime, lte: query.endTime };
-      } else if (query.startTime) {
-        whereClause.timestamp = { gte: query.startTime };
-      } else if (query.endTime) {
-        whereClause.timestamp = { lte: query.endTime };
+      } else if (startTime && endTime) {
+        whereClause.timestamp = { gte: startTime, lte: endTime };
+      } else if (startTime) {
+        whereClause.timestamp = { gte: startTime };
+      } else if (endTime) {
+        whereClause.timestamp = { lte: endTime };
       }
 
       const emissionData = await EmissionDataRepository.findAllForStatistics(whereClause);
@@ -645,9 +949,9 @@ class EmissionDataService {
               normalPercentage: '0', highPercentage: '0', criticalPercentage: '0' 
             },
             thresholds: EMISSION_THRESHOLDS,
-            timeRange: query.interval ? { interval: query.interval } : {
-              from: query.startTime || 'beginning',
-              to: query.endTime || 'now'
+            timeRange: interval ? { interval } : {
+              from: startTime || 'beginning',
+              to: endTime || 'now'
             }
           }
         };
@@ -720,22 +1024,33 @@ class EmissionDataService {
             criticalPercentage: ((stats.criticalCount / stats.count) * 100).toFixed(1),
           },
           thresholds: EMISSION_THRESHOLDS,
-          timeRange: query.interval ? { interval: query.interval } : {
-            from: query.startTime || 'beginning',
-            to: query.endTime || 'now'
+          timeRange: interval ? { interval } : {
+            from: startTime || 'beginning',
+            to: endTime || 'now'
           }
         }
       };
-    } catch (error) {
-      logger.error('EmissionDataService::getEmissionStatistics failed', error);
-      throw error;
+    } catch (error: any) {
+      // If it's already an AppError (from repository or business logic), rethrow
+      if (error instanceof AppError) {
+        logger.error('EmissionDataService::getEmissionStatistics', error);
+        throw error;
+      }
+
+      // For unexpected errors, wrap as generic AppError
+      const appError = new AppError(
+        error.message || 'Failed to calculate emission statistics',
+        HttpStatusCode.INTERNAL_SERVER_ERROR,
+        undefined,
+        false
+      );
+      logger.error('EmissionDataService::getEmissionStatistics', appError);
+      throw appError;
     }
   }
 
   // Get emission thresholds
-  static getEmissionThresholds(): EmissionThresholds {
+  getEmissionThresholds(): EmissionThresholds {
     return EMISSION_THRESHOLDS;
   }
 }
-
-export default EmissionDataService;

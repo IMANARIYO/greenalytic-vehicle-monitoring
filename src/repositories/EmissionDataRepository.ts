@@ -1,6 +1,7 @@
 import { EmissionData, Prisma } from '@prisma/client';
 import logger from '../utils/logger';
 import { PaginationMeta, PaginationParams } from '../types/GlobalTypes';
+import { AppError, handlePrismaError, HttpStatusCode, NotFoundError } from '../middlewares/errorHandler';
 import prisma from '../config/db';
 
 interface EmissionDataWithRelations extends EmissionData {
@@ -43,9 +44,7 @@ interface EmissionDataUpdateInput {
   hcPPM?: number;
   noxPPM?: number | null;
   pm25Level?: number | null;
-  vehicleId?: number;
   plateNumber?: string;
-  trackingDeviceId?: number;
   timestamp?: Date;
   deletedAt?: Date | null;
 }
@@ -92,9 +91,22 @@ class EmissionDataRepository {
           }
         }
       });
-    } catch (error) {
-      logger.error('EmissionDataRepository::create', error);
-      throw error;
+    } catch (error: any) {
+      // Handle known Prisma errors with your AppError system
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        const appError = handlePrismaError(error);
+        logger.error('EmissionDataRepository::create', appError);
+        throw appError;
+      }
+      // For other errors, wrap or rethrow as generic AppError
+      const appError = new AppError(
+        error.message || 'Failed to create emission data',
+        HttpStatusCode.INTERNAL_SERVER_ERROR,
+        undefined,
+        false
+      );
+      logger.error('EmissionDataRepository::create', appError);
+      throw appError;
     }
   }
 
@@ -103,15 +115,28 @@ class EmissionDataRepository {
       return await prisma.emissionData.findUnique({
         where: { id }
       });
-    } catch (error) {
-      logger.error('EmissionDataRepository::findById', error);
-      throw error;
+    } catch (error: any) {
+      // Handle known Prisma errors consistently
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        const appError = handlePrismaError(error);
+        logger.error('EmissionDataRepository::findById', appError);
+        throw appError;
+      }
+      // For other errors, wrap as generic AppError
+      const appError = new AppError(
+        error.message || 'Failed to find emission data by ID',
+        HttpStatusCode.INTERNAL_SERVER_ERROR,
+        undefined,
+        false
+      );
+      logger.error('EmissionDataRepository::findById', appError);
+      throw appError;
     }
   }
 
-  async findByIdWithRelations(id: number): Promise<EmissionDataWithRelations | null> {
+  async findByIdWithRelations(id: number): Promise<EmissionDataWithRelations> {
     try {
-      return await prisma.emissionData.findUnique({
+      const emissionData = await prisma.emissionData.findUnique({
         where: { id },
         include: {
           vehicle: {
@@ -139,26 +164,57 @@ class EmissionDataRepository {
           }
         }
       });
-    } catch (error) {
-      logger.error('EmissionDataRepository::findByIdWithRelations', error);
-      throw error;
+
+      if (!emissionData) {
+        throw new NotFoundError('Emission data');
+      }
+
+      return emissionData;
+    } catch (error: any) {
+      // If it's already a NotFoundError, rethrow it
+      if (error instanceof NotFoundError) {
+        logger.error('EmissionDataRepository::findByIdWithRelations', error);
+        throw error;
+      }
+
+      // Handle known Prisma errors
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        const appError = handlePrismaError(error);
+        logger.error('EmissionDataRepository::findByIdWithRelations', appError);
+        throw appError;
+      }
+
+      // For other errors, wrap as generic AppError
+      const appError = new AppError(
+        error.message || 'Failed to find emission data with relations',
+        HttpStatusCode.INTERNAL_SERVER_ERROR,
+        undefined,
+        false
+      );
+      logger.error('EmissionDataRepository::findByIdWithRelations', appError);
+      throw appError;
     }
   }
 
   async findManyWithFilters(
     whereClause: Prisma.EmissionDataWhereInput,
     page: number,
-    limit: number
+    limit: number,
+    sortBy: string = 'timestamp',
+    sortOrder: 'asc' | 'desc' = 'desc'
   ): Promise<{ data: EmissionDataWithRelations[]; totalCount: number }> {
     try {
       const skip = (page - 1) * limit;
 
       const [data, totalCount] = await Promise.all([
         prisma.emissionData.findMany({
-          where: whereClause,
+          where: {
+            ...whereClause,
+            deletedAt: null // Always filter out soft deleted records
+          },
           skip,
           take: limit,
-          orderBy: { timestamp: 'desc' },
+          orderBy: { [sortBy]: sortOrder },
           include: {
             vehicle: {
               select: {
@@ -180,21 +236,40 @@ class EmissionDataRepository {
           }
         }),
         prisma.emissionData.count({
-          where: whereClause
+          where: {
+            ...whereClause,
+            deletedAt: null
+          }
         })
       ]);
 
       return { data, totalCount };
-    } catch (error) {
-      logger.error('EmissionDataRepository::findManyWithFilters', error);
-      throw error;
+    } catch (error: any) {
+      // Handle known Prisma errors consistently
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        const appError = handlePrismaError(error);
+        logger.error('EmissionDataRepository::findManyWithFilters', appError);
+        throw appError;
+      }
+      // For other errors, wrap as generic AppError
+      const appError = new AppError(
+        error.message || 'Failed to find emission data with filters',
+        HttpStatusCode.INTERNAL_SERVER_ERROR,
+        undefined,
+        false
+      );
+      logger.error('EmissionDataRepository::findManyWithFilters', appError);
+      throw appError;
     }
   }
 
   async findAllForStatistics(whereClause: Prisma.EmissionDataWhereInput): Promise<EmissionData[]> {
     try {
       return await prisma.emissionData.findMany({
-        where: whereClause,
+        where: {
+          ...whereClause,
+          deletedAt: null
+        },
         orderBy: { timestamp: 'asc' },
         include: {
           vehicle: {
@@ -206,9 +281,22 @@ class EmissionDataRepository {
           }
         }
       });
-    } catch (error) {
-      logger.error('EmissionDataRepository::findAllForStatistics', error);
-      throw error;
+    } catch (error: any) {
+      // Handle known Prisma errors consistently
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        const appError = handlePrismaError(error);
+        logger.error('EmissionDataRepository::findAllForStatistics', appError);
+        throw appError;
+      }
+      // For other errors, wrap as generic AppError
+      const appError = new AppError(
+        error.message || 'Failed to find emission data for statistics',
+        HttpStatusCode.INTERNAL_SERVER_ERROR,
+        undefined,
+        false
+      );
+      logger.error('EmissionDataRepository::findAllForStatistics', appError);
+      throw appError;
     }
   }
 
@@ -249,9 +337,22 @@ class EmissionDataRepository {
           }
         }
       });
-    } catch (error) {
-      logger.error('EmissionDataRepository::update', error);
-      throw error;
+    } catch (error: any) {
+      // Handle known Prisma errors consistently
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        const appError = handlePrismaError(error);
+        logger.error('EmissionDataRepository::update', appError);
+        throw appError;
+      }
+      // For other errors, wrap as generic AppError
+      const appError = new AppError(
+        error.message || 'Failed to update emission data',
+        HttpStatusCode.INTERNAL_SERVER_ERROR,
+        undefined,
+        false
+      );
+      logger.error('EmissionDataRepository::update', appError);
+      throw appError;
     }
   }
 
@@ -260,9 +361,22 @@ class EmissionDataRepository {
       return await prisma.emissionData.delete({
         where: { id }
       });
-    } catch (error) {
-      logger.error('EmissionDataRepository::delete', error);
-      throw error;
+    } catch (error: any) {
+      // Handle known Prisma errors consistently
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        const appError = handlePrismaError(error);
+        logger.error('EmissionDataRepository::delete', appError);
+        throw appError;
+      }
+      // For other errors, wrap as generic AppError
+      const appError = new AppError(
+        error.message || 'Failed to delete emission data',
+        HttpStatusCode.INTERNAL_SERVER_ERROR,
+        undefined,
+        false
+      );
+      logger.error('EmissionDataRepository::delete', appError);
+      throw appError;
     }
   }
 
@@ -288,9 +402,22 @@ class EmissionDataRepository {
       }
 
       return this.findManyWithFilters(whereClause, page, limit);
-    } catch (error) {
-      logger.error('EmissionDataRepository::findByVehicleId', error);
-      throw error;
+    } catch (error: any) {
+      // Handle known Prisma errors consistently
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        const appError = handlePrismaError(error);
+        logger.error('EmissionDataRepository::findByVehicleId', appError);
+        throw appError;
+      }
+      // For other errors, wrap as generic AppError
+      const appError = new AppError(
+        error.message || 'Failed to find emission data by vehicle ID',
+        HttpStatusCode.INTERNAL_SERVER_ERROR,
+        undefined,
+        false
+      );
+      logger.error('EmissionDataRepository::findByVehicleId', appError);
+      throw appError;
     }
   }
 
@@ -313,9 +440,22 @@ class EmissionDataRepository {
       }
 
       return this.findManyWithFilters(whereClause, page, limit);
-    } catch (error) {
-      logger.error('EmissionDataRepository::findByPlateNumber', error);
-      throw error;
+    } catch (error: any) {
+      // Handle known Prisma errors consistently
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        const appError = handlePrismaError(error);
+        logger.error('EmissionDataRepository::findByPlateNumber', appError);
+        throw appError;
+      }
+      // For other errors, wrap as generic AppError
+      const appError = new AppError(
+        error.message || 'Failed to find emission data by plate number',
+        HttpStatusCode.INTERNAL_SERVER_ERROR,
+        undefined,
+        false
+      );
+      logger.error('EmissionDataRepository::findByPlateNumber', appError);
+      throw appError;
     }
   }
 
@@ -327,9 +467,22 @@ class EmissionDataRepository {
     try {
       const whereClause: Prisma.EmissionDataWhereInput = { trackingDeviceId };
       return this.findManyWithFilters(whereClause, page, limit);
-    } catch (error) {
-      logger.error('EmissionDataRepository::findByTrackingDeviceId', error);
-      throw error;
+    } catch (error: any) {
+      // Handle known Prisma errors consistently
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        const appError = handlePrismaError(error);
+        logger.error('EmissionDataRepository::findByTrackingDeviceId', appError);
+        throw appError;
+      }
+      // For other errors, wrap as generic AppError
+      const appError = new AppError(
+        error.message || 'Failed to find emission data by tracking device ID',
+        HttpStatusCode.INTERNAL_SERVER_ERROR,
+        undefined,
+        false
+      );
+      logger.error('EmissionDataRepository::findByTrackingDeviceId', appError);
+      throw appError;
     }
   }
 
@@ -338,9 +491,22 @@ class EmissionDataRepository {
       return await prisma.emissionData.count({
         where: { deletedAt: null }
       });
-    } catch (error) {
-      logger.error('EmissionDataRepository::countEmissionData', error);
-      throw error;
+    } catch (error: any) {
+      // Handle known Prisma errors consistently
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        const appError = handlePrismaError(error);
+        logger.error('EmissionDataRepository::countEmissionData', appError);
+        throw appError;
+      }
+      // For other errors, wrap as generic AppError
+      const appError = new AppError(
+        error.message || 'Failed to count emission data',
+        HttpStatusCode.INTERNAL_SERVER_ERROR,
+        undefined,
+        false
+      );
+      logger.error('EmissionDataRepository::countEmissionData', appError);
+      throw appError;
     }
   }
 
@@ -380,9 +546,22 @@ class EmissionDataRepository {
       const normal = total - high - critical;
 
       return { normal, high, critical };
-    } catch (error) {
-      logger.error('EmissionDataRepository::countByEmissionLevel', error);
-      throw error;
+    } catch (error: any) {
+      // Handle known Prisma errors consistently
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        const appError = handlePrismaError(error);
+        logger.error('EmissionDataRepository::countByEmissionLevel', appError);
+        throw appError;
+      }
+      // For other errors, wrap as generic AppError
+      const appError = new AppError(
+        error.message || 'Failed to count emission data by level',
+        HttpStatusCode.INTERNAL_SERVER_ERROR,
+        undefined,
+        false
+      );
+      logger.error('EmissionDataRepository::countByEmissionLevel', appError);
+      throw appError;
     }
   }
 
@@ -411,9 +590,22 @@ class EmissionDataRepository {
           }
         }
       });
-    } catch (error) {
-      logger.error('EmissionDataRepository::getLatestByVehicleId', error);
-      throw error;
+    } catch (error: any) {
+      // Handle known Prisma errors consistently
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        const appError = handlePrismaError(error);
+        logger.error('EmissionDataRepository::getLatestByVehicleId', appError);
+        throw appError;
+      }
+      // For other errors, wrap as generic AppError
+      const appError = new AppError(
+        error.message || 'Failed to get latest emission data by vehicle ID',
+        HttpStatusCode.INTERNAL_SERVER_ERROR,
+        undefined,
+        false
+      );
+      logger.error('EmissionDataRepository::getLatestByVehicleId', appError);
+      throw appError;
     }
   }
 
@@ -452,9 +644,22 @@ class EmissionDataRepository {
           }
         }
       });
-    } catch (error) {
-      logger.error('EmissionDataRepository::findRecentEmissions', error);
-      throw error;
+    } catch (error: any) {
+      // Handle known Prisma errors consistently
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        const appError = handlePrismaError(error);
+        logger.error('EmissionDataRepository::findRecentEmissions', appError);
+        throw appError;
+      }
+      // For other errors, wrap as generic AppError
+      const appError = new AppError(
+        error.message || 'Failed to find recent emissions',
+        HttpStatusCode.INTERNAL_SERVER_ERROR,
+        undefined,
+        false
+      );
+      logger.error('EmissionDataRepository::findRecentEmissions', appError);
+      throw appError;
     }
   }
 }
