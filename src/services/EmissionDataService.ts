@@ -367,11 +367,11 @@ export class EmissionDataService {
       // Filter by emission level
       if (emissionLevel === 'HIGH') {
         whereClause.OR = [
-          { co2Percentage: { gte: EMISSION_THRESHOLDS.co2.warning } },
-          { coPercentage: { gte: EMISSION_THRESHOLDS.co.warning } },
-          { hcPPM: { gte: EMISSION_THRESHOLDS.hc.warning } },
-          { noxPPM: { gte: EMISSION_THRESHOLDS.nox.warning } },
-          { pm25Level: { gte: EMISSION_THRESHOLDS.pm25.warning } }
+          { co2Percentage: { gte: EMISSION_THRESHOLDS.co2.warning, lt:EMISSION_THRESHOLDS.co2.critical } },
+          { coPercentage: { gte: EMISSION_THRESHOLDS.co.warning, lt:EMISSION_THRESHOLDS.co.critical } },
+          { hcPPM: { gte: EMISSION_THRESHOLDS.hc.warning, lt:EMISSION_THRESHOLDS.hc.critical } },
+          { noxPPM: { gte: EMISSION_THRESHOLDS.nox.warning, lt: EMISSION_THRESHOLDS.nox.critical  } },
+          { pm25Level: { gte: EMISSION_THRESHOLDS.pm25.warning, lt: EMISSION_THRESHOLDS.pm25.critical  } }
         ];
       } else if (emissionLevel === 'CRITICAL') {
         whereClause.OR = [
@@ -382,6 +382,21 @@ export class EmissionDataService {
           { pm25Level: { gte: EMISSION_THRESHOLDS.pm25.critical } }
         ];
       }
+      else if (emissionLevel === 'NORMAL') {
+        whereClause.AND = [
+            { co2Percentage: { lt: EMISSION_THRESHOLDS.co2.warning } },
+            { coPercentage: { lt: EMISSION_THRESHOLDS.co.warning } },
+            { hcPPM: { lt: EMISSION_THRESHOLDS.hc.warning } },
+            { OR: [
+            { noxPPM: null },
+            { noxPPM: { lt: EMISSION_THRESHOLDS.nox.warning } }
+            ]},
+            { OR: [
+            { pm25Level: null },
+            { pm25Level: { lt: EMISSION_THRESHOLDS.pm25.warning } }
+            ]}
+        ];
+    }
 
       // Filter by device category
       if (deviceCategory) {
