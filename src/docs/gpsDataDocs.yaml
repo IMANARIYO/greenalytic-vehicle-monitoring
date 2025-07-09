@@ -1,0 +1,836 @@
+/gps:
+  get:
+    tags:
+      - GPS Data
+    summary: Get all GPS data with filters and pagination
+    parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Items per page
+      - in: query
+        name: startTime
+        schema:
+          type: string
+          format: date-time
+        description: Filter by start timestamp
+      - in: query
+        name: endTime
+        schema:
+          type: string
+          format: date-time
+        description: Filter by end timestamp
+      - in: query
+        name: vehicleStatus
+        schema:
+          type: string
+        description: Filter by vehicle status
+      - in: query
+        name: speedLevel
+        schema:
+          type: string
+          enum: [NORMAL, HIGH, CRITICAL]
+        description: Filter by speed level
+      - in: query
+        name: minSpeed
+        schema:
+          type: number
+        description: Minimum speed filter (km/h)
+      - in: query
+        name: maxSpeed
+        schema:
+          type: number
+        description: Maximum speed filter (km/h)
+    responses:
+      200:
+        description: GPS data retrieved successfully
+
+  post:
+    tags:
+      - GPS Data
+    summary: Create new GPS data
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CreateGpsDataRequest'
+    responses:
+      201:
+        description: GPS data created successfully
+
+/gps/health:
+  get:
+    tags:
+      - GPS Data
+    summary: Health check for GPS service
+    responses:
+      200:
+        description: Service is healthy
+
+/gps/config/thresholds:
+  get:
+    tags:
+      - GPS Data
+    summary: Get GPS speed thresholds configuration
+    responses:
+      200:
+        description: GPS speed thresholds retrieved successfully
+
+/gps/statistics:
+  get:
+    tags:
+      - GPS Data
+    summary: Get GPS statistics and analytics
+    parameters:
+      - in: query
+        name: vehicleId
+        schema:
+          type: integer
+        description: Filter by specific vehicle ID
+      - in: query
+        name: interval
+        schema:
+          type: string
+          enum: [day, week, month]
+        description: Time interval for statistics
+      - in: query
+        name: startTime
+        schema:
+          type: string
+          format: date-time
+        description: Start time for custom date range
+      - in: query
+        name: endTime
+        schema:
+          type: string
+          format: date-time
+        description: End time for custom date range
+    responses:
+      200:
+        description: GPS statistics retrieved successfully
+
+/gps/{id}:
+  get:
+    tags:
+      - GPS Data
+    summary: Get GPS data by ID with route analysis
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: GPS data retrieved successfully
+      404:
+        description: GPS data not found
+
+  put:
+    tags:
+      - GPS Data
+    summary: Update GPS data by ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdateGpsDataRequest'
+    responses:
+      200:
+        description: GPS data updated successfully
+      404:
+        description: GPS data not found
+
+  patch:
+    tags:
+      - GPS Data
+    summary: Partially update GPS data by ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdateGpsDataRequest'
+    responses:
+      200:
+        description: GPS data updated successfully
+      404:
+        description: GPS data not found
+
+  delete:
+    tags:
+      - GPS Data
+    summary: Permanently delete GPS data by ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: GPS data deleted successfully
+      404:
+        description: GPS data not found
+
+/gps/{id}/deactivate:
+  patch:
+    tags:
+      - GPS Data
+    summary: Soft delete GPS data
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: GPS data deactivated successfully
+
+/gps/vehicle/{vehicleId}:
+  get:
+    tags:
+      - GPS Data
+    summary: Get GPS data by vehicle ID
+    parameters:
+      - in: path
+        name: vehicleId
+        required: true
+        schema:
+          type: integer
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Items per page
+      - in: query
+        name: startTime
+        schema:
+          type: string
+          format: date-time
+        description: Filter by start timestamp
+      - in: query
+        name: endTime
+        schema:
+          type: string
+          format: date-time
+        description: Filter by end timestamp
+    responses:
+      200:
+        description: Vehicle GPS data retrieved successfully
+
+/gps/vehicle/{vehicleId}/interval:
+  get:
+    tags:
+      - GPS Data
+    summary: Get GPS data by vehicle with time interval filtering
+    parameters:
+      - in: path
+        name: vehicleId
+        required: true
+        schema:
+          type: integer
+      - in: query
+        name: interval
+        required: true
+        schema:
+          type: string
+          enum: [hours, days, daytime]
+        description: Time interval type
+      - in: query
+        name: value
+        required: true
+        schema:
+          type: string
+        description: Interval value
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Items per page
+    responses:
+      200:
+        description: Vehicle GPS data retrieved successfully
+
+/gps/plate/{plateNumber}:
+  get:
+    tags:
+      - GPS Data
+    summary: Get GPS data by vehicle plate number
+    parameters:
+      - in: path
+        name: plateNumber
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Items per page
+      - in: query
+        name: startTime
+        schema:
+          type: string
+          format: date-time
+        description: Filter by start timestamp
+      - in: query
+        name: endTime
+        schema:
+          type: string
+          format: date-time
+        description: Filter by end timestamp
+    responses:
+      200:
+        description: GPS data retrieved successfully
+
+/gps/location/radius:
+  get:
+    tags:
+      - GPS Data
+    summary: Get GPS data within a specific location radius
+    parameters:
+      - in: query
+        name: centerLatitude
+        required: true
+        schema:
+          type: number
+          format: float
+          minimum: -90
+          maximum: 90
+        description: Center latitude for radius search
+      - in: query
+        name: centerLongitude
+        required: true
+        schema:
+          type: number
+          format: float
+          minimum: -180
+          maximum: 180
+        description: Center longitude for radius search
+      - in: query
+        name: radiusKm
+        required: true
+        schema:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1000
+        description: Search radius in kilometers
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Items per page
+      - in: query
+        name: startTime
+        schema:
+          type: string
+          format: date-time
+        description: Filter by start timestamp
+      - in: query
+        name: endTime
+        schema:
+          type: string
+          format: date-time
+        description: Filter by end timestamp
+    responses:
+      200:
+        description: GPS data by location radius retrieved successfully
+
+/gps/speed/range:
+  get:
+    tags:
+      - GPS Data
+    summary: Get GPS data within a specific speed range
+    parameters:
+      - in: query
+        name: minSpeed
+        required: true
+        schema:
+          type: number
+          format: float
+          minimum: 0
+        description: Minimum speed in km/h
+      - in: query
+        name: maxSpeed
+        required: true
+        schema:
+          type: number
+          format: float
+          minimum: 0
+        description: Maximum speed in km/h
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Items per page
+      - in: query
+        name: startTime
+        schema:
+          type: string
+          format: date-time
+        description: Filter by start timestamp
+      - in: query
+        name: endTime
+        schema:
+          type: string
+          format: date-time
+        description: Filter by end timestamp
+    responses:
+      200:
+        description: GPS data by speed range retrieved successfully
+
+# Schema Components
+components:
+  schemas:
+    CreateGpsDataRequest:
+      type: object
+      required:
+        - latitude
+        - longitude
+        - speed
+        - vehicleId
+        - plateNumber
+      properties:
+        latitude:
+          type: number
+          format: float
+          minimum: -90
+          maximum: 90
+          description: GPS latitude coordinate
+        longitude:
+          type: number
+          format: float
+          minimum: -180
+          maximum: 180
+          description: GPS longitude coordinate
+        speed:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 500
+          description: Vehicle speed in km/h
+        accuracy:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1000
+          description: GPS accuracy in meters
+        vehicleId:
+          type: integer
+          description: ID of the vehicle
+        plateNumber:
+          type: string
+          description: Vehicle plate number
+        trackingDeviceId:
+          type: integer
+          description: ID of the tracking device
+        trackingStatus:
+          type: boolean
+          description: Whether tracking is active
+        timestamp:
+          type: string
+          format: date-time
+          description: GPS data timestamp
+
+    UpdateGpsDataRequest:
+      type: object
+      properties:
+        latitude:
+          type: number
+          format: float
+          minimum: -90
+          maximum: 90
+          description: GPS latitude coordinate
+        longitude:
+          type: number
+          format: float
+          minimum: -180
+          maximum: 180
+          description: GPS longitude coordinate
+        speed:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 500
+          description: Vehicle speed in km/h
+        accuracy:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1000
+          description: GPS accuracy in meters
+        plateNumber:
+          type: string
+          description: Vehicle plate number
+        trackingStatus:
+          type: boolean
+          description: Whether tracking is active
+        timestamp:
+          type: string
+          format: date-time
+          description: GPS data timestamp
+
+    GpsDataResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: GPS data ID
+        latitude:
+          type: number
+          format: float
+          description: GPS latitude coordinate
+        longitude:
+          type: number
+          format: float
+          description: GPS longitude coordinate
+        speed:
+          type: number
+          format: float
+          description: Vehicle speed in km/h
+        accuracy:
+          type: number
+          format: float
+          description: GPS accuracy in meters
+        plateNumber:
+          type: string
+          description: Vehicle plate number
+        vehicleId:
+          type: integer
+          description: Vehicle ID
+        trackingDeviceId:
+          type: integer
+          description: Tracking device ID
+        trackingStatus:
+          type: boolean
+          description: Tracking status
+        timestamp:
+          type: string
+          format: date-time
+          description: GPS data timestamp
+        createdAt:
+          type: string
+          format: date-time
+          description: Record creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Record update timestamp
+        speedLevel:
+          type: string
+          enum: [NORMAL, HIGH, CRITICAL]
+          description: Speed level classification
+        exceedsSpeedLimit:
+          type: boolean
+          description: Whether speed exceeds warning threshold
+        distanceFromPrevious:
+          type: number
+          format: float
+          description: Distance from previous GPS point in km
+        vehicle:
+          $ref: '#/components/schemas/VehicleInfo'
+        trackingDevice:
+          $ref: '#/components/schemas/TrackingDeviceInfo'
+
+    GpsDataWithRouteAnalysis:
+      allOf:
+        - $ref: '#/components/schemas/GpsDataResponse'
+        - type: object
+          properties:
+            routeAnalysis:
+              $ref: '#/components/schemas/RouteAnalysis'
+            thresholds:
+              $ref: '#/components/schemas/SpeedThresholds'
+
+    RouteAnalysis:
+      type: object
+      properties:
+        distanceFromStart:
+          type: number
+          format: float
+          description: Distance from route start in km
+        timeFromStart:
+          type: string
+          description: Time elapsed from route start
+        bearing:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 360
+          description: Direction in degrees (0-360)
+        speedChange:
+          type: number
+          format: float
+          description: Speed change from previous point
+        isStationary:
+          type: boolean
+          description: True if speed < 5 km/h
+        estimatedAddress:
+          type: string
+          description: Reverse geocoded address
+
+    GpsStatisticsResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            summary:
+              type: object
+              properties:
+                totalRecords:
+                  type: integer
+                  description: Total number of GPS records
+                totalDistanceKm:
+                  type: number
+                  format: float
+                  description: Total distance traveled in km
+                averageSpeed:
+                  type: string
+                  description: Average speed
+                maxSpeed:
+                  type: number
+                  format: float
+                  description: Maximum speed recorded
+                speedViolations:
+                  type: integer
+                  description: Number of speed violations
+                speedViolationPercentage:
+                  type: string
+                  description: Percentage of speed violations
+            speedAnalysis:
+              type: object
+              properties:
+                normal:
+                  type: integer
+                  description: Count of normal speed records
+                high:
+                  type: integer
+                  description: Count of high speed records
+                critical:
+                  type: integer
+                  description: Count of critical speed records
+                normalPercentage:
+                  type: string
+                  description: Percentage of normal speed records
+                highPercentage:
+                  type: string
+                  description: Percentage of high speed records
+                criticalPercentage:
+                  type: string
+                  description: Percentage of critical speed records
+            locationCoverage:
+              type: object
+              properties:
+                minLatitude:
+                  type: number
+                  format: float
+                  description: Minimum latitude in dataset
+                maxLatitude:
+                  type: number
+                  format: float
+                  description: Maximum latitude in dataset
+                minLongitude:
+                  type: number
+                  format: float
+                  description: Minimum longitude in dataset
+                maxLongitude:
+                  type: number
+                  format: float
+                  description: Maximum longitude in dataset
+                boundingBoxArea:
+                  type: number
+                  format: float
+                  description: Area coverage in square km
+            thresholds:
+              $ref: '#/components/schemas/SpeedThresholds'
+            timeRange:
+              type: object
+              properties:
+                interval:
+                  type: string
+                  description: Time interval used
+                from:
+                  type: string
+                  description: Start time or 'beginning'
+                to:
+                  type: string
+                  description: End time or 'now'
+
+    LocationRadiusResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/GpsDataResponse'
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+            limit:
+              type: integer
+            totalCount:
+              type: integer
+            totalPages:
+              type: integer
+            hasNextPage:
+              type: boolean
+            hasPrevPage:
+              type: boolean
+            searchRadius:
+              type: object
+              properties:
+                centerLatitude:
+                  type: number
+                  format: float
+                centerLongitude:
+                  type: number
+                  format: float
+                radiusKm:
+                  type: number
+                  format: float
+                searchAreaKm2:
+                  type: number
+                  format: float
+
+    SpeedRangeResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/GpsDataResponse'
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+            limit:
+              type: integer
+            totalCount:
+              type: integer
+            totalPages:
+              type: integer
+            hasNextPage:
+              type: boolean
+            hasPrevPage:
+              type: boolean
+            speedRange:
+              type: object
+              properties:
+                minSpeed:
+                  type: number
+                  format: float
+                maxSpeed:
+                  type: number
+                  format: float
+                averageSpeed:
+                  type: number
+                  format: float
+                violationsFound:
+                  type: integer
+
+    SpeedThresholds:
+      type: object
+      properties:
+        speed:
+          type: object
+          properties:
+            warning:
+              type: number
+              format: float
+              description: Speed warning threshold in km/h
+            critical:
+              type: number
+              format: float
+              description: Speed critical threshold in km/h
+        accuracy:
+          type: object
+          properties:
+            minimum:
+              type: number
+              format: float
+              description: Minimum required accuracy in meters
+        tracking:
+          type: object
+          properties:
+            interval:
+              type: number
+              format: float
+              description: Tracking interval in seconds
+
+    VehicleInfo:
+      type: object
+      properties:
+        plateNumber:
+          type: string
+        vehicleModel:
+          type: string
+        vehicleType:
+          type: string
+        status:
+          type: string
+        fuelType:
+          type: string
+
+    TrackingDeviceInfo:
+      type: object
+      properties:
+        serialNumber:
+          type: string
+        model:
+          type: string
+        deviceCategory:
+          type: string
+        status:
+          type: string

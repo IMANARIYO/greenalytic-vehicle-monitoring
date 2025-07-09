@@ -6,12 +6,6 @@ import GpsDataService from '../services/GpsDataService';
 import { CreateGpsDataDTO, UpdateGpsDataDTO, GpsDataQueryDTO } from '../types/dtos/GpsDataDto';
 
 class GpsDataController {
-  private gpsDataService: GpsDataService;
-
-  constructor() {
-    this.gpsDataService = new GpsDataService();
-  }
-
   createGpsData = catchAsync(async (req: Request, res: ExpressResponse) => {
     const dto: CreateGpsDataDTO = {
       latitude: parseFloat(req.body.latitude),
@@ -21,11 +15,11 @@ class GpsDataController {
       vehicleId: parseInt(req.body.vehicleId),
       plateNumber: req.body.plateNumber,
       trackingDeviceId: req.body.trackingDeviceId ? parseInt(req.body.trackingDeviceId) : undefined,
-      trackingStatus: req.body.trackingStatus,
+      trackingStatus: req.body.trackingStatus !== undefined ? Boolean(req.body.trackingStatus) : undefined,
       timestamp: req.body.timestamp ? new Date(req.body.timestamp) : undefined
     };
 
-    const result = await this.gpsDataService.createGpsData(dto);
+    const result = await GpsDataService.createGpsData(dto);
     return Response.created(res, result, 'GPS data created successfully');
   });
 
@@ -41,19 +35,19 @@ class GpsDataController {
       maxSpeed: req.query.maxSpeed ? parseFloat(req.query.maxSpeed as string) : undefined
     };
 
-    const result = await this.gpsDataService.getAllGpsData(query);
+    const result = await GpsDataService.getAllGpsData(query);
     return Response.success(res, result, 'GPS data retrieved successfully');
   });
 
   getGpsDataById = catchAsync(async (req: AuthenticatedRequest, res: ExpressResponse) => {
     const id = parseInt(req.params.id);
-    const result = await this.gpsDataService.getGpsDataById(id);
+    const result = await GpsDataService.getGpsDataById(id);
     return Response.success(res, result, 'GPS data retrieved successfully');
   });
 
   getGpsDataByVehicle = catchAsync(async (req: Request, res: ExpressResponse) => {
     const vehicleId = parseInt(req.params.vehicleId);
-    const query: GpsDataQueryDTO = {
+    const query = {
       page: req.query.page ? parseInt(req.query.page as string) : undefined,
       limit: req.query.limit ? parseInt(req.query.limit as string) : undefined,
       startTime: req.query.startTime ? new Date(req.query.startTime as string) : undefined,
@@ -61,13 +55,13 @@ class GpsDataController {
       vehicleId
     };
 
-    const result = await this.gpsDataService.getGpsDataByVehicle(query);
+    const result = await GpsDataService.getGpsDataByVehicle(query);
     return Response.success(res, result, 'Vehicle GPS data retrieved successfully');
   });
 
   getGpsDataByVehicleInterval = catchAsync(async (req: Request, res: ExpressResponse) => {
     const vehicleId = parseInt(req.params.vehicleId);
-    const query: GpsDataQueryDTO = {
+    const query = {
       page: req.query.page ? parseInt(req.query.page as string) : undefined,
       limit: req.query.limit ? parseInt(req.query.limit as string) : undefined,
       vehicleId,
@@ -75,13 +69,13 @@ class GpsDataController {
       intervalValue: req.query.value as string
     };
 
-    const result = await this.gpsDataService.getGpsDataByVehicleInterval(query);
+    const result = await GpsDataService.getGpsDataByVehicleInterval(query);
     return Response.success(res, result, 'Vehicle GPS data retrieved successfully');
   });
 
   getGpsDataByPlateNumber = catchAsync(async (req: AuthenticatedRequest, res: ExpressResponse) => {
     const plateNumber = req.params.plateNumber;
-    const query: GpsDataQueryDTO = {
+    const query = {
       page: req.query.page ? parseInt(req.query.page as string) : undefined,
       limit: req.query.limit ? parseInt(req.query.limit as string) : undefined,
       startTime: req.query.startTime ? new Date(req.query.startTime as string) : undefined,
@@ -89,36 +83,36 @@ class GpsDataController {
       plateNumber
     };
 
-    const result = await this.gpsDataService.getGpsDataByPlateNumber(query);
+    const result = await GpsDataService.getGpsDataByPlateNumber(query);
     return Response.success(res, result, 'GPS data retrieved successfully');
   });
 
   getGpsDataByLocationRadius = catchAsync(async (req: AuthenticatedRequest, res: ExpressResponse) => {
-    const query: GpsDataQueryDTO = {
+    const query = {
       page: req.query.page ? parseInt(req.query.page as string) : undefined,
       limit: req.query.limit ? parseInt(req.query.limit as string) : undefined,
-      centerLatitude: req.query.centerLatitude ? parseFloat(req.query.centerLatitude as string) : undefined,
-      centerLongitude: req.query.centerLongitude ? parseFloat(req.query.centerLongitude as string) : undefined,
-      radiusKm: req.query.radiusKm ? parseFloat(req.query.radiusKm as string) : undefined,
+      centerLatitude: parseFloat(req.query.centerLatitude as string),
+      centerLongitude: parseFloat(req.query.centerLongitude as string),
+      radiusKm: parseFloat(req.query.radiusKm as string),
       startTime: req.query.startTime ? new Date(req.query.startTime as string) : undefined,
       endTime: req.query.endTime ? new Date(req.query.endTime as string) : undefined
     };
 
-    const result = await this.gpsDataService.getGpsDataByLocationRadius(query);
+    const result = await GpsDataService.getGpsDataByLocationRadius(query);
     return Response.success(res, result, 'GPS data by location retrieved successfully');
   });
 
   getGpsDataBySpeedRange = catchAsync(async (req: AuthenticatedRequest, res: ExpressResponse) => {
-    const query: GpsDataQueryDTO = {
+    const query = {
       page: req.query.page ? parseInt(req.query.page as string) : undefined,
       limit: req.query.limit ? parseInt(req.query.limit as string) : undefined,
-      minSpeed: req.query.minSpeed ? parseFloat(req.query.minSpeed as string) : undefined,
-      maxSpeed: req.query.maxSpeed ? parseFloat(req.query.maxSpeed as string) : undefined,
+      minSpeed: parseFloat(req.query.minSpeed as string),
+      maxSpeed: parseFloat(req.query.maxSpeed as string),
       startTime: req.query.startTime ? new Date(req.query.startTime as string) : undefined,
       endTime: req.query.endTime ? new Date(req.query.endTime as string) : undefined
     };
 
-    const result = await this.gpsDataService.getGpsDataBySpeedRange(query);
+    const result = await GpsDataService.getGpsDataBySpeedRange(query);
     return Response.success(res, result, 'GPS data by speed range retrieved successfully');
   });
 
@@ -130,18 +124,17 @@ class GpsDataController {
       speed: req.body.speed ? parseFloat(req.body.speed) : undefined,
       accuracy: req.body.accuracy ? parseFloat(req.body.accuracy) : undefined,
       plateNumber: req.body.plateNumber,
-      trackingStatus: req.body.trackingStatus,
-      timestamp: req.body.timestamp ? new Date(req.body.timestamp) : undefined,
-      deletedAt: req.body.deletedAt ? new Date(req.body.deletedAt) : undefined
+      trackingStatus: req.body.trackingStatus !== undefined ? Boolean(req.body.trackingStatus) : undefined,
+      timestamp: req.body.timestamp ? new Date(req.body.timestamp) : undefined
     };
 
-    const result = await this.gpsDataService.updateGpsData(id, dto);
+    const result = await GpsDataService.updateGpsData(id, dto);
     return Response.success(res, result, 'GPS data updated successfully');
   });
 
   deleteGpsData = catchAsync(async (req: AuthenticatedRequest, res: ExpressResponse) => {
     const id = parseInt(req.params.id);
-    await this.gpsDataService.deleteGpsData(id);
+    await GpsDataService.deleteGpsData(id);
     return Response.success(res, null, 'GPS data deleted successfully');
   });
 
@@ -153,9 +146,9 @@ class GpsDataController {
       endTime: req.query.endTime ? new Date(req.query.endTime as string) : undefined
     };
 
-    const result = await this.gpsDataService.getGpsStatistics(query);
+    const result = await GpsDataService.getGpsStatistics(query);
     return Response.success(res, result, 'GPS statistics retrieved successfully');
   });
 }
 
-export default GpsDataController;
+export default new GpsDataController();

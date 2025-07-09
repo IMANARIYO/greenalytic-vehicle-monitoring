@@ -6,7 +6,7 @@ import GpsDataController from '../controllers/GpsDataController';
 
 export const GpsDataRouter = Router();
 
-const gpsDataController = new GpsDataController();
+const gpsDataController = GpsDataController;
 
 // CREATE ROUTES
 // Create GPS data

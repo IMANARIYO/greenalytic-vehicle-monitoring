@@ -21,6 +21,9 @@ const vehiclesDocs = yaml.load(
 const emissionDataDocs = yaml.load(
   fs.readFileSync(path.join(__dirname, 'emissionDataDocs.yaml'), 'utf8')
 ) as Record<string, any>;
+const gpsDataDocs = yaml.load(
+  fs.readFileSync(path.join(__dirname, 'gpsDataDocs.yaml'), 'utf8')
+) as Record<string, any>;
 
 const trackingDevicesDocs = yaml.load(
   fs.readFileSync(path.join(__dirname, 'trackingDevicesDocs.yaml'), 'utf8')
@@ -545,6 +548,7 @@ const swaggerSpec = {
     ...vehiclesDocs,
     ...emissionDataDocs,
     ...trackingDevicesDocs,
+    ...gpsDataDocs,
     '/__show-models': {
       get: {
         summary: 'Force schema display',
