@@ -479,9 +479,9 @@ export class GpsDataService {
       const updatedGpsData = await GpsDataRepository.update(id, dto);
 
       // Re-analyze speed levels if speed was updated
-      if (dto.speed !== undefined && existingRecord.vehicleId) {
-        await GpsDataService.updateVehicleTrackingStatus(existingRecord.vehicleId, updatedGpsData);
-      }
+      // if (dto.speed !== undefined && existingRecord.vehicleId) {
+      //   await GpsDataService.updateVehicleTrackingStatus(existingRecord.vehicleId, updatedGpsData);
+      // }
 
       // Add enhanced fields
       const enhancedData = {
@@ -799,30 +799,30 @@ export class GpsDataService {
     }
   }
 
-  // Helper function to update vehicle tracking status
-  private static async updateVehicleTrackingStatus(vehicleId: number, gpsData: any): Promise<string> {
-    try {
-      const exceedsSpeedLimit = gpsData.speed >= SPEED_THRESHOLDS.speed.warning;
-      const isStationary = gpsData.speed < 5; // Consider stationary if speed < 5 km/h
+  // // Helper function to update vehicle tracking status
+  // private static async updateVehicleTrackingStatus(vehicleId: number, gpsData: any): Promise<string> {
+  //   try {
+  //     const exceedsSpeedLimit = gpsData.speed >= SPEED_THRESHOLDS.speed.warning;
+  //     const isStationary = gpsData.speed < 5; // Consider stationary if speed < 5 km/h
 
-      let newStatus = 'NORMAL';
-      if (exceedsSpeedLimit) {
-        newStatus = 'SPEEDING';
-      } else if (isStationary) {
-        newStatus = 'STATIONARY';
-      } else {
-        newStatus = 'MOVING';
-      }
+  //     let newStatus = 'NORMAL';
+  //     if (exceedsSpeedLimit) {
+  //       newStatus = 'SPEEDING';
+  //     } else if (isStationary) {
+  //       newStatus = 'STATIONARY';
+  //     } else {
+  //       newStatus = 'MOVING';
+  //     }
 
-      // Update vehicle status
-      await VehicleRepository.updateVehicle(vehicleId, { status: newStatus as any });
+  //     // Update vehicle status
+  //     await VehicleRepository.updateVehicle(vehicleId, { status: newStatus as any });
 
-      return newStatus;
-    } catch (error) {
-      logger.error('GpsDataService::updateVehicleTrackingStatus failed', error);
-      throw error;
-    }
-  }
+  //     return newStatus;
+  //   } catch (error) {
+  //     logger.error('GpsDataService::updateVehicleTrackingStatus failed', error);
+  //     throw error;
+  //   }
+  // }
 
   // Helper function to classify speed level
   private static classifySpeedLevel(speed: number): 'NORMAL' | 'HIGH' | 'CRITICAL' {
@@ -937,7 +937,7 @@ export class GpsDataService {
       }
 
       // Update vehicle tracking status
-      const vehicleStatus = await GpsDataService.updateVehicleTrackingStatus(dto.vehicleId, gpsData);
+      // const vehicleStatus = await GpsDataService.updateVehicleTrackingStatus(dto.vehicleId, gpsData);
 
       // Classify speed level
       const speedLevel = GpsDataService.classifySpeedLevel(dto.speed);

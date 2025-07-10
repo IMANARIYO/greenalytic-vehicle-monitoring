@@ -24,7 +24,9 @@ const emissionDataDocs = yaml.load(
 const gpsDataDocs = yaml.load(
   fs.readFileSync(path.join(__dirname, 'gpsDataDocs.yaml'), 'utf8')
 ) as Record<string, any>;
-
+const fuelDataDocs = yaml.load(
+  fs.readFileSync(path.join(__dirname, 'fuelDataDocs.yaml'), 'utf8')
+) as Record<string, any>;
 const trackingDevicesDocs = yaml.load(
   fs.readFileSync(path.join(__dirname, 'trackingDevicesDocs.yaml'), 'utf8')
 ) as Record<string, any>;
@@ -405,7 +407,62 @@ const swaggerSpec = {
         timestamp: { type: 'string', format: 'date-time', example: '2024-01-15T11:00:00Z', nullable: true },
         deletedAt: { type: 'string', format: 'date-time', nullable: true }
       }
+    },
+    CreateGpsDataRequest: {
+      type: 'object',
+      required: ['trackingDeviceId', 'latitude', 'longitude'],
+      properties: {
+        trackingDeviceId: { type: 'integer', example: 1 },
+        vehicleId: { type: 'integer', example: 1, nullable: true },
+        latitude: { type: 'number', format: 'float', example: -1.2921 },
+        longitude: { type: 'number', format: 'float', example: 36.8219 },
+        speed: { type: 'number', format: 'float', example: 60.5, nullable: true },
+        altitude: { type: 'number', format: 'float', example: 1500, nullable: true },
+        plateNumber: { type: 'string', example: 'XYZ-789', nullable: true },
+        timestamp: { type: 'string', format: 'date-time', example: '2024-01-15T10:30:00Z' }
+      }
+    },
+    UpdateGpsDataRequest: {
+      type: 'object',
+      properties: {
+        latitude: { type: 'number', format: 'float', example: -1.2921 },
+        longitude: { type: 'number', format: 'float', example: 36.8219 },
+        speed: { type: 'number', format: 'float', example: 65.0, nullable: true },
+        altitude: { type: 'number', format: 'float', example: 1550, nullable: true },
+        plateNumber: { type: 'string', example: 'XYZ-789', nullable: true },
+        timestamp: { type: 'string', format: 'date-time', example: '2024-01-15T11:00:00Z' },
+        deletedAt: { type: 'string', format: 'date-time', nullable: true }
+      }
+    },
+    CreateFuelDataRequest: {
+      type: 'object',
+      required: ['vehicleId', 'fuelType', 'quantity', 'cost'],
+      properties: {
+        trackingDeviceId: { type: 'integer', example: 1 },
+        vehicleId: { type: 'integer', example: 1 },
+        fuelType: { type: 'string', enum: ['PETROL', 'DIESEL', 'ELECTRIC', 'HYBRID'], example: 'PETROL' },
+        fuelLevel: { type: 'number', format: 'float', example: 75.5, nullable: true },
+        fuelConsumption: { type: 'number', format: 'float', example: 15.0, nullable: true },
+        quantity: { type: 'number', format: 'float', example: 50.0 },
+        cost: { type: 'number', format: 'float', example: 100.0 },
+        plateNumber: { type: 'string', example: 'XYZ-789', nullable: true },
+        timestamp: { type: 'string', format: 'date-time', example: '2024-01-15T10:30:00Z' }
+      }
+    },
+    UpdateFuelDataRequest: {
+      type: 'object',
+      properties: {
+        fuelType: { type: 'string', enum: ['PETROL', 'DIESEL', 'ELECTRIC', 'HYBRID'], example: 'DIESEL' },
+        fuelLevel: { type: 'number', format: 'float', example: 80.0, nullable: true },
+        fuelConsumption: { type: 'number', format: 'float', example: 12.5, nullable: true },
+        quantity: { type: 'number', format: 'float', example: 60.0 },
+        cost: { type: 'number', format: 'float', example: 120.0 },
+        plateNumber: { type: 'string', example: 'XYZ-789', nullable: true },
+        timestamp: { type: 'string', format: 'date-time', example: '2025-07-10T11:00:00Z' },
+        deletedAt: { type: 'string', format: 'date-time', nullable: true }
+      }
     }
+    
 
     },
     parameters: {
@@ -549,6 +606,7 @@ const swaggerSpec = {
     ...emissionDataDocs,
     ...trackingDevicesDocs,
     ...gpsDataDocs,
+    ...fuelDataDocs,
     '/__show-models': {
       get: {
         summary: 'Force schema display',
