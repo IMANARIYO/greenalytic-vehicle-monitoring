@@ -1,0 +1,852 @@
+/obd:
+  get:
+    tags:
+      - OBD Data
+    summary: Get all OBD data with filters and pagination
+    parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Items per page
+      - in: query
+        name: startTime
+        schema:
+          type: string
+          format: date-time
+        description: Filter by start timestamp
+      - in: query
+        name: endTime
+        schema:
+          type: string
+          format: date-time
+        description: Filter by end timestamp
+      - in: query
+        name: vehicleStatus
+        schema:
+          type: string
+        description: Filter by vehicle status
+      - in: query
+        name: engineStatus
+        schema:
+          type: string
+        description: Filter by engine status
+      - in: query
+        name: hasFaultCodes
+        schema:
+          type: boolean
+        description: Filter by presence of fault codes
+      - in: query
+        name: minRPM
+        schema:
+          type: integer
+        description: Minimum RPM filter
+      - in: query
+        name: maxRPM
+        schema:
+          type: integer
+        description: Maximum RPM filter
+      - in: query
+        name: minEngineTemp
+        schema:
+          type: number
+        description: Minimum engine temperature filter (°C)
+      - in: query
+        name: maxEngineTemp
+        schema:
+          type: number
+        description: Maximum engine temperature filter (°C)
+      - in: query
+        name: minThrottlePosition
+        schema:
+          type: number
+        description: Minimum throttle position filter (%)
+      - in: query
+        name: maxThrottlePosition
+        schema:
+          type: number
+        description: Maximum throttle position filter (%)
+    responses:
+      200:
+        description: OBD data retrieved successfully
+
+  post:
+    tags:
+      - OBD Data
+    summary: Create new OBD data
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CreateOBDDataRequest'
+    responses:
+      201:
+        description: OBD data created successfully
+
+/obd/health:
+  get:
+    tags:
+      - OBD Data
+    summary: Health check for OBD service
+    responses:
+      200:
+        description: Service is healthy
+
+/obd/config/thresholds:
+  get:
+    tags:
+      - OBD Data
+    summary: Get OBD diagnostic thresholds configuration
+    responses:
+      200:
+        description: OBD diagnostic thresholds retrieved successfully
+
+/obd/statistics:
+  get:
+    tags:
+      - OBD Data
+    summary: Get OBD statistics and analytics
+    parameters:
+      - in: query
+        name: vehicleId
+        schema:
+          type: integer
+        description: Filter by specific vehicle ID
+      - in: query
+        name: interval
+        schema:
+          type: string
+          enum: [day, week, month]
+        description: Time interval for statistics
+      - in: query
+        name: startTime
+        schema:
+          type: string
+          format: date-time
+        description: Start time for custom date range
+      - in: query
+        name: endTime
+        schema:
+          type: string
+          format: date-time
+        description: End time for custom date range
+      - in: query
+        name: engineStatus
+        schema:
+          type: string
+        description: Filter by engine status
+    responses:
+      200:
+        description: OBD statistics retrieved successfully
+
+/obd/{id}:
+  get:
+    tags:
+      - OBD Data
+    summary: Get OBD data by ID with diagnostic analysis
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: OBD data retrieved successfully
+      404:
+        description: OBD data not found
+
+  put:
+    tags:
+      - OBD Data
+    summary: Update OBD data by ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdateOBDDataRequest'
+    responses:
+      200:
+        description: OBD data updated successfully
+      404:
+        description: OBD data not found
+
+  patch:
+    tags:
+      - OBD Data
+    summary: Partially update OBD data by ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdateOBDDataRequest'
+    responses:
+      200:
+        description: OBD data updated successfully
+      404:
+        description: OBD data not found
+
+  delete:
+    tags:
+      - OBD Data
+    summary: Permanently delete OBD data by ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: OBD data deleted successfully
+      404:
+        description: OBD data not found
+
+/obd/vehicle/{vehicleId}:
+  get:
+    tags:
+      - OBD Data
+    summary: Get OBD data by vehicle ID
+    parameters:
+      - in: path
+        name: vehicleId
+        required: true
+        schema:
+          type: integer
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Items per page
+      - in: query
+        name: startTime
+        schema:
+          type: string
+          format: date-time
+        description: Filter by start timestamp
+      - in: query
+        name: endTime
+        schema:
+          type: string
+          format: date-time
+        description: Filter by end timestamp
+    responses:
+      200:
+        description: Vehicle OBD data retrieved successfully
+
+/obd/vehicle/{vehicleId}/interval:
+  get:
+    tags:
+      - OBD Data
+    summary: Get OBD data by vehicle with time interval filtering
+    parameters:
+      - in: path
+        name: vehicleId
+        required: true
+        schema:
+          type: integer
+      - in: query
+        name: interval
+        required: true
+        schema:
+          type: string
+          enum: [hours, days, daytime]
+        description: Time interval type
+      - in: query
+        name: value
+        required: true
+        schema:
+          type: string
+        description: Interval value
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Items per page
+    responses:
+      200:
+        description: Vehicle OBD data retrieved successfully
+
+/obd/plate/{plateNumber}:
+  get:
+    tags:
+      - OBD Data
+    summary: Get OBD data by vehicle plate number
+    parameters:
+      - in: path
+        name: plateNumber
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Items per page
+      - in: query
+        name: startTime
+        schema:
+          type: string
+          format: date-time
+        description: Filter by start timestamp
+      - in: query
+        name: endTime
+        schema:
+          type: string
+          format: date-time
+        description: Filter by end timestamp
+    responses:
+      200:
+        description: OBD data retrieved successfully
+
+# Schema Components
+components:
+  schemas:
+    CreateOBDDataRequest:
+      type: object
+      required:
+        - throttlePosition
+        - vehicleId
+        - plateNumber
+        - trackingDeviceId
+      properties:
+        rpm:
+          type: integer
+          minimum: 0
+          maximum: 10000
+          description: Engine RPM (revolutions per minute)
+        throttlePosition:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+          description: Throttle position percentage
+        engineTemperature:
+          type: number
+          format: float
+          minimum: -40
+          maximum: 200
+          description: Engine temperature in Celsius
+        engineStatus:
+          type: string
+          description: Current engine status description
+        faultCodes:
+          type: array
+          items:
+            type: string
+          description: Array of diagnostic trouble codes
+        vehicleId:
+          type: integer
+          description: ID of the vehicle
+        plateNumber:
+          type: string
+          description: Vehicle plate number
+        trackingDeviceId:
+          type: integer
+          description: ID of the tracking device
+        timestamp:
+          type: string
+          format: date-time
+          description: OBD data timestamp
+
+    UpdateOBDDataRequest:
+      type: object
+      properties:
+        rpm:
+          type: integer
+          minimum: 0
+          maximum: 10000
+          description: Engine RPM (revolutions per minute)
+        throttlePosition:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+          description: Throttle position percentage
+        engineTemperature:
+          type: number
+          format: float
+          minimum: -40
+          maximum: 200
+          description: Engine temperature in Celsius
+        engineStatus:
+          type: string
+          description: Current engine status description
+        faultCodes:
+          type: array
+          items:
+            type: string
+          description: Array of diagnostic trouble codes
+        plateNumber:
+          type: string
+          description: Vehicle plate number
+        timestamp:
+          type: string
+          format: date-time
+          description: OBD data timestamp
+
+    OBDDataResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: OBD data ID
+        rpm:
+          type: integer
+          description: Engine RPM (revolutions per minute)
+        throttlePosition:
+          type: number
+          format: float
+          description: Throttle position percentage
+        engineTemperature:
+          type: number
+          format: float
+          description: Engine temperature in Celsius
+        engineStatus:
+          type: string
+          description: Current engine status description
+        faultCodes:
+          type: array
+          items:
+            type: string
+          description: Array of diagnostic trouble codes
+        plateNumber:
+          type: string
+          description: Vehicle plate number
+        vehicleId:
+          type: integer
+          description: Vehicle ID
+        trackingDeviceId:
+          type: integer
+          description: Tracking device ID
+        timestamp:
+          type: string
+          format: date-time
+          description: OBD data timestamp
+        createdAt:
+          type: string
+          format: date-time
+          description: Record creation timestamp
+        engineHealthStatus:
+          type: string
+          enum: [HEALTHY, WARNING, CRITICAL]
+          description: Engine health classification
+        temperatureStatus:
+          type: string
+          enum: [NORMAL, HIGH, OVERHEATING]
+          description: Engine temperature status
+        rpmStatus:
+          type: string
+          enum: [IDLE, NORMAL, HIGH, REDLINE]
+          description: RPM level classification
+        throttleStatus:
+          type: string
+          enum: [CLOSED, PARTIAL, FULL]
+          description: Throttle position status
+        faultCodesCount:
+          type: integer
+          description: Number of active fault codes
+        hasActiveFaults:
+          type: boolean
+          description: Whether there are active fault codes
+        performanceScore:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+          description: Engine performance score
+        vehicle:
+          $ref: '#/components/schemas/VehicleInfo'
+        trackingDevice:
+          $ref: '#/components/schemas/TrackingDeviceInfo'
+
+    OBDDataWithDiagnostics:
+      allOf:
+        - $ref: '#/components/schemas/OBDDataResponse'
+        - type: object
+          properties:
+            diagnosticAnalysis:
+              $ref: '#/components/schemas/DiagnosticAnalysis'
+            thresholds:
+              $ref: '#/components/schemas/OBDThresholds'
+
+    DiagnosticAnalysis:
+      type: object
+      properties:
+        engineHealth:
+          type: object
+          properties:
+            score:
+              type: number
+              format: float
+              minimum: 0
+              maximum: 100
+              description: Engine health score
+            status:
+              type: string
+              enum: [EXCELLENT, GOOD, FAIR, POOR]
+              description: Engine health status
+            issues:
+              type: array
+              items:
+                type: string
+              description: Identified engine issues
+            recommendations:
+              type: array
+              items:
+                type: string
+              description: Maintenance recommendations
+        performanceMetrics:
+          type: object
+          properties:
+            rpmEfficiency:
+              type: number
+              format: float
+              description: RPM efficiency score
+            throttleResponse:
+              type: number
+              format: float
+              description: Throttle response score
+            temperatureStability:
+              type: number
+              format: float
+              description: Temperature stability score
+            overallPerformance:
+              type: number
+              format: float
+              description: Overall performance score
+        faultCodeDetails:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              description:
+                type: string
+              severity:
+                type: string
+                enum: [LOW, MEDIUM, HIGH, CRITICAL]
+              category:
+                type: string
+                enum: [ENGINE, TRANSMISSION, EMISSIONS, ELECTRICAL, OTHER]
+              recommendedAction:
+                type: string
+        maintenancePrediction:
+          type: object
+          properties:
+            nextServiceDue:
+              type: string
+              format: date
+            urgency:
+              type: string
+              enum: [LOW, MEDIUM, HIGH, CRITICAL]
+            predictedIssues:
+              type: array
+              items:
+                type: string
+
+    OBDStatisticsResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            summary:
+              type: object
+              properties:
+                totalRecords:
+                  type: integer
+                  description: Total number of OBD records
+                averageRPM:
+                  type: string
+                  description: Average engine RPM
+                averageThrottlePosition:
+                  type: string
+                  description: Average throttle position
+                averageEngineTemperature:
+                  type: string
+                  description: Average engine temperature
+                totalFaultCodes:
+                  type: integer
+                  description: Total number of fault codes
+                vehiclesWithFaults:
+                  type: integer
+                  description: Number of vehicles with active faults
+                criticalEngineIssues:
+                  type: integer
+                  description: Number of critical engine issues
+            engineAnalysis:
+              type: object
+              properties:
+                healthy:
+                  type: integer
+                  description: Count of healthy engine records
+                warning:
+                  type: integer
+                  description: Count of warning engine records
+                critical:
+                  type: integer
+                  description: Count of critical engine records
+                healthyPercentage:
+                  type: string
+                  description: Percentage of healthy records
+                warningPercentage:
+                  type: string
+                  description: Percentage of warning records
+                criticalPercentage:
+                  type: string
+                  description: Percentage of critical records
+            temperatureAnalysis:
+              type: object
+              properties:
+                normal:
+                  type: integer
+                  description: Count of normal temperature records
+                high:
+                  type: integer
+                  description: Count of high temperature records
+                overheating:
+                  type: integer
+                  description: Count of overheating records
+                normalPercentage:
+                  type: string
+                  description: Percentage of normal temperature records
+                highPercentage:
+                  type: string
+                  description: Percentage of high temperature records
+                overheatingPercentage:
+                  type: string
+                  description: Percentage of overheating records
+            rpmAnalysis:
+              type: object
+              properties:
+                idle:
+                  type: integer
+                  description: Count of idle RPM records
+                normal:
+                  type: integer
+                  description: Count of normal RPM records
+                high:
+                  type: integer
+                  description: Count of high RPM records
+                redline:
+                  type: integer
+                  description: Count of redline RPM records
+                idlePercentage:
+                  type: string
+                  description: Percentage of idle records
+                normalPercentage:
+                  type: string
+                  description: Percentage of normal records
+                highPercentage:
+                  type: string
+                  description: Percentage of high records
+                redlinePercentage:
+                  type: string
+                  description: Percentage of redline records
+            faultCodeAnalysis:
+              type: object
+              properties:
+                mostCommonFaults:
+                  type: object
+                  additionalProperties:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                      description:
+                        type: string
+                      severity:
+                        type: string
+                        enum: [LOW, MEDIUM, HIGH, CRITICAL]
+                faultTrends:
+                  type: object
+                  properties:
+                    increasing:
+                      type: array
+                      items:
+                        type: string
+                    decreasing:
+                      type: array
+                      items:
+                        type: string
+                    stable:
+                      type: array
+                      items:
+                        type: string
+            performanceMetrics:
+              type: object
+              properties:
+                averagePerformanceScore:
+                  type: number
+                  format: float
+                  description: Average performance score across fleet
+                topPerformingVehicles:
+                  type: array
+                  items:
+                    type: string
+                  description: Plate numbers of top performing vehicles
+                poorPerformingVehicles:
+                  type: array
+                  items:
+                    type: string
+                  description: Plate numbers of poor performing vehicles
+                maintenanceRequired:
+                  type: array
+                  items:
+                    type: string
+                  description: Plate numbers requiring maintenance
+            thresholds:
+              $ref: '#/components/schemas/OBDThresholds'
+            timeRange:
+              type: object
+              properties:
+                interval:
+                  type: string
+                  description: Time interval used
+                from:
+                  type: string
+                  description: Start time or 'beginning'
+                to:
+                  type: string
+                  description: End time or 'now'
+
+    OBDThresholds:
+      type: object
+      properties:
+        rpm:
+          type: object
+          properties:
+            idle:
+              type: integer
+              description: Idle RPM threshold
+            normal:
+              type: integer
+              description: Normal RPM threshold
+            high:
+              type: integer
+              description: High RPM threshold
+            critical:
+              type: integer
+              description: Critical RPM threshold
+        engineTemperature:
+          type: object
+          properties:
+            normal:
+              type: number
+              format: float
+              description: Normal temperature threshold in °C
+            high:
+              type: number
+              format: float
+              description: High temperature threshold in °C
+            critical:
+              type: number
+              format: float
+              description: Critical temperature threshold in °C
+        throttlePosition:
+          type: object
+          properties:
+            closed:
+              type: number
+              format: float
+              description: Closed throttle threshold in %
+            partial:
+              type: number
+              format: float
+              description: Partial throttle threshold in %
+            full:
+              type: number
+              format: float
+              description: Full throttle threshold in %
+        faultCodes:
+          type: object
+          properties:
+            maxActive:
+              type: integer
+              description: Maximum acceptable active fault codes
+            warningLimit:
+              type: integer
+              description: Warning threshold for fault codes
+            criticalLimit:
+              type: integer
+              description: Critical threshold for fault codes
+        performance:
+          type: object
+          properties:
+            excellent:
+              type: number
+              format: float
+              description: Excellent performance score threshold
+            good:
+              type: number
+              format: float
+              description: Good performance score threshold
+            fair:
+              type: number
+              format: float
+              description: Fair performance score threshold
+            poor:
+              type: number
+              format: float
+              description: Poor performance score threshold
+
+    VehicleInfo:
+      type: object
+      properties:
+        plateNumber:
+          type: string
+        vehicleModel:
+          type: string
+        vehicleType:
+          type: string
+        status:
+          type: string
+        fuelType:
+          type: string
+
+    TrackingDeviceInfo:
+      type: object
+      properties:
+        serialNumber:
+          type: string
+        model:
+          type: string
+        deviceCategory:
+          type: string
+        status:
+          type: string

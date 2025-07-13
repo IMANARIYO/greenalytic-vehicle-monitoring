@@ -27,6 +27,9 @@ const gpsDataDocs = yaml.load(
 const fuelDataDocs = yaml.load(
   fs.readFileSync(path.join(__dirname, 'fuelDataDocs.yaml'), 'utf8')
 ) as Record<string, any>;
+const obdDataDocs = yaml.load(
+  fs.readFileSync(path.join(__dirname, 'obdDataDocs.yaml'), 'utf8')
+) as Record<string, any>;
 const trackingDevicesDocs = yaml.load(
   fs.readFileSync(path.join(__dirname, 'trackingDevicesDocs.yaml'), 'utf8')
 ) as Record<string, any>;
@@ -461,6 +464,32 @@ const swaggerSpec = {
         timestamp: { type: 'string', format: 'date-time', example: '2025-07-10T11:00:00Z' },
         deletedAt: { type: 'string', format: 'date-time', nullable: true }
       }
+    },
+    CreateOBDDataRequest: {
+      type: 'object',
+      required: ['vehicleId', 'trackingDeviceId', 'speed', 'rpm'],
+      properties: {
+        vehicleId: { type: 'integer', example: 1 },
+        trackingDeviceId: { type: 'integer', example: 1 },
+        rpm: { type: 'integer', example: 3000 },
+        fuelLevel: { type: 'number', format: 'float', example: 75.5, nullable: true },
+        coolantTemperature: { type: 'number', format: 'float', example: 90.0, nullable: true },
+        throttlePosition: { type: 'number', format: 'float', example: 25.0, nullable: true },
+        plateNumber: { type: 'string', example: 'XYZ-789', nullable: true },
+        timestamp: { type: 'string', format: 'date-time', example: '2024-01-15T10:30:00Z' }
+      }
+    },
+    UpdateOBDDataRequest: {
+      type: 'object',
+      properties: {
+        rpm: { type: 'integer', example: 3200 },
+        fuelLevel: { type: 'number', format: 'float', example: 80.0, nullable: true },
+        coolantTemperature: { type: 'number', format: 'float', example: 95.0, nullable: true },
+        throttlePosition: { type: 'number', format: 'float', example: 30.0, nullable: true },
+        plateNumber: { type: 'string', example: 'XYZ-789', nullable: true },
+        timestamp: { type: 'string', format: 'date-time', example: '2024-01-15T11:00:00Z' },
+        deletedAt: { type: 'string', format: 'date-time', nullable: true }
+      }
     }
     
 
@@ -607,6 +636,7 @@ const swaggerSpec = {
     ...trackingDevicesDocs,
     ...gpsDataDocs,
     ...fuelDataDocs,
+    ...obdDataDocs,
     '/__show-models': {
       get: {
         summary: 'Force schema display',
