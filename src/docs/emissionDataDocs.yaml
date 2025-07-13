@@ -1,0 +1,316 @@
+/emissions:
+  get:
+    tags:
+      - Emissions
+    summary: Get all emission data with filters and pagination
+    parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Items per page
+      - in: query
+        name: startTime
+        schema:
+          type: string
+          format: date-time
+        description: Filter by start timestamp
+      - in: query
+        name: endTime
+        schema:
+          type: string
+          format: date-time
+        description: Filter by end timestamp
+      - in: query
+        name: vehicleStatus
+        schema:
+          type: string
+        description: Filter by vehicle status
+      - in: query
+        name: emissionLevel
+        schema:
+          type: string
+          enum: [NORMAL, HIGH, CRITICAL]
+        description: Filter by emission level
+      - in: query
+        name: deviceCategory
+        schema:
+          type: string
+        description: Filter by device category
+    responses:
+      200:
+        description: Emission data retrieved successfully
+
+  post:
+    tags:
+      - Emissions
+    summary: Create new emission data
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CreateEmissionDataRequest'
+    responses:
+      201:
+        description: Emission data created successfully
+
+/emissions/health:
+  get:
+    tags:
+      - Emissions
+    summary: Health check for emission service
+    responses:
+      200:
+        description: Service is healthy
+
+/emissions/config/thresholds:
+  get:
+    tags:
+      - Emissions
+    summary: Get emission thresholds configuration
+    responses:
+      200:
+        description: Emission thresholds retrieved successfully
+
+/emissions/statistics:
+  get:
+    tags:
+      - Emissions
+    summary: Get emission statistics and analytics
+    parameters:
+      - in: query
+        name: vehicleId
+        schema:
+          type: integer
+        description: Filter by specific vehicle ID
+      - in: query
+        name: interval
+        schema:
+          type: string
+          enum: [day, week, month]
+        description: Time interval for statistics
+      - in: query
+        name: startTime
+        schema:
+          type: string
+          format: date-time
+        description: Start time for custom date range
+      - in: query
+        name: endTime
+        schema:
+          type: string
+          format: date-time
+        description: End time for custom date range
+    responses:
+      200:
+        description: Emission statistics retrieved successfully
+
+/emissions/{id}:
+  get:
+    tags:
+      - Emissions
+    summary: Get emission data by ID with detailed analysis
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Emission data retrieved successfully
+      404:
+        description: Emission data not found
+
+  put:
+    tags:
+      - Emissions
+    summary: Update emission data by ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdateEmissionDataRequest'
+    responses:
+      200:
+        description: Emission data updated successfully
+      404:
+        description: Emission data not found
+
+  patch:
+    tags:
+      - Emissions
+    summary: Partially update emission data by ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdateEmissionDataRequest'
+    responses:
+      200:
+        description: Emission data updated successfully
+      404:
+        description: Emission data not found
+
+  delete:
+    tags:
+      - Emissions
+    summary: Permanently delete emission data by ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Emission data deleted successfully
+      404:
+        description: Emission data not found
+
+/emissions/{id}/deactivate:
+  patch:
+    tags:
+      - Emissions
+    summary: Soft delete emission data
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Emission data deactivated successfully
+
+/emissions/vehicle/{vehicleId}:
+  get:
+    tags:
+      - Emissions
+    summary: Get emission data by vehicle ID
+    parameters:
+      - in: path
+        name: vehicleId
+        required: true
+        schema:
+          type: integer
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Items per page
+      - in: query
+        name: startTime
+        schema:
+          type: string
+          format: date-time
+        description: Filter by start timestamp
+      - in: query
+        name: endTime
+        schema:
+          type: string
+          format: date-time
+        description: Filter by end timestamp
+    responses:
+      200:
+        description: Vehicle emission data retrieved successfully
+
+/emissions/vehicle/{vehicleId}/interval:
+  get:
+    tags:
+      - Emissions
+    summary: Get emission data by vehicle with time interval filtering
+    parameters:
+      - in: path
+        name: vehicleId
+        required: true
+        schema:
+          type: integer
+      - in: query
+        name: interval
+        required: true
+        schema:
+          type: string
+          enum: [hours, days, daytime]
+        description: Time interval type
+      - in: query
+        name: value
+        required: true
+        schema:
+          type: string
+        description: Interval value
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Items per page
+    responses:
+      200:
+        description: Vehicle emission data retrieved successfully
+
+/emissions/plate/{plateNumber}:
+  get:
+    tags:
+      - Emissions
+    summary: Get emission data by vehicle plate number
+    parameters:
+      - in: path
+        name: plateNumber
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Items per page
+      - in: query
+        name: startTime
+        schema:
+          type: string
+          format: date-time
+        description: Filter by start timestamp
+      - in: query
+        name: endTime
+        schema:
+          type: string
+          format: date-time
+        description: Filter by end timestamp
+    responses:
+      200:
+        description: Emission data retrieved successfully

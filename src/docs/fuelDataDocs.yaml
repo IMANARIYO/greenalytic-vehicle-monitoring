@@ -1,0 +1,846 @@
+/fuel:
+  get:
+    tags:
+      - Fuel Data
+    summary: Get all fuel data with filters and pagination
+    parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Items per page
+      - in: query
+        name: startTime
+        schema:
+          type: string
+          format: date-time
+        description: Filter by start timestamp
+      - in: query
+        name: endTime
+        schema:
+          type: string
+          format: date-time
+        description: Filter by end timestamp
+      - in: query
+        name: vehicleStatus
+        schema:
+          type: string
+        description: Filter by vehicle status
+      - in: query
+        name: fuelLevel
+        schema:
+          type: string
+          enum: [LOW, NORMAL, HIGH]
+        description: Filter by fuel level status
+      - in: query
+        name: consumptionLevel
+        schema:
+          type: string
+          enum: [EFFICIENT, NORMAL, POOR]
+        description: Filter by consumption efficiency
+      - in: query
+        name: minConsumption
+        schema:
+          type: number
+        description: Minimum consumption filter (L/100km)
+      - in: query
+        name: maxConsumption
+        schema:
+          type: number
+        description: Maximum consumption filter (L/100km)
+      - in: query
+        name: minFuelLevel
+        schema:
+          type: number
+        description: Minimum fuel level filter (%)
+      - in: query
+        name: maxFuelLevel
+        schema:
+          type: number
+        description: Maximum fuel level filter (%)
+    responses:
+      200:
+        description: Fuel data retrieved successfully
+
+  post:
+    tags:
+      - Fuel Data
+    summary: Create new fuel data
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CreateFuelDataRequest'
+    responses:
+      201:
+        description: Fuel data created successfully
+
+/fuel/health:
+  get:
+    tags:
+      - Fuel Data
+    summary: Health check for fuel service
+    responses:
+      200:
+        description: Service is healthy
+
+/fuel/config/thresholds:
+  get:
+    tags:
+      - Fuel Data
+    summary: Get fuel consumption thresholds configuration
+    responses:
+      200:
+        description: Fuel consumption thresholds retrieved successfully
+
+/fuel/statistics:
+  get:
+    tags:
+      - Fuel Data
+    summary: Get fuel statistics and analytics
+    parameters:
+      - in: query
+        name: vehicleId
+        schema:
+          type: integer
+        description: Filter by specific vehicle ID
+      - in: query
+        name: interval
+        schema:
+          type: string
+          enum: [day, week, month]
+        description: Time interval for statistics
+      - in: query
+        name: startTime
+        schema:
+          type: string
+          format: date-time
+        description: Start time for custom date range
+      - in: query
+        name: endTime
+        schema:
+          type: string
+          format: date-time
+        description: End time for custom date range
+      - in: query
+        name: fuelType
+        schema:
+          type: string
+          enum: [PETROL, DIESEL, ELECTRIC, HYBRID]
+        description: Filter by fuel type
+    responses:
+      200:
+        description: Fuel statistics retrieved successfully
+
+/fuel/{id}:
+  get:
+    tags:
+      - Fuel Data
+    summary: Get fuel data by ID with efficiency analysis
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Fuel data retrieved successfully
+      404:
+        description: Fuel data not found
+
+  put:
+    tags:
+      - Fuel Data
+    summary: Update fuel data by ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdateFuelDataRequest'
+    responses:
+      200:
+        description: Fuel data updated successfully
+      404:
+        description: Fuel data not found
+
+  patch:
+    tags:
+      - Fuel Data
+    summary: Partially update fuel data by ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdateFuelDataRequest'
+    responses:
+      200:
+        description: Fuel data updated successfully
+      404:
+        description: Fuel data not found
+
+  delete:
+    tags:
+      - Fuel Data
+    summary: Permanently delete fuel data by ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Fuel data deleted successfully
+      404:
+        description: Fuel data not found
+
+/fuel/vehicle/{vehicleId}:
+  get:
+    tags:
+      - Fuel Data
+    summary: Get fuel data by vehicle ID
+    parameters:
+      - in: path
+        name: vehicleId
+        required: true
+        schema:
+          type: integer
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Items per page
+      - in: query
+        name: startTime
+        schema:
+          type: string
+          format: date-time
+        description: Filter by start timestamp
+      - in: query
+        name: endTime
+        schema:
+          type: string
+          format: date-time
+        description: Filter by end timestamp
+    responses:
+      200:
+        description: Vehicle fuel data retrieved successfully
+
+/fuel/vehicle/{vehicleId}/interval:
+  get:
+    tags:
+      - Fuel Data
+    summary: Get fuel data by vehicle with time interval filtering
+    parameters:
+      - in: path
+        name: vehicleId
+        required: true
+        schema:
+          type: integer
+      - in: query
+        name: interval
+        required: true
+        schema:
+          type: string
+          enum: [hours, days, daytime]
+        description: Time interval type
+      - in: query
+        name: value
+        required: true
+        schema:
+          type: string
+        description: Interval value
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Items per page
+    responses:
+      200:
+        description: Vehicle fuel data retrieved successfully
+
+/fuel/plate/{plateNumber}:
+  get:
+    tags:
+      - Fuel Data
+    summary: Get fuel data by vehicle plate number
+    parameters:
+      - in: path
+        name: plateNumber
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Items per page
+      - in: query
+        name: startTime
+        schema:
+          type: string
+          format: date-time
+        description: Filter by start timestamp
+      - in: query
+        name: endTime
+        schema:
+          type: string
+          format: date-time
+        description: Filter by end timestamp
+    responses:
+      200:
+        description: Fuel data retrieved successfully
+
+/fuel/consumption/range:
+  get:
+    tags:
+      - Fuel Data
+    summary: Get fuel data within a specific consumption range
+    parameters:
+      - in: query
+        name: minConsumption
+        required: true
+        schema:
+          type: number
+          format: float
+          minimum: 0
+        description: Minimum consumption in L/100km
+      - in: query
+        name: maxConsumption
+        required: true
+        schema:
+          type: number
+          format: float
+          minimum: 0
+        description: Maximum consumption in L/100km
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Items per page
+      - in: query
+        name: startTime
+        schema:
+          type: string
+          format: date-time
+        description: Filter by start timestamp
+      - in: query
+        name: endTime
+        schema:
+          type: string
+          format: date-time
+        description: Filter by end timestamp
+    responses:
+      200:
+        description: Fuel data by consumption range retrieved successfully
+
+# Schema Components
+components:
+  schemas:
+    CreateFuelDataRequest:
+      type: object
+      required:
+        - fuelLevel
+        - fuelConsumption
+        - vehicleId
+        - plateNumber
+        - trackingDeviceId
+      properties:
+        fuelLevel:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+          description: Fuel level percentage
+        fuelConsumption:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 50
+          description: Fuel consumption in L/100km
+        vehicleId:
+          type: integer
+          description: ID of the vehicle
+        plateNumber:
+          type: string
+          description: Vehicle plate number
+        trackingDeviceId:
+          type: integer
+          description: ID of the tracking device
+        timestamp:
+          type: string
+          format: date-time
+          description: Fuel data timestamp
+
+    UpdateFuelDataRequest:
+      type: object
+      properties:
+        fuelLevel:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+          description: Fuel level percentage
+        fuelConsumption:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 50
+          description: Fuel consumption in L/100km
+        plateNumber:
+          type: string
+          description: Vehicle plate number
+        timestamp:
+          type: string
+          format: date-time
+          description: Fuel data timestamp
+
+    FuelDataResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Fuel data ID
+        fuelLevel:
+          type: number
+          format: float
+          description: Fuel level percentage
+        fuelConsumption:
+          type: number
+          format: float
+          description: Fuel consumption in L/100km
+        plateNumber:
+          type: string
+          description: Vehicle plate number
+        vehicleId:
+          type: integer
+          description: Vehicle ID
+        trackingDeviceId:
+          type: integer
+          description: Tracking device ID
+        timestamp:
+          type: string
+          format: date-time
+          description: Fuel data timestamp
+        createdAt:
+          type: string
+          format: date-time
+          description: Record creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Record update timestamp
+        fuelLevelStatus:
+          type: string
+          enum: [LOW, NORMAL, HIGH]
+          description: Fuel level classification
+        consumptionStatus:
+          type: string
+          enum: [EFFICIENT, NORMAL, POOR]
+          description: Consumption efficiency classification
+        fuelEfficiency:
+          type: number
+          format: float
+          description: Calculated fuel efficiency in km/L
+        estimatedRange:
+          type: number
+          format: float
+          description: Estimated remaining range in km
+        costEstimate:
+          type: number
+          format: float
+          description: Estimated fuel cost per km
+        vehicle:
+          $ref: '#/components/schemas/VehicleInfo'
+        trackingDevice:
+          $ref: '#/components/schemas/TrackingDeviceInfo'
+
+    FuelDataWithEfficiency:
+      allOf:
+        - $ref: '#/components/schemas/FuelDataResponse'
+        - type: object
+          properties:
+            efficiencyAnalysis:
+              $ref: '#/components/schemas/EfficiencyAnalysis'
+            costAnalysis:
+              $ref: '#/components/schemas/CostAnalysis'
+            thresholds:
+              $ref: '#/components/schemas/FuelConsumptionThresholds'
+
+    EfficiencyAnalysis:
+      type: object
+      properties:
+        currentEfficiency:
+          type: number
+          format: float
+          description: Current efficiency in km/L
+        benchmarkEfficiency:
+          type: number
+          format: float
+          description: Benchmark efficiency for comparison
+        efficiencyRating:
+          type: string
+          enum: [EXCELLENT, GOOD, AVERAGE, POOR]
+          description: Efficiency rating
+        potentialSavings:
+          type: number
+          format: float
+          description: Potential cost savings
+        improvementSuggestions:
+          type: array
+          items:
+            type: string
+          description: Suggestions for improvement
+
+    CostAnalysis:
+      type: object
+      properties:
+        currentCost:
+          type: number
+          format: float
+          description: Current cost per 100km
+        benchmarkCost:
+          type: number
+          format: float
+          description: Benchmark cost for comparison
+        monthlyCostEstimate:
+          type: number
+          format: float
+          description: Estimated monthly cost
+        annualCostEstimate:
+          type: number
+          format: float
+          description: Estimated annual cost
+
+    FuelStatisticsResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            summary:
+              type: object
+              properties:
+                totalRecords:
+                  type: integer
+                  description: Total number of fuel records
+                averageFuelLevel:
+                  type: string
+                  description: Average fuel level
+                averageConsumption:
+                  type: string
+                  description: Average fuel consumption
+                totalConsumption:
+                  type: string
+                  description: Total fuel consumption
+                estimatedTotalCost:
+                  type: string
+                  description: Estimated total cost
+                highConsumptionCount:
+                  type: integer
+                  description: Number of high consumption records
+                lowFuelLevelCount:
+                  type: integer
+                  description: Number of low fuel level records
+            consumptionAnalysis:
+              type: object
+              properties:
+                efficient:
+                  type: integer
+                  description: Count of efficient consumption records
+                normal:
+                  type: integer
+                  description: Count of normal consumption records
+                poor:
+                  type: integer
+                  description: Count of poor consumption records
+                efficientPercentage:
+                  type: string
+                  description: Percentage of efficient records
+                normalPercentage:
+                  type: string
+                  description: Percentage of normal records
+                poorPercentage:
+                  type: string
+                  description: Percentage of poor records
+            fuelLevelAnalysis:
+              type: object
+              properties:
+                low:
+                  type: integer
+                  description: Count of low fuel level records
+                normal:
+                  type: integer
+                  description: Count of normal fuel level records
+                high:
+                  type: integer
+                  description: Count of high fuel level records
+                lowPercentage:
+                  type: string
+                  description: Percentage of low level records
+                normalPercentage:
+                  type: string
+                  description: Percentage of normal level records
+                highPercentage:
+                  type: string
+                  description: Percentage of high level records
+            trends:
+              type: object
+              properties:
+                consumptionTrend:
+                  type: string
+                  enum: [INCREASING, DECREASING, STABLE]
+                  description: Consumption trend
+                fuelLevelTrend:
+                  type: string
+                  enum: [INCREASING, DECREASING, STABLE]
+                  description: Fuel level trend
+                efficiencyTrend:
+                  type: string
+                  enum: [IMPROVING, DECLINING, STABLE]
+                  description: Efficiency trend
+            thresholds:
+              $ref: '#/components/schemas/FuelConsumptionThresholds'
+            timeRange:
+              type: object
+              properties:
+                interval:
+                  type: string
+                  description: Time interval used
+                from:
+                  type: string
+                  description: Start time or 'beginning'
+                to:
+                  type: string
+                  description: End time or 'now'
+
+    ConsumptionRangeResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/FuelDataResponse'
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+            limit:
+              type: integer
+            totalCount:
+              type: integer
+            totalPages:
+              type: integer
+            hasNextPage:
+              type: boolean
+            hasPrevPage:
+              type: boolean
+            consumptionRange:
+              type: object
+              properties:
+                minConsumption:
+                  type: number
+                  format: float
+                maxConsumption:
+                  type: number
+                  format: float
+                averageConsumption:
+                  type: number
+                  format: float
+                totalConsumption:
+                  type: number
+                  format: float
+                inefficientRecords:
+                  type: integer
+
+    FuelEfficiencyAnalysisResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/FuelDataResponse'
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+            limit:
+              type: integer
+            totalCount:
+              type: integer
+            totalPages:
+              type: integer
+            hasNextPage:
+              type: boolean
+            hasPrevPage:
+              type: boolean
+            efficiencyAnalysis:
+              type: object
+              properties:
+                overallEfficiency:
+                  type: number
+                  format: float
+                  description: Overall fleet efficiency
+                fuelTypeAnalysis:
+                  type: object
+                  additionalProperties:
+                    type: object
+                    properties:
+                      averageEfficiency:
+                        type: number
+                        format: float
+                      recordCount:
+                        type: integer
+                      costPerKm:
+                        type: number
+                        format: float
+                vehicleTypeAnalysis:
+                  type: object
+                  additionalProperties:
+                    type: object
+                    properties:
+                      averageEfficiency:
+                        type: number
+                        format: float
+                      recordCount:
+                        type: integer
+                      bestPerformer:
+                        type: string
+                      worstPerformer:
+                        type: string
+                recommendations:
+                  type: object
+                  properties:
+                    mostEfficientVehicles:
+                      type: array
+                      items:
+                        type: string
+                    leastEfficientVehicles:
+                      type: array
+                      items:
+                        type: string
+                    maintenanceRecommended:
+                      type: array
+                      items:
+                        type: string
+                    replacementSuggested:
+                      type: array
+                      items:
+                        type: string
+
+    FuelConsumptionThresholds:
+      type: object
+      properties:
+        consumption:
+          type: object
+          properties:
+            warning:
+              type: number
+              format: float
+              description: Consumption warning threshold in L/100km
+            critical:
+              type: number
+              format: float
+              description: Consumption critical threshold in L/100km
+        level:
+          type: object
+          properties:
+            low:
+              type: number
+              format: float
+              description: Low fuel level threshold in %
+            critical:
+              type: number
+              format: float
+              description: Critical fuel level threshold in %
+        efficiency:
+          type: object
+          properties:
+            poor:
+              type: number
+              format: float
+              description: Poor efficiency threshold in km/L
+            excellent:
+              type: number
+              format: float
+              description: Excellent efficiency threshold in km/L
+        cost:
+          type: object
+          properties:
+            budget:
+              type: number
+              format: float
+              description: Budget cost threshold per 100km
+            high:
+              type: number
+              format: float
+              description: High cost threshold per 100km
+
+    VehicleInfo:
+      type: object
+      properties:
+        plateNumber:
+          type: string
+        vehicleModel:
+          type: string
+        vehicleType:
+          type: string
+        fuelType:
+          type: string
+        status:
+          type: string
+
+    TrackingDeviceInfo:
+      type: object
+      properties:
+        serialNumber:
+          type: string
+        model:
+          type: string
+        deviceCategory:
+          type: string
+        status:
+          type: string

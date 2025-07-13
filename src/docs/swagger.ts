@@ -18,6 +18,18 @@ const userDocs = yaml.load(
 const vehiclesDocs = yaml.load(
   fs.readFileSync(path.join(__dirname, 'vehiclesDocs.yaml'), 'utf8')
 ) as Record<string, any>;
+const emissionDataDocs = yaml.load(
+  fs.readFileSync(path.join(__dirname, 'emissionDataDocs.yaml'), 'utf8')
+) as Record<string, any>;
+const gpsDataDocs = yaml.load(
+  fs.readFileSync(path.join(__dirname, 'gpsDataDocs.yaml'), 'utf8')
+) as Record<string, any>;
+const fuelDataDocs = yaml.load(
+  fs.readFileSync(path.join(__dirname, 'fuelDataDocs.yaml'), 'utf8')
+) as Record<string, any>;
+const obdDataDocs = yaml.load(
+  fs.readFileSync(path.join(__dirname, 'obdDataDocs.yaml'), 'utf8')
+) as Record<string, any>;
 const trackingDevicesDocs = yaml.load(
   fs.readFileSync(path.join(__dirname, 'trackingDevicesDocs.yaml'), 'utf8')
 ) as Record<string, any>;
@@ -41,7 +53,9 @@ const swaggerSpec = {
   tags: [
     { name: 'Users', description: 'User-related operations' },
     { name: 'Vehicles', description: 'Vehicle operations' },
-    { name: 'TrackingDevices', description: 'Vehicle tracking endpoints' }
+    { name: 'TrackingDevices', description: 'Vehicle tracking endpoints' },
+    { name: 'Emissions', description: 'Emission data endpoints' },
+
   ],
   components: {
     securitySchemes: {
@@ -365,7 +379,120 @@ const swaggerSpec = {
           language: { type: 'string', example: 'English' },
           notificationPreference: { type: 'string', example: 'Email' }
         }
+      },
+      CreateEmissionDataRequest: {
+      type: 'object',
+      required: ['vehicleId', 'co2Percentage', 'coPercentage', 'o2Percentage', 'hcPPM', 'trackingDeviceId'],
+      properties: {
+        vehicleId: { type: 'integer', example: 1 },
+        co2Percentage: { type: 'number', minimum: 0, maximum: 20, example: 0.8 },
+        coPercentage: { type: 'number', minimum: 0, maximum: 10, example: 0.4 },
+        o2Percentage: { type: 'number', minimum: 0, maximum: 25, example: 20.5 },
+        hcPPM: { type: 'integer', minimum: 0, maximum: 10000, example: 150 },
+        noxPPM: { type: 'number', minimum: 0, maximum: 5000, example: 80, nullable: true },
+        pm25Level: { type: 'number', minimum: 0, maximum: 500, example: 30, nullable: true },
+        trackingDeviceId: { type: 'integer', example: 1 },
+        plateNumber: { type: 'string', example: 'ABC-123', nullable: true },
+        timestamp: { type: 'string', format: 'date-time', example: '2024-01-15T10:30:00Z', nullable: true }
       }
+    },
+
+    UpdateEmissionDataRequest: {
+      type: 'object',
+      properties: {
+        co2Percentage: { type: 'number', minimum: 0, maximum: 20, example: 1.2 },
+        coPercentage: { type: 'number', minimum: 0, maximum: 10, example: 0.6 },
+        o2Percentage: { type: 'number', minimum: 0, maximum: 25, example: 19.8 },
+        hcPPM: { type: 'integer', minimum: 0, maximum: 10000, example: 200 },
+        noxPPM: { type: 'number', minimum: 0, maximum: 5000, example: 120, nullable: true },
+        pm25Level: { type: 'number', minimum: 0, maximum: 500, example: 35, nullable: true },
+        plateNumber: { type: 'string', example: 'XYZ-789', nullable: true },
+        timestamp: { type: 'string', format: 'date-time', example: '2024-01-15T11:00:00Z', nullable: true },
+        deletedAt: { type: 'string', format: 'date-time', nullable: true }
+      }
+    },
+    CreateGpsDataRequest: {
+      type: 'object',
+      required: ['trackingDeviceId', 'latitude', 'longitude'],
+      properties: {
+        trackingDeviceId: { type: 'integer', example: 1 },
+        vehicleId: { type: 'integer', example: 1, nullable: true },
+        latitude: { type: 'number', format: 'float', example: -1.2921 },
+        longitude: { type: 'number', format: 'float', example: 36.8219 },
+        speed: { type: 'number', format: 'float', example: 60.5, nullable: true },
+        altitude: { type: 'number', format: 'float', example: 1500, nullable: true },
+        plateNumber: { type: 'string', example: 'XYZ-789', nullable: true },
+        timestamp: { type: 'string', format: 'date-time', example: '2024-01-15T10:30:00Z' }
+      }
+    },
+    UpdateGpsDataRequest: {
+      type: 'object',
+      properties: {
+        latitude: { type: 'number', format: 'float', example: -1.2921 },
+        longitude: { type: 'number', format: 'float', example: 36.8219 },
+        speed: { type: 'number', format: 'float', example: 65.0, nullable: true },
+        altitude: { type: 'number', format: 'float', example: 1550, nullable: true },
+        plateNumber: { type: 'string', example: 'XYZ-789', nullable: true },
+        timestamp: { type: 'string', format: 'date-time', example: '2024-01-15T11:00:00Z' },
+        deletedAt: { type: 'string', format: 'date-time', nullable: true }
+      }
+    },
+    CreateFuelDataRequest: {
+      type: 'object',
+      required: ['vehicleId', 'fuelType', 'quantity', 'cost'],
+      properties: {
+        trackingDeviceId: { type: 'integer', example: 1 },
+        vehicleId: { type: 'integer', example: 1 },
+        fuelType: { type: 'string', enum: ['PETROL', 'DIESEL', 'ELECTRIC', 'HYBRID'], example: 'PETROL' },
+        fuelLevel: { type: 'number', format: 'float', example: 75.5, nullable: true },
+        fuelConsumption: { type: 'number', format: 'float', example: 15.0, nullable: true },
+        quantity: { type: 'number', format: 'float', example: 50.0 },
+        cost: { type: 'number', format: 'float', example: 100.0 },
+        plateNumber: { type: 'string', example: 'XYZ-789', nullable: true },
+        timestamp: { type: 'string', format: 'date-time', example: '2024-01-15T10:30:00Z' }
+      }
+    },
+    UpdateFuelDataRequest: {
+      type: 'object',
+      properties: {
+        fuelType: { type: 'string', enum: ['PETROL', 'DIESEL', 'ELECTRIC', 'HYBRID'], example: 'DIESEL' },
+        fuelLevel: { type: 'number', format: 'float', example: 80.0, nullable: true },
+        fuelConsumption: { type: 'number', format: 'float', example: 12.5, nullable: true },
+        quantity: { type: 'number', format: 'float', example: 60.0 },
+        cost: { type: 'number', format: 'float', example: 120.0 },
+        plateNumber: { type: 'string', example: 'XYZ-789', nullable: true },
+        timestamp: { type: 'string', format: 'date-time', example: '2025-07-10T11:00:00Z' },
+        deletedAt: { type: 'string', format: 'date-time', nullable: true }
+      }
+    },
+    CreateOBDDataRequest: {
+      type: 'object',
+      required: ['vehicleId', 'trackingDeviceId', 'speed', 'rpm'],
+      properties: {
+        vehicleId: { type: 'integer', example: 1 },
+        trackingDeviceId: { type: 'integer', example: 1 },
+        rpm: { type: 'integer', example: 3000 },
+        fuelLevel: { type: 'number', format: 'float', example: 75.5, nullable: true },
+        coolantTemperature: { type: 'number', format: 'float', example: 90.0, nullable: true },
+        throttlePosition: { type: 'number', format: 'float', example: 25.0, nullable: true },
+        plateNumber: { type: 'string', example: 'XYZ-789', nullable: true },
+        timestamp: { type: 'string', format: 'date-time', example: '2024-01-15T10:30:00Z' }
+      }
+    },
+    UpdateOBDDataRequest: {
+      type: 'object',
+      properties: {
+        rpm: { type: 'integer', example: 3200 },
+        fuelLevel: { type: 'number', format: 'float', example: 80.0, nullable: true },
+        coolantTemperature: { type: 'number', format: 'float', example: 95.0, nullable: true },
+        throttlePosition: { type: 'number', format: 'float', example: 30.0, nullable: true },
+        plateNumber: { type: 'string', example: 'XYZ-789', nullable: true },
+        timestamp: { type: 'string', format: 'date-time', example: '2024-01-15T11:00:00Z' },
+        deletedAt: { type: 'string', format: 'date-time', nullable: true }
+      }
+    }
+    
+
     },
     parameters: {
       deviceId: {
@@ -505,7 +632,11 @@ const swaggerSpec = {
   paths: {
     ...userDocs,
     ...vehiclesDocs,
+    ...emissionDataDocs,
     ...trackingDevicesDocs,
+    ...gpsDataDocs,
+    ...fuelDataDocs,
+    ...obdDataDocs,
     '/__show-models': {
       get: {
         summary: 'Force schema display',

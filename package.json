@@ -13,16 +13,15 @@
     "tsoa:spec": "npx tsoa spec",
     "generate:swagger-schema": "prisma generate",
     "tsoa:routes": "npx tsoa routes",
-    "seed": "ts-node prisma/seed.ts",
-    "start": "nodemon src/index.ts",
-    "dev": "nodemon --watch src --ext ts --exec \"node --loader ts-node/esm\" src/index.ts",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "seed": "node --loader ts-node/esm prisma/seed.ts",
+    "dev": "nodemon --exec \"node --loader ts-node/esm src/index.ts\"",
+    "start": "node --loader ts-node/esm src/index.ts",
     "build": "tsc --project tsconfig.json",
     "start:prod": "node dist/index.js"
 
   },
   "prisma": {
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "node --loader ts-node/esm prisma/seed.ts"
   },
   "keywords": [],
   "author": "",
