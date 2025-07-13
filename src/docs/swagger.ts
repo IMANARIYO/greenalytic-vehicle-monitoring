@@ -47,7 +47,7 @@ const swaggerSpec = {
     },
   },
   servers: [
-    { url: 'http://localhost:3000/api', description: 'Local Dev Server' },
+    { url: 'http://localhost:4000/api', description: 'Local Dev Server' },
     { url: 'https://greenalytic-vehicle-monitoring-api.onrender.com/api', description: 'Production' },
   ],
   tags: [

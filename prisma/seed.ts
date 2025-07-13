@@ -20,33 +20,33 @@ const DEVICE_IDS = {
   DEVICE_002: 2,
   DEVICE_003: 3
 }
-
 async function seedUsers() {
   console.log('🌱 Seeding Users...')
-  // Import the UserRole enum from Prisma client
-const hashedPassword = await passHashing('password123')
-const users = [
-  {
-    id: USER_IDS.ADMIN,
-    username: 'admin_user',
-    email: 'admin@vehicletracking.com',
-    password: hashedPassword,
-    nationalId: 'ID123456789',
-    gender: 'Male',
-    phoneNumber: '+250788123456',
-    location: 'Kigali, Rwanda',
-    companyName: 'Vehicle Tracking Solutions',
-    companyRegistrationNumber: 'RW-REG-001',
-    businessSector: 'Technology',
-    fleetSize: 50,
-    language: 'English',
-    notificationPreference: 'Email',
-    role: UserRole.ADMIN,
-    status: UserStatus.ACTIVE,
-    verified: true,
-    createdAt: new Date('2024-01-15'),
-    updatedAt: new Date('2024-01-15')
-  },
+  const hashedPassword = await passHashing('password123')
+
+  // Keep predefined core users
+  const baseUsers = [
+    {
+      id: USER_IDS.ADMIN,
+      username: 'admin_user',
+      email: 'admin@vehicletracking.com',
+      password: hashedPassword,
+      nationalId: 'ID123456789',
+      gender: 'Male',
+      phoneNumber: '+250788123456',
+      location: 'Kigali, Rwanda',
+      companyName: 'Vehicle Tracking Solutions',
+      companyRegistrationNumber: 'RW-REG-001',
+      businessSector: 'Technology',
+      fleetSize: 50,
+      language: 'English',
+      notificationPreference: 'Email',
+      role: UserRole.ADMIN,
+      status: UserStatus.ACTIVE,
+      verified: true,
+      createdAt: new Date('2024-01-15'),
+      updatedAt: new Date('2024-01-15')
+    },
     {
       id: USER_IDS.FLEET_MANAGER,
       username: 'fleet_manager',
@@ -90,17 +90,44 @@ const users = [
       updatedAt: new Date('2024-01-25')
     }
   ]
-  
 
-  for (const user of users) {
+  // Generate 1000 additional users
+  const bulkUsers = Array.from({ length: 1000 }, (_, i) => {
+    const index = i + 4 // start from ID 4
+    return {
+
+      username: `user${index}`,
+      email: `user${index}@example.com`,
+      password: hashedPassword,
+      nationalId: `ID-${index.toString().padStart(9, '0')}`,
+      gender: index % 2 === 0 ? 'Male' : 'Female',
+      phoneNumber: `+250788${(100000 + index).toString().slice(-6)}`,
+      location: 'Rwanda',
+      companyName: `Company ${index}`,
+      companyRegistrationNumber: `RW-REG-${index}`,
+      businessSector: 'Transport',
+      fleetSize: Math.floor(Math.random() * 100),
+      language: 'English',
+      notificationPreference: index % 2 === 0 ? 'Email' : 'SMS',
+      role: UserRole.USER,
+      status: UserStatus.ACTIVE,
+      verified: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+  })
+
+  const allUsers = [...baseUsers, ...bulkUsers]
+
+  for (const user of allUsers) {
     await prisma.user.upsert({
-      where: { id: user.id },
+      where: { email: user.email },
       update: user,
       create: user
     })
   }
 
-  console.log('✅ Users seeded successfully')
+  console.log(`✅ Seeded ${allUsers.length} users successfully`)
 }
 
 async function seedVehicles() {

@@ -36,7 +36,7 @@ class UserRepository {
           trackingDevices: true,
           alerts: true,
           reports: true,
-          activityLogs: true,
+          // activityLogs: true,
           userNotifications: true,
         },
       },
@@ -46,6 +46,7 @@ class UserRepository {
   // User CRUD Operations
   async addUser(data: CreateUserDTO): Promise<UserBasicInfo> {
     logger.info(`${this.tag} addUser() called`);
+    console.log("data,",data)
     try {
       const user = await prisma.user.create({
         data,
@@ -54,6 +55,7 @@ class UserRepository {
       logger.info(`${this.tag} addUser() succeeded — new user ID: ${user.id}`);
       return user;
     } catch (error: unknown) {
+      console.log(error)
       logger.error(`${this.tag} addUser() failed — ${JSON.stringify(error)}`);
       
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -165,13 +167,20 @@ class UserRepository {
           username: true,
           email: true,
           image: true,
+          gender:true,
+          companyRegistrationNumber:true,
+          nationalId:true,
+          businessSector:true,
+          language:true,
           phoneNumber: true,
           companyName: true,
+          notificationPreference:true,
           role: true,
           status: true,
           location: true,
           createdAt: true,
           updatedAt: true,
+          fleetSize:true,
         
           _count: {
             select: {
@@ -243,15 +252,14 @@ class UserRepository {
 
   // User List Operations
   async listUsers(query: UserListQueryDTO): Promise<{
-    users: UserListItemWithCounts[];
+    data: UserListItemWithCounts[];
     pagination: PaginationMeta;
   }> {
     logger.info(`${this.tag} findUsers() called — ${JSON.stringify(query)}`);
     
     try {
       const {
-        page = 1,
-        limit = 10,
+
         search,
         filters = {},
         sortBy = 'createdAt',
@@ -259,9 +267,12 @@ class UserRepository {
         includeDeleted = false,
         deletedOnly = false,
       } = query;
+      const page = parseInt(String(query.page), 10);
+const limit = parseInt(String(query.limit), 10);
       
       const skip = (page - 1) * limit;
       
+
       const where: Prisma.UserWhereInput = {
         // Handle soft delete filtering
         ...(deletedOnly 
@@ -280,11 +291,14 @@ class UserRepository {
             { email: { contains: search, mode: 'insensitive' } },
             { username: { contains: search, mode: 'insensitive' } },
             { companyName: { contains: search, mode: 'insensitive' } },
+            {nationalId:{contains:search,mode:`insensitive`}},
+            {phoneNumber:{contains:search,mode:`insensitive`}}
+            
           ],
         }),
       };
       
-      const [users, totalItems] = await Promise.all([
+      const [data, totalItems] = await Promise.all([
         prisma.user.findMany({
           where,
           skip,
@@ -309,8 +323,8 @@ class UserRepository {
         sortOrder,
       };
       
-      logger.info(`${this.tag} findUsers() succeeded — returned ${users.length} users`);
-      return { users, pagination };
+      logger.info(`${this.tag} findUsers() succeeded — returned ${data.length} users`);
+      return { data, pagination };
     } catch (error: unknown) {
       if (error instanceof Error) {
         logger.error(`${this.tag} findUsers() failed — error: ${error.message}`);

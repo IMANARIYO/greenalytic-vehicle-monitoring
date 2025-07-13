@@ -40,8 +40,12 @@ export type GetUserByIdResponse = Pick<
   | 'username'
   | 'email'
   | 'image'
+  |'gender'
   | 'phoneNumber'
   | 'companyName'
+  | 'notificationPreference'
+  | 'businessSector'
+  | 'language'
   | 'role'
   | 'status'
   | 'location'
@@ -126,6 +130,7 @@ export interface ChangeRoleDTO {
 
 export type CreateUserDTO = Omit<
   Prisma.UserCreateInput,
+  | 'id' 
   | 'vehicles'
   | 'trackingDevices'
   | 'alerts'

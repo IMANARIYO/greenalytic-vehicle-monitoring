@@ -36,7 +36,7 @@ app.get('/', (req, res) => {
   res.send('API is running');
 });
 
-const PORT = Number(process.env.PORT) || 3000;
+const PORT = Number(process.env.PORTT) || 4000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
   console.log(`Swagger docs available at http://localhost:${PORT}/docs`);
