@@ -146,6 +146,18 @@
           "type": "string",
           "format": "date-time"
         },
+        "oauthProvider": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "oauthProviderId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "vehicles": {
           "type": "array",
           "items": {

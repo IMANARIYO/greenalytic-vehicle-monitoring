@@ -1,6 +1,7 @@
+import dotenv from 'dotenv';
+dotenv.config();
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './docs/swagger';
 import MainRouter from './routes/allroutes';
@@ -35,7 +36,7 @@ app.get('/', (req, res) => {
   res.send('API is running');
 });
 
-const PORT = Number(process.env.PORT) || 3000;
+const PORT = Number(process.env.PORTT) || 4000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
   console.log(`Swagger docs available at http://localhost:${PORT}/docs`);

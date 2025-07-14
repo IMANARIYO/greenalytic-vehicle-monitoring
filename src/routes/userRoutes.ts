@@ -3,6 +3,7 @@ import UserController from '../controllers/UserController';
 import { hasRole } from '../middlewares/hasRole';
 import { AuthenticatedRequest } from '../utils/jwtFunctions';
 import { isLoggedIn } from '../middlewares/isLoggedIn';
+
 export const UserRouter = Router();
 const userController = new UserController();
 UserRouter.post('/signup', (req: Request, res: Response) => {
@@ -72,7 +73,7 @@ UserRouter.put(
 
 UserRouter.post(
   '',
-  hasRole(['ADMIN']),
+  // hasRole(['ADMIN']),
   (req: AuthenticatedRequest, res: Response) => {
     userController.createUser(req, res);
   }
@@ -80,7 +81,7 @@ UserRouter.post(
 
 UserRouter.get(
   '',
-  hasRole(['ADMIN']),
+  // hasRole(['ADMIN']),
   (req: AuthenticatedRequest, res: Response) => {
     userController.listUsers(req, res);
   }

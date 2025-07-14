@@ -70,7 +70,7 @@ class UserService {
   }
 
 
-  async listUsers(query: UserListQueryDTO): Promise<{ users: UserListItemWithCounts[]; pagination: PaginationMeta }> {
+  async listUsers(query: UserListQueryDTO): Promise<{ data: UserListItemWithCounts[]; pagination: PaginationMeta }> {
     try {
       return await  UserRepo.listUsers(query);
     } catch (error) {

@@ -204,7 +204,7 @@ class VehicleRepository {
       vehicleType?: string;
       userId?: number;
     };
-  }): Promise<{ data: VehicleListItemWithUser[]; meta: PaginationMeta }> {
+  }): Promise<{ data: VehicleListItemWithUser[]; pagination: PaginationMeta }> {
     try {
       const {
         page = 1,
@@ -282,7 +282,7 @@ class VehicleRepository {
 
       return {
         data: vehicles as VehicleListItemWithUser[],
-        meta: {
+        pagination: {
           page,
           limit,
           totalItems: total,

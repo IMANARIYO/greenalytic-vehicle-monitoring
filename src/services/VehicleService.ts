@@ -224,7 +224,7 @@ export class VehicleService {
       vehicleType?: string;
       userId?: number;
     };
-  }): Promise<{ data: VehicleListItemWithUser[]; meta: PaginationMeta }> {
+  }): Promise<{ data: VehicleListItemWithUser[]; pagination: PaginationMeta }> {
     try {
       // Business logic validations for pagination parameters
       const {
