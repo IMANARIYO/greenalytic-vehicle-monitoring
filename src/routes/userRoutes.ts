@@ -27,7 +27,7 @@ UserRouter.put(
 );
 UserRouter.get(
   '/:id',
-  hasRole(['ADMIN', 'USER', 'TECHNICIAN', 'MANAGER', 'FLEET_MANAGER', 'ANALYST', 'SUPPORT_AGENT']),
+  // hasRole(['ADMIN', 'USER', 'TECHNICIAN', 'MANAGER', 'FLEET_MANAGER', 'ANALYST', 'SUPPORT_AGENT']),
   (req: AuthenticatedRequest, res: Response) => {
     userController.getUserById(req, res);
   }
@@ -81,7 +81,7 @@ UserRouter.post(
 
 UserRouter.get(
   '',
-  hasRole(['ADMIN']),
+  // hasRole(['ADMIN']),
   (req: AuthenticatedRequest, res: Response) => {
     userController.listUsers(req, res);
   }
