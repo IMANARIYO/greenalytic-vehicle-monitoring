@@ -73,7 +73,7 @@ UserRouter.put(
 
 UserRouter.post(
   '',
-  // hasRole(['ADMIN']),
+  hasRole(['ADMIN']),
   (req: AuthenticatedRequest, res: Response) => {
     userController.createUser(req, res);
   }
@@ -81,7 +81,7 @@ UserRouter.post(
 
 UserRouter.get(
   '',
-  // hasRole(['ADMIN']),
+  hasRole(['ADMIN']),
   (req: AuthenticatedRequest, res: Response) => {
     userController.listUsers(req, res);
   }

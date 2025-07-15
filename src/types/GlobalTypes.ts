@@ -13,10 +13,11 @@ export interface PaginationMeta {
 export interface PaginationParams {
   page?: number;
   limit?: number;
-  sortBy?: string;               // optional: 'createdAt', 'name', etc.
-  sortOrder?: 'asc' | 'desc';    // default = 'desc'
-  search?: string;               // optional search term
-  filters?: Record<string, any>; // optional: key-value filters (e.g., { status: 'ACTIVE' })
-  includeDeleted?: boolean;      // optional: include soft-deleted items (default = false)
-  deletedOnly?: boolean;         // optional: only return soft-deleted items (default = false)
+  sortBy?: string;           
+  sortOrder?: 'asc' | 'desc';  
+  search?: string;              
+  filters?: Record<string, any>;
+  includeDeleted?: boolean;     
+  deletedOnly?: boolean;
+  
 }

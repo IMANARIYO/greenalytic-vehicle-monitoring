@@ -5,7 +5,7 @@ import { PaginationMeta } from '../types/GlobalTypes';
 import logger from '../utils/logger';
 import { AppError, handlePrismaError, HttpStatusCode } from '../middlewares/errorHandler';
 import { CreateUserDTO, GetUserByIdResponse, InternalUser, UpdateUserDTO, UserBasicInfo, UserListItemWithCounts, UserListQueryDTO } from '../types';
-import { UpdateUserDto } from '../types/dtos/UpdateUserDto';
+
 
 class UserRepository {
   private readonly tag = '[UserRepository]';
@@ -249,103 +249,146 @@ class UserRepository {
       throw new AppError('Failed to get user by id');
     }
   }
+private sanitizeFilters<T extends Record<string, any>>(filters: T): Partial<T> {
+  const result: Partial<T> = {};
 
-  // User List Operations
-  async listUsers(query: UserListQueryDTO): Promise<{
-    data: UserListItemWithCounts[];
-    pagination: PaginationMeta;
-  }> {
-    logger.info(`${this.tag} findUsers() called — ${JSON.stringify(query)}`);
+  for (const key in filters) {
+    let value = filters[key];
+
+    if (typeof value === 'string') {
+      value = value.trim().toLowerCase();
+      if (value === '' || value === 'all') continue;
+    }
+
+    // ✅ transform filters[role] => role
+    const match = key.match(/^filters\[(.+)\]$/);
+    if (match) {
+      const cleanKey = match[1]; // e.g., 'role'
+      result[cleanKey as keyof T] = filters[key];
+    } else {
+      result[key] = filters[key];
+    }
+  }
+
+  return result;
+}
+
+
+
+
+
+// User List Operations
+async listUsers(query: UserListQueryDTO): Promise<{
+  data: UserListItemWithCounts[];
+  pagination: PaginationMeta;
+}> {
+  logger.info(`${this.tag} listUsers() called — ${JSON.stringify(query)}`);
+function parseBoolean(value: unknown): boolean {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') return value.toLowerCase() === 'true';
+  return false;
+}
+
+  try {
+    const {
+      search,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+
+    } = query;
+console.log(" the  query was__",query)
+const rawFilters = Object.fromEntries(
+  Object.entries(query).filter(([key]) => key.startsWith('filters['))
+);
+console.log("the raw filters were___",rawFilters)
+    const filters = this.sanitizeFilters(rawFilters); 
+    const includeDeleted = parseBoolean(query.includeDeleted);
+const deletedOnly = parseBoolean(query.deletedOnly);
+    const page = Math.max(parseInt(String(query.page), 10) || 1, 1);
+    const limit = Math.max(parseInt(String(query.limit), 10) || 10, 1);
+    const skip = (page - 1) * limit;
+
+    const where: Prisma.UserWhereInput = {
+      ...(deletedOnly
+        ? { deletedAt: { not: null } }
+        : includeDeleted
+        ? {}
+        : { deletedAt: null }),
+
+      ...(filters.status && { status: filters.status }),
+      ...(filters.role && { role: filters.role }),
+      ...(filters.verified !== undefined && { verified: filters.verified }),
+      ...(filters.gender && {
+        gender: { equals: filters.gender, mode: 'insensitive' },
+      }),
+      ...(filters.language && {
+        language: { equals: filters.language, mode: 'insensitive' },
+      }),
+      ...(filters.companyName && {
+        companyName: { contains: filters.companyName, mode: 'insensitive' },
+      }),
+
+      ...(search && {
+        OR: [
+          { email: { contains: search, mode: 'insensitive' } },
+          { username: { contains: search, mode: 'insensitive' } },
+          { companyName: { contains: search, mode: 'insensitive' } },
+          { nationalId: { contains: search, mode: 'insensitive' } },
+          { phoneNumber: { contains: search, mode: 'insensitive' } },
+        ],
+      }),
+    };
+// console.log("WHERE clause:", where);
+
+    const [data, totalItems] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { [sortBy]: sortOrder },
+        select: this.getUserListSelect(),
+      }),
+      prisma.user.count({ where }),
+    ]);
+
+    const totalPages = Math.ceil(totalItems / limit);
+    const pagination: PaginationMeta = {
+      page,
+      limit,
+      totalItems,
+      totalPages,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1,
+      nextPage: page < totalPages ? page + 1 : undefined,
+      prevPage: page > 1 ? page - 1 : undefined,
+      sortBy,
+      sortOrder,
+    };
+
+    logger.info(`${this.tag} listUsers() succeeded — returned ${data.length} users`);
     
-    try {
-      const {
-
-        search,
-        filters = {},
-        sortBy = 'createdAt',
-        sortOrder = 'desc',
-        includeDeleted = false,
-        deletedOnly = false,
-      } = query;
-      const page = parseInt(String(query.page), 10);
-const limit = parseInt(String(query.limit), 10);
-      
-      const skip = (page - 1) * limit;
-      
-
-      const where: Prisma.UserWhereInput = {
-        // Handle soft delete filtering
-        ...(deletedOnly 
-          ? { deletedAt: { not: null } }
-          : includeDeleted 
-            ? {} 
-            : { deletedAt: null }
-        ),
-        // Apply filters
-        ...(filters.status && { status: filters.status }),
-        ...(filters.role && { role: filters.role }),
-        ...(filters.verified !== undefined && { verified: filters.verified }),
-        // Apply search
-        ...(search && {
-          OR: [
-            { email: { contains: search, mode: 'insensitive' } },
-            { username: { contains: search, mode: 'insensitive' } },
-            { companyName: { contains: search, mode: 'insensitive' } },
-            {nationalId:{contains:search,mode:`insensitive`}},
-            {phoneNumber:{contains:search,mode:`insensitive`}}
-            
-          ],
-        }),
-      };
-      
-      const [data, totalItems] = await Promise.all([
-        prisma.user.findMany({
-          where,
-          skip,
-          take: limit,
-          orderBy: { [sortBy]: sortOrder },
-          select: this.getUserListSelect(),
-        }),
-        prisma.user.count({ where }),
-      ]);
-      
-      const totalPages = Math.ceil(totalItems / limit);
-      const pagination: PaginationMeta = {
-        page,
-        limit,
-        totalItems,
-        totalPages,
-        hasNextPage: page < totalPages,
-        hasPrevPage: page > 1,
-        nextPage: page < totalPages ? page + 1 : undefined,
-        prevPage: page > 1 ? page - 1 : undefined,
-        sortBy,
-        sortOrder,
-      };
-      
-      logger.info(`${this.tag} findUsers() succeeded — returned ${data.length} users`);
-      return { data, pagination };
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        logger.error(`${this.tag} findUsers() failed — error: ${error.message}`);
-        
-        if (error instanceof Prisma.PrismaClientKnownRequestError) {
-          throw handlePrismaError(error);
-        }
-        
-        throw new AppError(
-          error.message || 'Failed to retrieve user list.',
-          HttpStatusCode.INTERNAL_SERVER_ERROR
-        );
+    // console.log(data)
+    return { data, pagination };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      logger.error(`${this.tag} listUsers() failed — error: ${error.message}`);
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        throw handlePrismaError(error);
       }
-      
-      logger.error(`${this.tag} findUsers() failed — unknown error:`, error);
       throw new AppError(
-        'Unknown error occurred while retrieving users.',
+        error.message || 'Failed to retrieve user list.',
         HttpStatusCode.INTERNAL_SERVER_ERROR
       );
     }
+
+    logger.error(`${this.tag} listUsers() failed — unknown error`, error);
+    throw new AppError(
+      'Unknown error occurred while retrieving users.',
+      HttpStatusCode.INTERNAL_SERVER_ERROR
+    );
   }
+}
+
 
   // User Status Management
   async changeUserStatus(id: number, status: UserStatus): Promise<UserBasicInfo> {

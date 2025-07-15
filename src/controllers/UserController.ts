@@ -200,6 +200,7 @@ class UserController {
 
   async listUsers(req: Request, res: ExpressResponse) {
     try {
+      console.log("called -------------------------------------------------------")
       const query = req.query as unknown as PaginationParams;
       const result = await UserService.listUsers(query);
       return Response.success(res, result, "Users retrieved successfully");

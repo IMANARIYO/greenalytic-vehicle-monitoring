@@ -137,7 +137,7 @@ model Vehicle {
   status                VehicleStatus  @default(NORMAL_EMISSION)
   emissionStatus        EmissionStatus @default(LOW)
   lastMaintenanceDate   DateTime?
-  user                  User           @relation(fields: [userId], references: [id])
+user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId                Int
   emissionData          EmissionData[]
   gpsData               GpsData[]
@@ -261,7 +261,7 @@ model GpsData {
 
   trackingStatus       Boolean        @default(false)
 
-  trackingDevice       TrackingDevice? @relation(fields: [trackingDeviceId], references: [id])
+  trackingDevice       TrackingDevice? @relation(fields: [trackingDeviceId], references: [id],onDelete: Cascade)
   trackingDeviceId     Int?
 
   createdAt            DateTime       @default(now())
