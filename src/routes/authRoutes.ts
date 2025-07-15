@@ -1,35 +1,24 @@
 import express from "express";
 import passport from "passport";
-import { tokengenerating } from "../utils/jwtFunctions";
+import UserController from "../controllers/UserController";
 
 const authRoutes = express.Router();
+const userController = new UserController();
 
+// Redirects to Google for authentication
 authRoutes.get(
-  "/auth/google",
+  "/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
+// Google callback – now handled in the controller
 authRoutes.get(
-  "/auth/google/callback",
+  "/google/callback",
   passport.authenticate("google", {
-    failureRedirect: "/login",
+    failureRedirect: "http://localhost:3000/login", // redirect to frontend
     session: false,
   }),
-  async (req, res) => {
-    const user = req.user as any;
-
-    if (!user) return res.redirect("/login");
-
-    const token = tokengenerating({
-      id: user.id,
-      email: user.email,
-      role: user.role,
-      username: user.username || "",
-    });
-    return res.redirect(`/dashboard?token=${token}`);
-  }
+  userController.googleAuth
 );
-
-
 
 export default authRoutes;
