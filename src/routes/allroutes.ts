@@ -6,7 +6,9 @@ import { GpsDataRouter } from './gpsdata-routes';
 import { OBDDataRouter } from './obddata-routes'; // Uncomment if OBDDataRouter is defined
 import VehiclesRouter from './vehicle-routes';
 import TrackingdevicesRouter from './trackingdevice-routes';
+import authRoutes from './authRoutes';
 const MainRouter = Router();
+MainRouter.use("/auth", authRoutes);
 MainRouter.use('/users', UserRouter)
 MainRouter.use('/vehicles', VehiclesRouter)
 MainRouter.use('/emissions', EmissionRouter);

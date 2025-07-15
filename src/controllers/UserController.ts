@@ -32,18 +32,25 @@ class UserController {
   async changeUserStatus(req: Request, res: ExpressResponse) {
     try {
       const userId = Number(req.params.id);
-      const { status } = req.body;  // expect status in body
-      if (!status) return Response.badRequest(res, 'Status is required');
-  
+      const { status } = req.body; // expect status in body
+      if (!status) return Response.badRequest(res, "Status is required");
+
       const updatedUser = await UserService.changeUserStatus(userId, status);
-      if (!updatedUser) return Response.notFound(res, 'User');
-  
-      return Response.success(res, updatedUser, 'User status updated successfully');
+      if (!updatedUser) return Response.notFound(res, "User");
+
+      return Response.success(
+        res,
+        updatedUser,
+        "User status updated successfully"
+      );
     } catch (error: any) {
-      return Response.badRequest(res, error.message || 'Change user status failed');
+      return Response.badRequest(
+        res,
+        error.message || "Change user status failed"
+      );
     }
   }
-  
+
   // Convert signup to instance method for consistency
   async signup(req: Request, res: ExpressResponse) {
     try {
@@ -57,14 +64,21 @@ class UserController {
   async getUserById(req: Request, res: ExpressResponse) {
     try {
       const userId = Number(req.params.id);
+
+      if (isNaN(userId)) {
+        return Response.badRequest(res, "Invalid user ID");
+      }
+
       const user = await UserService.getUserById(userId);
-      if (!user) return Response.notFound(res, 'User');
-      return Response.success(res, user, 'User retrieved successfully');
+      if (!user) return Response.notFound(res, "User");
+
+      return Response.success(res, user, "User retrieved successfully");
     } catch (error: any) {
-      return Response.badRequest(res, error.message || 'Get user failed');
+      return Response.badRequest(res, error.message || "Get user failed");
     }
   }
   
+
   async login(req: Request, res: ExpressResponse) {
     try {
       const { user, token } = await UserService.login(req.body);
@@ -77,7 +91,7 @@ class UserController {
   async googleAuth(req: Request, res: ExpressResponse) {
     try {
       const user = req.user as any;
-      if (!user) return res.redirect("/login");
+      if (!user) return res.redirect("http://localhost:3000/login");
 
       const token = tokengenerating({
         id: user.id,
@@ -86,9 +100,9 @@ class UserController {
         username: user.username || "",
       });
 
-      return res.redirect(`/dashboard?token=${token}`);
+      return res.redirect(`http://localhost:3000/dashboard?token=${token}`);
     } catch (error: any) {
-      return res.redirect("/login");
+      return res.redirect("http://localhost:3000/login");
     }
   }
 
@@ -96,8 +110,8 @@ class UserController {
     try {
       const userId = Number(req.params.id);
       const user = await UserService.updateUser(userId, req.body);
-      if (!user) return Response.notFound(res, 'User');
-      return Response.success(res, user, 'User updated successfully');
+      if (!user) return Response.notFound(res, "User");
+      return Response.success(res, user, "User updated successfully");
     } catch (error: any) {
       return Response.badRequest(res, error.message || "Update failed");
     }
@@ -107,8 +121,8 @@ class UserController {
     try {
       const userId = Number(req.params.id);
       const user = await UserService.softDeleteUser(userId);
-      if (!user) return Response.notFound(res, 'User');
-      return Response.success(res, user, 'User soft deleted');
+      if (!user) return Response.notFound(res, "User");
+      return Response.success(res, user, "User soft deleted");
     } catch (error: any) {
       return Response.badRequest(res, error.message || "Soft delete failed");
     }
@@ -118,8 +132,8 @@ class UserController {
     try {
       const userId = Number(req.params.id);
       const user = await UserService.hardDeleteUser(userId);
-      if (!user) return Response.notFound(res, 'User');
-      return Response.success(res, user, 'User permanently deleted');
+      if (!user) return Response.notFound(res, "User");
+      return Response.success(res, user, "User permanently deleted");
     } catch (error: any) {
       return Response.badRequest(res, error.message || "Hard delete failed");
     }
@@ -129,8 +143,8 @@ class UserController {
     try {
       const userId = Number(req.params.id);
       const user = await UserService.restoreUser(userId);
-      if (!user) return Response.notFound(res, 'User');
-      return Response.success(res, user, 'User restored');
+      if (!user) return Response.notFound(res, "User");
+      return Response.success(res, user, "User restored");
     } catch (error: any) {
       return Response.badRequest(res, error.message || "Restore failed");
     }
@@ -157,8 +171,7 @@ class UserController {
     try {
       const { email } = req.body;
       await UserService.requestPasswordReset(email);
-      return Response.success(res, null, 'OTP sent to registered email');
-      
+      return Response.success(res, null, "OTP sent to registered email");
     } catch (error: any) {
       return Response.badRequest(
         res,
@@ -182,8 +195,8 @@ class UserController {
       const userId = Number(req.params.id);
       const { role } = req.body;
       const user = await UserService.changeRole(userId, role);
-      if (!user) return Response.notFound(res, 'User');
-      return Response.success(res, user, 'User role changed');
+      if (!user) return Response.notFound(res, "User");
+      return Response.success(res, user, "User role changed");
     } catch (error: any) {
       return Response.badRequest(res, error.message || "Change role failed");
     }
