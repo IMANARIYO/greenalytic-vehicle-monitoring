@@ -226,45 +226,10 @@ export class VehicleService {
     };
   }): Promise<{ data: VehicleListItemWithUser[]; pagination: PaginationMeta }> {
     try {
-      // Business logic validations for pagination parameters
-      const {
-        page = 1,
-        limit = 10,
-        search,
-        filters = {},
-        sortBy = 'createdAt',
-        sortOrder = 'desc',
-      } = params;
-
-      // Validate pagination parameters
-      if (page < 1) {
-        throw new AppError('Page number must be greater than 0', HttpStatusCode.BAD_REQUEST);
-      }
+  
+console.log("the params  received  for  lisitng the vehicles*************************",params)
       
-      if (limit < 1 || limit > 100) {
-        throw new AppError('Limit must be between 1 and 100', HttpStatusCode.BAD_REQUEST);
-      }
-
-      // Validate sortOrder
-      if (sortOrder && !['asc', 'desc'].includes(sortOrder)) {
-        throw new AppError('Sort order must be either "asc" or "desc"', HttpStatusCode.BAD_REQUEST);
-      }
-
-      // Validate search term length if provided
-      if (search && search.length < 2) {
-        throw new AppError('Search term must be at least 2 characters long', HttpStatusCode.BAD_REQUEST);
-      }
-
-      // Validate sortBy field (basic validation - you might want to extend this)
-      const allowedSortFields = [
-        'id', 'plateNumber', 'registrationNumber', 'chassisNumber',
-        'vehicleType', 'vehicleModel', 'yearOfManufacture', 'usage',
-        'fuelType', 'status', 'emissionStatus', 'createdAt', 'updatedAt', 'userId'
-      ];
-      
-      if (sortBy && !allowedSortFields.includes(sortBy)) {
-        throw new AppError(`Invalid sort field. Allowed fields: ${allowedSortFields.join(', ')}`, HttpStatusCode.BAD_REQUEST);
-      }
+    
 
       return await VehicleRepository.listVehicles(params);
     } catch (error: any) {

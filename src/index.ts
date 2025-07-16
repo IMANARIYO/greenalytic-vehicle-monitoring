@@ -5,7 +5,7 @@ import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './docs/swagger';
 import MainRouter from './routes/allroutes';
-import swaggerDocument from './swagger/swagger.json';
+
 import passport from './utils/passport';
 import session from 'express-session';
 import { globalErrorHandler, handleNotFoundRoutes } from './middlewares/errorHandler';

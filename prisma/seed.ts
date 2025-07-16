@@ -130,74 +130,61 @@ async function seedUsers() {
   console.log(`✅ Seeded ${allUsers.length} users successfully`)
 }
 
-async function seedVehicles() {
-  console.log('🌱 Seeding Vehicles...')
-  
-  const vehicles = [
-    {
-      id: VEHICLE_IDS.TRUCK_001,
-      plateNumber: 'RAD-001-T',
-      registrationNumber: 'RW-VEH-001',
-      chassisNumber: 'TRUCK123456789',
-      vehicleType: 'Heavy Truck',
-      vehicleModel: 'Isuzu FVR',
-      yearOfManufacture: 2020,
-      usage: 'Commercial Transport',
-      fuelType: FuelType.DIESEL,
-      status: VehicleStatus.NORMAL_EMISSION,
-      emissionStatus: 'NORMAL' as any, // Replace 'as any' with EmissionStatus.NORMAL if you import the enum
-      lastMaintenanceDate: new Date('2024-06-15'),
-      userId: USER_IDS.FLEET_MANAGER,
-      createdAt: new Date('2024-02-01'),
-      updatedAt: new Date('2024-02-01')
-    },
-    {
-      id: VEHICLE_IDS.CAR_001,
-      plateNumber: 'RAD-002-C',
-      registrationNumber: 'RW-VEH-002',
-      chassisNumber: 'CAR987654321',
-      vehicleType: 'Sedan',
-      vehicleModel: 'Toyota Camry',
-      yearOfManufacture: 2022,
-      usage: 'Executive Transport',
-      fuelType: FuelType.PETROL,
-      status: VehicleStatus.NORMAL_EMISSION,
-      emissionStatus: 'LOW' as any, // Replace 'as any' with EmissionStatus.LOW if you import the enum
-      lastMaintenanceDate: new Date('2024-06-20'),
-      userId: USER_IDS.ADMIN,
-      createdAt: new Date('2024-02-05'),
-      updatedAt: new Date('2024-02-05')
-    },
-    {
-      id: VEHICLE_IDS.MOTORCYCLE_001,
-      plateNumber: 'RAD-003-M',
-      registrationNumber: 'RW-VEH-003',
-      chassisNumber: 'MOTO456789123',
-      vehicleType: 'Motorcycle',
-      vehicleModel: 'Honda CRF 250',
-      yearOfManufacture: 2023,
-      usage: 'Delivery Service',
-      fuelType: FuelType.PETROL,
-      status: VehicleStatus.NORMAL_EMISSION,
-      emissionStatus: 'LOW',
-      lastMaintenanceDate: new Date('2024-06-25'),
-      userId: USER_IDS.TECHNICIAN,
-      createdAt: new Date('2024-02-10'),
-      updatedAt: new Date('2024-02-10')
-    }
-  ]
+const BATCH_SIZE = 500
 
-  for (const vehicle of vehicles) {
-    await prisma.vehicle.upsert({
-      where: { id: vehicle.id },
-      update: vehicle,
-      create: vehicle
-    })
+async function seedVehicles() {
+  console.log("🌱 Seeding Vehicles...")
+
+  const users = await prisma.user.findMany({ select: { id: true } })
+
+  const fuelTypes = Object.values(FuelType)
+  const statuses = Object.values(VehicleStatus)
+  const emissionStatuses = ["NORMAL", "LOW", "HIGH"]
+  const vehicleModels = ["Toyota Hilux", "Isuzu FVR", "Nissan Hardbody", "Kia Frontier", "Land Cruiser"]
+  const vehicleTypes = ["Truck", "Car", "Van", "Motorcycle", "SUV"]
+  const usages = ["Delivery", "Transport", "Logistics", "Private", "Public"]
+
+  const allVehicles: any[] = []
+  let globalIndex = 1
+
+  for (const user of users) {
+    for (let i = 0; i < 20; i++) {
+      const plateSuffix = String(globalIndex).padStart(4, "0")
+      const plateNumber = `R${String.fromCharCode(65 + (globalIndex % 26))}D-${plateSuffix}`
+
+      allVehicles.push({
+        plateNumber,
+        registrationNumber: `RW-VEH-${globalIndex.toString().padStart(4, "0")}`,
+        chassisNumber: `CHS-${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
+        vehicleType: vehicleTypes[globalIndex % vehicleTypes.length],
+        vehicleModel: vehicleModels[globalIndex % vehicleModels.length],
+        yearOfManufacture: 2010 + (globalIndex % 15),
+        usage: usages[globalIndex % usages.length],
+        fuelType: fuelTypes[globalIndex % fuelTypes.length],
+        status: statuses[globalIndex % statuses.length],
+        emissionStatus: emissionStatuses[globalIndex % emissionStatuses.length] as any,
+        lastMaintenanceDate: new Date(Date.now() - Math.random() * 1_000_000_000 * 2),
+        userId: user.id,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+
+      globalIndex++
+    }
   }
 
-  console.log('✅ Vehicles seeded successfully')
-}
+  // Batch insert
+  for (let i = 0; i < allVehicles.length; i += BATCH_SIZE) {
+    const batch = allVehicles.slice(i, i + BATCH_SIZE)
+    await prisma.vehicle.createMany({
+      data: batch,
+      skipDuplicates: true
+    })
+    console.log(`✅ Inserted ${Math.min(i + BATCH_SIZE, allVehicles.length)} / ${allVehicles.length} vehicles`)
+  }
 
+  console.log(`🎉 Finished seeding ${allVehicles.length} vehicles.`)
+}
 async function seedTrackingDevices() {
   console.log('🌱 Seeding Tracking Devices...')
   
