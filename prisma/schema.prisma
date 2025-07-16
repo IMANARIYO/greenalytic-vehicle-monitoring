@@ -423,7 +423,7 @@ model Solution {
   subtitle             String
   description          String
   content              String
-  imageUrl             String
+  icon             String
   type                 SolutionType
   testimonials         Testimonial[]
   createdAt            DateTime     @default(now())
@@ -466,9 +466,8 @@ model Product {
   name                 String
   description          String
   content              String
-  imageUrl             String
+  icon             String
   iconBackgroundColor String
-  category             String
   features            Feature[]
   createdAt            DateTime     @default(now())
   updatedAt            DateTime     @updatedAt

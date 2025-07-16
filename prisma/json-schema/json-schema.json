@@ -1073,7 +1073,7 @@
         "content": {
           "type": "string"
         },
-        "imageUrl": {
+        "icon": {
           "type": "string"
         },
         "type": {
@@ -1177,13 +1177,10 @@
         "content": {
           "type": "string"
         },
-        "imageUrl": {
+        "icon": {
           "type": "string"
         },
         "iconBackgroundColor": {
-          "type": "string"
-        },
-        "category": {
           "type": "string"
         },
         "features": {
