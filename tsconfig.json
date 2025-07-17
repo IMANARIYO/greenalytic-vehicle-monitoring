@@ -13,8 +13,8 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "resolveJsonModule": true,
-    // "noEmit": true,
-    // "types": ["node"],
+    "noEmit": true,
+    "types": ["node"],
     "allowSyntheticDefaultImports": true
   },
   "ts-node": {
