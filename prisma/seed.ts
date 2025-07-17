@@ -27,7 +27,7 @@ async function seedUsers() {
   // Keep predefined core users
   const baseUsers = [
     {
-      id: USER_IDS.ADMIN,
+
       username: 'admin_user',
       email: 'admin@vehicletracking.com',
       password: hashedPassword,
@@ -48,7 +48,7 @@ async function seedUsers() {
       updatedAt: new Date('2024-01-15')
     },
     {
-      id: USER_IDS.FLEET_MANAGER,
+
       username: 'fleet_manager',
       email: 'fleetmanager@logistics.com',
       password: hashedPassword,
@@ -69,7 +69,7 @@ async function seedUsers() {
       updatedAt: new Date('2024-01-20')
     },
     {
-      id: USER_IDS.TECHNICIAN,
+
       username: 'tech_support',
       email: 'technician@maintenance.com',
       password: hashedPassword,

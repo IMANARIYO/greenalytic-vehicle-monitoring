@@ -2,12 +2,12 @@
 
 export function sanitizeFilters<T extends Record<string, any>>(filters: T): Partial<T> {
   const result: Partial<T> = {};
-
+console.log("from filters i received   the ",filters)
   for (const key in filters) {
     let value = filters[key];
 
     if (typeof value === 'string') {
-      value = value.trim().toLowerCase();
+      value = value.trim();
       if (value === '' || value === 'all') continue;
     }
 

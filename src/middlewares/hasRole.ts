@@ -6,7 +6,7 @@ import { catchAsync } from './errorHandler';
 
 export const hasRole = (roles: string[]) => {
   return catchAsync(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    // First verify the token asynchronously
+
     await new Promise<void>((resolve, reject) => {
       verifyingtoken(req, res, (err?: any) => {
         if (err) return reject(err);

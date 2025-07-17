@@ -12,6 +12,7 @@ import { AppError, handlePrismaError, HttpStatusCode, NotFoundError } from '../m
 import { parseBoolean, sanitizeFilters } from '../queryUtils';
 
 class VehicleRepository {
+    private readonly tag = '[VehicleRepository]';
   async createVehicle(data: VehicleCreateRequest): Promise<Vehicle> {
     try {
       return await prisma.vehicle.create({ data });
@@ -197,13 +198,12 @@ class VehicleRepository {
       throw appError;
     }
   }
-async listVehicles(params: PaginationParams & {
-  filters?: Record<string, any>;
-}): Promise<{ data: VehicleListItemWithUser[]; pagination: PaginationMeta }> {
+async listVehicles(params: PaginationParams): Promise<{ data: VehicleListItemWithUser[]; pagination: PaginationMeta }> {
   try {
+      logger.info(`${this.tag} listUsers() called — ${JSON.stringify(params)}`);
     const {
-      page = 1,
-      limit = 10,
+   page: rawPage = 1,
+  limit: rawLimit = 10,
       search,
       filters = {},
       sortBy = 'createdAt',
@@ -211,10 +211,14 @@ async listVehicles(params: PaginationParams & {
       includeDeleted,
       deletedOnly,
     } = params;
-
+const page = Number(rawPage) || 1;
+const limit = Number(rawLimit) || 10;
     const skip = (page - 1) * limit;
-    const rawFilters = filters ?? {};
+const rawFilters = Object.fromEntries(
+  Object.entries(params).filter(([key]) => key.startsWith('filters['))
+);
     const cleanFilters = sanitizeFilters(rawFilters);
+
     const isDeletedOnly = parseBoolean(deletedOnly);
     const isIncludeDeleted = parseBoolean(includeDeleted);
 

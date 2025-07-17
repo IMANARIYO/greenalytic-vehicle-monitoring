@@ -4,6 +4,7 @@ import { ENV } from '../config/env';
 import { JwtPayload } from '../types/jwtPayload';
 import Response from './response';
 import { catchAsync } from '../middlewares/errorHandler'; // Adjust path as needed
+import logger from './logger';
 
 export interface AuthenticatedRequest extends Request {
   userId?: number;
@@ -42,6 +43,7 @@ export const verifyingtoken = catchAsync(async (
   const token = auth?.split(' ')[1];
 
   if (!token) {
+console.log("provide the token  plaease*********************************************************",auth)
     return Response.unauthorized(res, 'No access token provided');
   }
 
