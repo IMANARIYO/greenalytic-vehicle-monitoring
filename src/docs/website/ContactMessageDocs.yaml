@@ -1,0 +1,392 @@
+# Contact Message API Endpoints
+/website/contact-messages:
+  get:
+    tags:
+      - Website/Contact Messages
+    summary: Get all contact messages with filters and pagination (Admin only)
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Items per page
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search in name, email, subject, or message
+      - in: query
+        name: email
+        schema:
+          type: string
+        description: Filter by email address
+      - in: query
+        name: dateFrom
+        schema:
+          type: string
+          format: date-time
+        description: Filter messages from this date
+      - in: query
+        name: dateTo
+        schema:
+          type: string
+          format: date-time
+        description: Filter messages until this date
+      - in: query
+        name: sortBy
+        schema:
+          type: string
+          enum: [id, name, email, subject, createdAt, updatedAt]
+        description: Field to sort by
+      - in: query
+        name: sortOrder
+        schema:
+          type: string
+          enum: [asc, desc]
+        description: Sort order
+    responses:
+      200:
+        description: Contact messages retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
+                      email:
+                        type: string
+                      subject:
+                        type: string
+                      message:
+                        type: string
+                      createdAt:
+                        type: string
+                        format: date-time
+                      updatedAt:
+                        type: string
+                        format: date-time
+                meta:
+                  type: object
+                  properties:
+                    page:
+                      type: integer
+                    limit:
+                      type: integer
+                    totalItems:
+                      type: integer
+                    totalPages:
+                      type: integer
+                    hasNextPage:
+                      type: boolean
+                    hasPrevPage:
+                      type: boolean
+
+  post:
+    tags:
+      - Website/Contact Messages
+    summary: Create new contact message (Public access)
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - name
+              - email
+              - subject
+              - message
+            properties:
+              name:
+                type: string
+                maxLength: 100
+                minLength: 2
+                description: Sender name
+              email:
+                type: string
+                maxLength: 255
+                format: email
+                description: Sender email address
+              subject:
+                type: string
+                maxLength: 200
+                minLength: 5
+                description: Message subject
+              message:
+                type: string
+                maxLength: 2000
+                minLength: 10
+                description: Message content
+    responses:
+      201:
+        description: Contact message sent successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    email:
+                      type: string
+                    subject:
+                      type: string
+                    message:
+                      type: string
+                    createdAt:
+                      type: string
+                      format: date-time
+                    updatedAt:
+                      type: string
+                      format: date-time
+      400:
+        description: Bad request - validation error
+      429:
+        description: Too many requests - rate limit exceeded
+
+/website/contact-messages/recent:
+  get:
+    tags:
+      - Website/Contact Messages
+    summary: Get recent contact messages (Admin only)
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: query
+        name: hours
+        schema:
+          type: integer
+          default: 24
+          minimum: 1
+          maximum: 168
+        description: Number of hours to look back (max 7 days)
+    responses:
+      200:
+        description: Recent contact messages retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
+                      email:
+                        type: string
+                      subject:
+                        type: string
+                      message:
+                        type: string
+                      createdAt:
+                        type: string
+                        format: date-time
+                      updatedAt:
+                        type: string
+                        format: date-time
+
+/website/contact-messages/email/{email}:
+  get:
+    tags:
+      - Website/Contact Messages
+    summary: Get contact messages by email address (Admin only)
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: email
+        required: true
+        schema:
+          type: string
+          format: email
+    responses:
+      200:
+        description: Contact messages retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
+                      email:
+                        type: string
+                      subject:
+                        type: string
+                      message:
+                        type: string
+                      createdAt:
+                        type: string
+                        format: date-time
+                      updatedAt:
+                        type: string
+                        format: date-time
+      400:
+        description: Invalid email address
+
+/website/contact-messages/{id}:
+  get:
+    tags:
+      - Website/Contact Messages
+    summary: Get contact message by ID (Admin only)
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Contact message retrieved successfully
+      404:
+        description: Contact message not found
+
+  put:
+    tags:
+      - Website/Contact Messages
+    summary: Update contact message by ID (Admin only)
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                maxLength: 100
+                minLength: 2
+              email:
+                type: string
+                maxLength: 255
+                format: email
+              subject:
+                type: string
+                maxLength: 200
+                minLength: 5
+              message:
+                type: string
+                maxLength: 2000
+                minLength: 10
+    responses:
+      200:
+        description: Contact message updated successfully
+      404:
+        description: Contact message not found
+
+  patch:
+    tags:
+      - Website/Contact Messages
+    summary: Partially update contact message by ID (Admin only)
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                maxLength: 100
+                minLength: 2
+              email:
+                type: string
+                maxLength: 255
+                format: email
+              subject:
+                type: string
+                maxLength: 200
+                minLength: 5
+              message:
+                type: string
+                maxLength: 2000
+                minLength: 10
+    responses:
+      200:
+        description: Contact message updated successfully
+      404:
+        description: Contact message not found
+
+  delete:
+    tags:
+      - Website/Contact Messages
+    summary: Delete contact message by ID (Admin only)
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Contact message deleted successfully
+      404:
+        description: Contact message not found

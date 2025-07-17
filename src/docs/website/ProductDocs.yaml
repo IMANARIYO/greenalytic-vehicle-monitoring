@@ -1,0 +1,406 @@
+# Product API Endpoints
+/website/products:
+  get:
+    tags:
+      - Website/Products
+    summary: Get all products with filters and pagination
+    parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Items per page
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search in name, description
+      - in: query
+        name: sortBy
+        schema:
+          type: string
+          enum: [id, name, createdAt, updatedAt]
+        description: Field to sort by
+      - in: query
+        name: sortOrder
+        schema:
+          type: string
+          enum: [asc, desc]
+        description: Sort order
+    responses:
+      200:
+        description: Products retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
+                      description:
+                        type: string
+                      content:
+                        type: string
+                      icon:
+                        type: string
+                      iconBackgroundColor:
+                        type: string
+                      createdAt:
+                        type: string
+                        format: date-time
+                      updatedAt:
+                        type: string
+                        format: date-time
+                meta:
+                  type: object
+                  properties:
+                    page:
+                      type: integer
+                    limit:
+                      type: integer
+                    totalItems:
+                      type: integer
+                    totalPages:
+                      type: integer
+                    hasNextPage:
+                      type: boolean
+                    hasPrevPage:
+                      type: boolean
+
+  post:
+    tags:
+      - Website/Products
+    summary: Create new product
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - name
+              - description
+              - content
+              - icon
+              - iconBackgroundColor
+            properties:
+              name:
+                type: string
+                maxLength: 200
+                description: Product name
+              description:
+                type: string
+                maxLength: 1000
+                description: Product description
+              content:
+                type: string
+                maxLength: 10000
+                description: Product detailed content
+              icon:
+                type: string
+                maxLength: 500
+                description: Product image URL
+              iconBackgroundColor:
+                type: string
+                maxLength: 20
+                pattern: "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+                description: Icon background color (hex format)
+    responses:
+      201:
+        description: Product created successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  $ref: '#/components/schemas/Product'
+      400:
+        description: Bad request - validation error
+      409:
+        description: Conflict - product with name already exists
+
+/website/products/{id}:
+  get:
+    tags:
+      - Website/Products
+    summary: Get product by ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Product retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  $ref: '#/components/schemas/Product'
+      404:
+        description: Product not found
+
+  put:
+    tags:
+      - Website/Products
+    summary: Update product by ID
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                maxLength: 200
+                description: Product name
+              description:
+                type: string
+                maxLength: 1000
+                description: Product description
+              content:
+                type: string
+                maxLength: 10000
+                description: Product detailed content
+              icon:
+                type: string
+                maxLength: 500
+                description: Product image URL
+              iconBackgroundColor:
+                type: string
+                maxLength: 20
+                pattern: "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+                description: Icon background color (hex format)
+    responses:
+      200:
+        description: Product updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  $ref: '#/components/schemas/Product'
+      404:
+        description: Product not found
+      409:
+        description: Conflict - product with name already exists
+
+  patch:
+    tags:
+      - Website/Products
+    summary: Partially update product by ID
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                maxLength: 200
+                description: Product name
+              description:
+                type: string
+                maxLength: 1000
+                description: Product description
+              content:
+                type: string
+                maxLength: 10000
+                description: Product detailed content
+              icon:
+                type: string
+                maxLength: 500
+                description: Product image URL
+              iconBackgroundColor:
+                type: string
+                maxLength: 20
+                pattern: "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+                description: Icon background color (hex format)
+    responses:
+      200:
+        description: Product updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  $ref: '#/components/schemas/Product'
+      404:
+        description: Product not found
+
+  delete:
+    tags:
+      - Website/Products
+    summary: Delete product by ID
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Product deleted successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: null
+      404:
+        description: Product not found
+
+/website/products/{id}/features:
+  get:
+    tags:
+      - Website/Products
+    summary: Get product with its features by ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Product with features retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    description:
+                      type: string
+                    content:
+                      type: string
+                    icon:
+                      type: string
+                    iconBackgroundColor:
+                      type: string
+                    features:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                          title:
+                            type: string
+                          description:
+                            type: string
+                          icon:
+                            type: string
+                          createdAt:
+                            type: string
+                            format: date-time
+                          updatedAt:
+                            type: string
+                            format: date-time
+                    createdAt:
+                      type: string
+                      format: date-time
+                    updatedAt:
+                      type: string
+                      format: date-time
+      404:
+        description: Product not found
+
+components:
+  schemas:
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        content:
+          type: string
+        icon:
+          type: string
+        iconBackgroundColor:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
