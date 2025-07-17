@@ -16,7 +16,7 @@
     "seed": "node --loader ts-node/esm prisma/seed.ts",
     "dev": "nodemon --exec \"node --loader ts-node/esm src/index.ts\"",
     "start": "node --loader ts-node/esm src/index.ts",
- "build": "tsc",
+    "build": "tsc",
     "start:prod": "node dist/index.js"
   },
   "prisma": {
@@ -55,7 +55,7 @@
     "@types/express-validator": "^3.0.2",
     "@types/js-yaml": "^4.0.9",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^24.0.10",
+    "@types/node": "^24.0.14",
     "@types/nodemailer": "^6.4.17",
     "@types/passport": "^1.0.17",
     "@types/passport-google-oauth20": "^2.0.16",
