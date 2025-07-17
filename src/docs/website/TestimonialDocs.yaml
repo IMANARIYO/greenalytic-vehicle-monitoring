@@ -1,0 +1,521 @@
+# Testimonial API Endpoints
+/website/testimonials:
+  get:
+    tags:
+      - Website/Testimonials
+    summary: Get all testimonials with filters and pagination
+    parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Items per page
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search in name, position, company, or content
+      - in: query
+        name: solutionId
+        schema:
+          type: integer
+        description: Filter by solution ID
+      - in: query
+        name: company
+        schema:
+          type: string
+        description: Filter by company name
+      - in: query
+        name: includeSolution
+        schema:
+          type: boolean
+        description: Include solution details in response
+      - in: query
+        name: sortBy
+        schema:
+          type: string
+          enum: [id, name, company, createdAt, updatedAt]
+        description: Field to sort by
+      - in: query
+        name: sortOrder
+        schema:
+          type: string
+          enum: [asc, desc]
+        description: Sort order
+    responses:
+      200:
+        description: Testimonials retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    oneOf:
+                      - $ref: '#/components/schemas/Testimonial'
+                      - $ref: '#/components/schemas/TestimonialWithSolution'
+                meta:
+                  type: object
+                  properties:
+                    page:
+                      type: integer
+                    limit:
+                      type: integer
+                    totalItems:
+                      type: integer
+                    totalPages:
+                      type: integer
+                    hasNextPage:
+                      type: boolean
+                    hasPrevPage:
+                      type: boolean
+
+  post:
+    tags:
+      - Website/Testimonials
+    summary: Create new testimonial
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - name
+              - position
+              - company
+              - content
+              - solutionId
+            properties:
+              name:
+                type: string
+                maxLength: 100
+                description: Person's name
+              position:
+                type: string
+                maxLength: 100
+                description: Person's position/title
+              company:
+                type: string
+                maxLength: 100
+                description: Company name
+              content:
+                type: string
+                maxLength: 1000
+                description: Testimonial content
+              imageUrl:
+                type: string
+                maxLength: 500
+                description: Optional person's image URL
+              solutionId:
+                type: integer
+                description: ID of the associated solution
+    responses:
+      201:
+        description: Testimonial created successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  $ref: '#/components/schemas/Testimonial'
+      400:
+        description: Bad request - validation error
+      404:
+        description: Solution not found
+
+/website/testimonials/companies:
+  get:
+    tags:
+      - Website/Testimonials
+    summary: Get all unique companies from testimonials
+    responses:
+      200:
+        description: Companies retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    type: string
+
+/website/testimonials/solution/{solutionId}:
+  get:
+    tags:
+      - Website/Testimonials
+    summary: Get testimonials by solution ID
+    parameters:
+      - in: path
+        name: solutionId
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Testimonials by solution retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Testimonial'
+      404:
+        description: Solution not found
+
+/website/testimonials/solution/{solutionId}/count:
+  get:
+    tags:
+      - Website/Testimonials
+    summary: Get testimonial count by solution ID
+    parameters:
+      - in: path
+        name: solutionId
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Testimonial count retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: object
+                  properties:
+                    count:
+                      type: integer
+
+/website/testimonials/company/{company}:
+  get:
+    tags:
+      - Website/Testimonials
+    summary: Get testimonials by company name
+    parameters:
+      - in: path
+        name: company
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Testimonials by company retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Testimonial'
+
+/website/testimonials/{id}:
+  get:
+    tags:
+      - Website/Testimonials
+    summary: Get testimonial by ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Testimonial retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  $ref: '#/components/schemas/Testimonial'
+      404:
+        description: Testimonial not found
+
+  put:
+    tags:
+      - Website/Testimonials
+    summary: Update testimonial by ID
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                maxLength: 100
+                description: Person's name
+              position:
+                type: string
+                maxLength: 100
+                description: Person's position/title
+              company:
+                type: string
+                maxLength: 100
+                description: Company name
+              content:
+                type: string
+                maxLength: 1000
+                description: Testimonial content
+              imageUrl:
+                type: string
+                maxLength: 500
+                description: Optional person's image URL
+              solutionId:
+                type: integer
+                description: ID of the associated solution
+    responses:
+      200:
+        description: Testimonial updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  $ref: '#/components/schemas/Testimonial'
+      404:
+        description: Testimonial not found
+
+  patch:
+    tags:
+      - Website/Testimonials
+    summary: Partially update testimonial by ID
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                maxLength: 100
+                description: Person's name
+              position:
+                type: string
+                maxLength: 100
+                description: Person's position/title
+              company:
+                type: string
+                maxLength: 100
+                description: Company name
+              content:
+                type: string
+                maxLength: 1000
+                description: Testimonial content
+              imageUrl:
+                type: string
+                maxLength: 500
+                description: Optional person's image URL
+              solutionId:
+                type: integer
+                description: ID of the associated solution
+    responses:
+      200:
+        description: Testimonial updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  $ref: '#/components/schemas/Testimonial'
+      404:
+        description: Testimonial not found
+
+  delete:
+    tags:
+      - Website/Testimonials
+    summary: Delete testimonial by ID
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Testimonial deleted successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: null
+      404:
+        description: Testimonial not found
+
+/website/testimonials/{id}/solution:
+  get:
+    tags:
+      - Website/Testimonials
+    summary: Get testimonial with solution details by ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Testimonial with solution retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  $ref: '#/components/schemas/TestimonialWithSolution'
+      404:
+        description: Testimonial not found
+
+components:
+  schemas:
+    Testimonial:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        position:
+          type: string
+        company:
+          type: string
+        content:
+          type: string
+        imageUrl:
+          type: string
+          nullable: true
+        solutionId:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    TestimonialWithSolution:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        position:
+          type: string
+        company:
+          type: string
+        content:
+          type: string
+        imageUrl:
+          type: string
+          nullable: true
+        solutionId:
+          type: integer
+        usedSolution:
+          type: object
+          properties:
+            id:
+              type: integer
+            title:
+              type: string
+            subtitle:
+              type: string
+            type:
+              type: string
+              enum: [LOW_RISK, PROVEN_TECH, HIGH_IMPACT]
+            imageUrl:
+              type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time

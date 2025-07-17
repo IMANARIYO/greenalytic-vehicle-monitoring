@@ -1,0 +1,531 @@
+# Solution API Endpoints
+/website/solutions:
+  get:
+    tags:
+      - Website/Solutions
+    summary: Get all solutions with filters and pagination
+    parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Items per page
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search in title, subtitle, or description
+      - in: query
+        name: type
+        schema:
+          type: string
+          enum: [LOW_RISK, PROVEN_TECH, HIGH_IMPACT]
+        description: Filter by solution type
+      - in: query
+        name: includeTestimonials
+        schema:
+          type: boolean
+        description: Include testimonials in response
+      - in: query
+        name: sortBy
+        schema:
+          type: string
+          enum: [id, title, type, createdAt, updatedAt]
+        description: Field to sort by
+      - in: query
+        name: sortOrder
+        schema:
+          type: string
+          enum: [asc, desc]
+        description: Sort order
+    responses:
+      200:
+        description: Solutions retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    oneOf:
+                      - $ref: '#/components/schemas/Solution'
+                      - $ref: '#/components/schemas/SolutionWithTestimonials'
+                meta:
+                  type: object
+                  properties:
+                    page:
+                      type: integer
+                    limit:
+                      type: integer
+                    totalItems:
+                      type: integer
+                    totalPages:
+                      type: integer
+                    hasNextPage:
+                      type: boolean
+                    hasPrevPage:
+                      type: boolean
+
+  post:
+    tags:
+      - Website/Solutions
+    summary: Create new solution
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - title
+              - subtitle
+              - description
+              - content
+              - icon
+              - type
+            properties:
+              title:
+                type: string
+                maxLength: 200
+                description: Solution title
+              subtitle:
+                type: string
+                maxLength: 300
+                description: Solution subtitle
+              description:
+                type: string
+                maxLength: 1000
+                description: Solution description
+              content:
+                type: string
+                maxLength: 10000
+                description: Solution detailed content
+              icon:
+                type: string
+                maxLength: 500
+                description: Solution icon
+              type:
+                type: string
+                enum: [LOW_RISK, PROVEN_TECH, HIGH_IMPACT]
+                description: Solution type
+    responses:
+      201:
+        description: Solution created successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  $ref: '#/components/schemas/Solution'
+      400:
+        description: Bad request - validation error
+      409:
+        description: Conflict - solution with title already exists
+
+/website/solutions/types:
+  get:
+    tags:
+      - Website/Solutions
+    summary: Get all available solution types
+    responses:
+      200:
+        description: Solution types retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    type: string
+                    enum: [LOW_RISK, PROVEN_TECH, HIGH_IMPACT]
+
+/website/solutions/types/in-use:
+  get:
+    tags:
+      - Website/Solutions
+    summary: Get solution types currently in use
+    responses:
+      200:
+        description: Solution types in use retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    type: string
+                    enum: [LOW_RISK, PROVEN_TECH, HIGH_IMPACT]
+
+/website/solutions/type/{type}:
+  get:
+    tags:
+      - Website/Solutions
+    summary: Get solutions by type
+    parameters:
+      - in: path
+        name: type
+        required: true
+        schema:
+          type: string
+          enum: [LOW_RISK, PROVEN_TECH, HIGH_IMPACT]
+    responses:
+      200:
+        description: Solutions by type retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Solution'
+      400:
+        description: Invalid solution type
+
+/website/solutions/type/{type}/count:
+  get:
+    tags:
+      - Website/Solutions
+    summary: Get solution count by type
+    parameters:
+      - in: path
+        name: type
+        required: true
+        schema:
+          type: string
+          enum: [LOW_RISK, PROVEN_TECH, HIGH_IMPACT]
+    responses:
+      200:
+        description: Solution count retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: object
+                  properties:
+                    count:
+                      type: integer
+
+/website/solutions/{id}:
+  get:
+    tags:
+      - Website/Solutions
+    summary: Get solution by ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Solution retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  $ref: '#/components/schemas/Solution'
+      404:
+        description: Solution not found
+
+  put:
+    tags:
+      - Website/Solutions
+    summary: Update solution by ID
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+                maxLength: 200
+                description: Solution title
+              subtitle:
+                type: string
+                maxLength: 300
+                description: Solution subtitle
+              description:
+                type: string
+                maxLength: 1000
+                description: Solution description
+              content:
+                type: string
+                maxLength: 10000
+                description: Solution detailed content
+              icon:
+                type: string
+                maxLength: 500
+                description: Solution icon
+              type:
+                type: string
+                enum: [LOW_RISK, PROVEN_TECH, HIGH_IMPACT]
+                description: Solution type
+    responses:
+      200:
+        description: Solution updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  $ref: '#/components/schemas/Solution'
+      404:
+        description: Solution not found
+      409:
+        description: Conflict - solution with title already exists
+
+  patch:
+    tags:
+      - Website/Solutions
+    summary: Partially update solution by ID
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+                maxLength: 200
+                description: Solution title
+              subtitle:
+                type: string
+                maxLength: 300
+                description: Solution subtitle
+              description:
+                type: string
+                maxLength: 1000
+                description: Solution description
+              content:
+                type: string
+                maxLength: 10000
+                description: Solution detailed content
+              icon:
+                type: string
+                maxLength: 500
+                description: Solution icon
+              type:
+                type: string
+                enum: [LOW_RISK, PROVEN_TECH, HIGH_IMPACT]
+                description: Solution type
+    responses:
+      200:
+        description: Solution updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  $ref: '#/components/schemas/Solution'
+      404:
+        description: Solution not found
+
+  delete:
+    tags:
+      - Website/Solutions
+    summary: Delete solution by ID
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Solution deleted successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: null
+      404:
+        description: Solution not found
+
+/website/solutions/{id}/testimonials:
+  get:
+    tags:
+      - Website/Solutions
+    summary: Get solution with testimonials by ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Solution with testimonials retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  $ref: '#/components/schemas/SolutionWithTestimonials'
+      404:
+        description: Solution not found
+
+components:
+  schemas:
+    Solution:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        subtitle:
+          type: string
+        description:
+          type: string
+        content:
+          type: string
+        icon:
+          type: string
+        type:
+          type: string
+          enum: [LOW_RISK, PROVEN_TECH, HIGH_IMPACT]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    SolutionWithTestimonials:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        subtitle:
+          type: string
+        description:
+          type: string
+        content:
+          type: string
+        icon:
+          type: string
+        type:
+          type: string
+          enum: [LOW_RISK, PROVEN_TECH, HIGH_IMPACT]
+        testimonials:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              position:
+                type: string
+              company:
+                type: string
+              content:
+                type: string
+              icon:
+                type: string
+                nullable: true
+              createdAt:
+                type: string
+                format: date-time
+              updatedAt:
+                type: string
+                format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time

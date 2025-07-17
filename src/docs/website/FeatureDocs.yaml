@@ -1,0 +1,407 @@
+# Feature API Endpoints
+/website/features:
+  get:
+    tags:
+      - Website/Features
+    summary: Get all features with filters and pagination
+    parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Items per page
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search in title or description
+      - in: query
+        name: productId
+        schema:
+          type: integer
+        description: Filter by product ID
+      - in: query
+        name: includeProduct
+        schema:
+          type: boolean
+        description: Include product details in response
+      - in: query
+        name: sortBy
+        schema:
+          type: string
+          enum: [id, title, createdAt, updatedAt]
+        description: Field to sort by
+      - in: query
+        name: sortOrder
+        schema:
+          type: string
+          enum: [asc, desc]
+        description: Sort order
+    responses:
+      200:
+        description: Features retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    oneOf:
+                      - $ref: '#/components/schemas/Feature'
+                      - $ref: '#/components/schemas/FeatureWithProduct'
+                meta:
+                  type: object
+                  properties:
+                    page:
+                      type: integer
+                    limit:
+                      type: integer
+                    totalItems:
+                      type: integer
+                    totalPages:
+                      type: integer
+                    hasNextPage:
+                      type: boolean
+                    hasPrevPage:
+                      type: boolean
+
+  post:
+    tags:
+      - Website/Features
+    summary: Create new feature
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - title
+              - description
+              - icon
+              - productId
+            properties:
+              title:
+                type: string
+                maxLength: 200
+                description: Feature title
+              description:
+                type: string
+                maxLength: 1000
+                description: Feature description
+              icon:
+                type: string
+                maxLength: 50
+                description: Feature icon identifier
+              productId:
+                type: integer
+                description: ID of the parent product
+    responses:
+      201:
+        description: Feature created successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  $ref: '#/components/schemas/Feature'
+      400:
+        description: Bad request - validation error
+      404:
+        description: Product not found
+      409:
+        description: Conflict - feature with title already exists for this product
+
+/website/features/product/{productId}:
+  get:
+    tags:
+      - Website/Features
+    summary: Get features by product ID
+    parameters:
+      - in: path
+        name: productId
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Features by product retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Feature'
+      404:
+        description: Product not found
+
+/website/features/{id}:
+  get:
+    tags:
+      - Website/Features
+    summary: Get feature by ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Feature retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  $ref: '#/components/schemas/Feature'
+      404:
+        description: Feature not found
+
+  put:
+    tags:
+      - Website/Features
+    summary: Update feature by ID
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+                maxLength: 200
+                description: Feature title
+              description:
+                type: string
+                maxLength: 1000
+                description: Feature description
+              icon:
+                type: string
+                maxLength: 50
+                description: Feature icon identifier
+              productId:
+                type: integer
+                description: ID of the parent product
+    responses:
+      200:
+        description: Feature updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  $ref: '#/components/schemas/Feature'
+      404:
+        description: Feature not found
+      409:
+        description: Conflict - feature with title already exists for this product
+
+  patch:
+    tags:
+      - Website/Features
+    summary: Partially update feature by ID
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+                maxLength: 200
+                description: Feature title
+              description:
+                type: string
+                maxLength: 1000
+                description: Feature description
+              icon:
+                type: string
+                maxLength: 50
+                description: Feature icon identifier
+              productId:
+                type: integer
+                description: ID of the parent product
+    responses:
+      200:
+        description: Feature updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  $ref: '#/components/schemas/Feature'
+      404:
+        description: Feature not found
+
+  delete:
+    tags:
+      - Website/Features
+    summary: Delete feature by ID
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Feature deleted successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: null
+      404:
+        description: Feature not found
+
+/website/features/{id}/product:
+  get:
+    tags:
+      - Website/Features
+    summary: Get feature with product details by ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Feature with product retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  $ref: '#/components/schemas/FeatureWithProduct'
+      404:
+        description: Feature not found
+
+components:
+  schemas:
+    Feature:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        icon:
+          type: string
+        productId:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    FeatureWithProduct:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        icon:
+          type: string
+        productId:
+          type: integer
+        product:
+          type: object
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+            description:
+              type: string
+            category:
+              type: string
+            imageUrl:
+              type: string
+            iconBackgroundColor:
+              type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time

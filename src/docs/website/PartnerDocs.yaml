@@ -1,0 +1,513 @@
+# Partner API Endpoints
+/website/partners:
+  get:
+    tags:
+      - Website/Partners
+    summary: Get all partners with filters and pagination
+    parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Items per page
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search in name, description, or key impact
+      - in: query
+        name: categoryId
+        schema:
+          type: integer
+        description: Filter by partner category ID
+      - in: query
+        name: categoryName
+        schema:
+          type: string
+        description: Filter by partner category name
+      - in: query
+        name: includeCategory
+        schema:
+          type: boolean
+        description: Include category details in response
+      - in: query
+        name: sortBy
+        schema:
+          type: string
+          enum: [id, name, createdAt, updatedAt]
+        description: Field to sort by
+      - in: query
+        name: sortOrder
+        schema:
+          type: string
+          enum: [asc, desc]
+        description: Sort order
+    responses:
+      200:
+        description: Partners retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
+                      description:
+                        type: string
+                      logoUrl:
+                        type: string
+                      websiteUrl:
+                        type: string
+                        nullable: true
+                      categoryId:
+                        type: integer
+                      keyImpact:
+                        type: string
+                        nullable: true
+                      category:
+                        type: object
+                        nullable: true
+                        description: Included if includeCategory=true
+                        properties:
+                          id:
+                            type: integer
+                          name:
+                            type: string
+                          icon:
+                            type: string
+                      createdAt:
+                        type: string
+                        format: date-time
+                      updatedAt:
+                        type: string
+                        format: date-time
+                meta:
+                  type: object
+                  properties:
+                    page:
+                      type: integer
+                    limit:
+                      type: integer
+                    totalItems:
+                      type: integer
+                    totalPages:
+                      type: integer
+                    hasNextPage:
+                      type: boolean
+                    hasPrevPage:
+                      type: boolean
+
+  post:
+    tags:
+      - Website/Partners
+    summary: Create new partner
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - name
+              - description
+              - logoUrl
+              - categoryId
+            properties:
+              name:
+                type: string
+                maxLength: 100
+                description: Partner name
+              description:
+                type: string
+                maxLength: 500
+                description: Partner description
+              logoUrl:
+                type: string
+                maxLength: 500
+                format: uri
+                description: Partner logo URL
+              websiteUrl:
+                type: string
+                maxLength: 500
+                format: uri
+                description: Partner website URL
+              categoryId:
+                type: integer
+                description: Partner category ID
+              keyImpact:
+                type: string
+                maxLength: 200
+                description: Key impact or achievement
+    responses:
+      201:
+        description: Partner created successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    description:
+                      type: string
+                    logoUrl:
+                      type: string
+                    websiteUrl:
+                      type: string
+                      nullable: true
+                    categoryId:
+                      type: integer
+                    keyImpact:
+                      type: string
+                      nullable: true
+                    createdAt:
+                      type: string
+                      format: date-time
+                    updatedAt:
+                      type: string
+                      format: date-time
+      400:
+        description: Bad request - validation error
+      404:
+        description: Partner category not found
+      409:
+        description: Conflict - partner with name already exists in category
+
+/website/partners/category/{categoryId}:
+  get:
+    tags:
+      - Website/Partners
+    summary: Get partners by category ID
+    parameters:
+      - in: path
+        name: categoryId
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Partners retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
+                      description:
+                        type: string
+                      logoUrl:
+                        type: string
+                      websiteUrl:
+                        type: string
+                        nullable: true
+                      categoryId:
+                        type: integer
+                      keyImpact:
+                        type: string
+                        nullable: true
+                      createdAt:
+                        type: string
+                        format: date-time
+                      updatedAt:
+                        type: string
+                        format: date-time
+      404:
+        description: Partner category not found
+
+/website/partners/{id}:
+  get:
+    tags:
+      - Website/Partners
+    summary: Get partner by ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Partner retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    description:
+                      type: string
+                    logoUrl:
+                      type: string
+                    websiteUrl:
+                      type: string
+                      nullable: true
+                    categoryId:
+                      type: integer
+                    keyImpact:
+                      type: string
+                      nullable: true
+                    createdAt:
+                      type: string
+                      format: date-time
+                    updatedAt:
+                      type: string
+                      format: date-time
+      404:
+        description: Partner not found
+
+  put:
+    tags:
+      - Website/Partners
+    summary: Update partner by ID
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                maxLength: 100
+              description:
+                type: string
+                maxLength: 500
+              logoUrl:
+                type: string
+                maxLength: 500
+                format: uri
+              websiteUrl:
+                type: string
+                maxLength: 500
+                format: uri
+              categoryId:
+                type: integer
+              keyImpact:
+                type: string
+                maxLength: 200
+    responses:
+      200:
+        description: Partner updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    description:
+                      type: string
+                    logoUrl:
+                      type: string
+                    websiteUrl:
+                      type: string
+                      nullable: true
+                    categoryId:
+                      type: integer
+                    keyImpact:
+                      type: string
+                      nullable: true
+                    createdAt:
+                      type: string
+                      format: date-time
+                    updatedAt:
+                      type: string
+                      format: date-time
+      404:
+        description: Partner or category not found
+      409:
+        description: Conflict - partner with name already exists in category
+
+  patch:
+    tags:
+      - Website/Partners
+    summary: Partially update partner by ID
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                maxLength: 100
+              description:
+                type: string
+                maxLength: 500
+              logoUrl:
+                type: string
+                maxLength: 500
+                format: uri
+              websiteUrl:
+                type: string
+                maxLength: 500
+                format: uri
+              categoryId:
+                type: integer
+              keyImpact:
+                type: string
+                maxLength: 200
+    responses:
+      200:
+        description: Partner updated successfully
+      404:
+        description: Partner not found
+
+  delete:
+    tags:
+      - Website/Partners
+    summary: Delete partner by ID
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Partner deleted successfully
+      404:
+        description: Partner not found
+
+/website/partners/{id}/category:
+  get:
+    tags:
+      - Website/Partners
+    summary: Get partner with full category details
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Partner with category retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    description:
+                      type: string
+                    logoUrl:
+                      type: string
+                    websiteUrl:
+                      type: string
+                      nullable: true
+                    categoryId:
+                      type: integer
+                    keyImpact:
+                      type: string
+                      nullable: true
+                    createdAt:
+                      type: string
+                      format: date-time
+                    updatedAt:
+                      type: string
+                      format: date-time
+                    category:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        icon:
+                          type: string
+                        createdAt:
+                          type: string
+                          format: date-time
+                        updatedAt:
+                          type: string
+                          format: date-time
+      404:
+        description: Partner not found

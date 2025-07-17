@@ -1,0 +1,361 @@
+# Partner Category API Endpoints
+/website/partner-categories:
+  get:
+    tags:
+      - Website/Partner Categories
+    summary: Get all partner categories with filters and pagination
+    parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Items per page
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search in category name
+      - in: query
+        name: includePartnersCount
+        schema:
+          type: boolean
+        description: Include count of partners in each category
+      - in: query
+        name: sortBy
+        schema:
+          type: string
+          enum: [id, name, createdAt, updatedAt]
+        description: Field to sort by
+      - in: query
+        name: sortOrder
+        schema:
+          type: string
+          enum: [asc, desc]
+        description: Sort order
+    responses:
+      200:
+        description: Partner categories retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
+                      icon:
+                        type: string
+                      partnersCount:
+                        type: integer
+                        description: Number of partners in this category (if includePartnersCount=true)
+                      createdAt:
+                        type: string
+                        format: date-time
+                      updatedAt:
+                        type: string
+                        format: date-time
+                meta:
+                  type: object
+                  properties:
+                    page:
+                      type: integer
+                    limit:
+                      type: integer
+                    totalItems:
+                      type: integer
+                    totalPages:
+                      type: integer
+                    hasNextPage:
+                      type: boolean
+                    hasPrevPage:
+                      type: boolean
+
+  post:
+    tags:
+      - Website/Partner Categories
+    summary: Create new partner category
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - name
+              - icon
+            properties:
+              name:
+                type: string
+                maxLength: 100
+                description: Partner category name
+              icon:
+                type: string
+                maxLength: 50
+                description: Icon identifier
+    responses:
+      201:
+        description: Partner category created successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    icon:
+                      type: string
+                    createdAt:
+                      type: string
+                      format: date-time
+                    updatedAt:
+                      type: string
+                      format: date-time
+      400:
+        description: Bad request - validation error
+      409:
+        description: Conflict - partner category with name already exists
+
+/website/partner-categories/{id}:
+  get:
+    tags:
+      - Website/Partner Categories
+    summary: Get partner category by ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Partner category retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    icon:
+                      type: string
+                    createdAt:
+                      type: string
+                      format: date-time
+                    updatedAt:
+                      type: string
+                      format: date-time
+      404:
+        description: Partner category not found
+
+  put:
+    tags:
+      - Website/Partner Categories
+    summary: Update partner category by ID
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                maxLength: 100
+                description: Partner category name
+              icon:
+                type: string
+                maxLength: 50
+                description: Icon identifier
+    responses:
+      200:
+        description: Partner category updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    icon:
+                      type: string
+                    createdAt:
+                      type: string
+                      format: date-time
+                    updatedAt:
+                      type: string
+                      format: date-time
+      404:
+        description: Partner category not found
+      409:
+        description: Conflict - partner category with name already exists
+
+  patch:
+    tags:
+      - Website/Partner Categories
+    summary: Partially update partner category by ID
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                maxLength: 100
+                description: Partner category name
+              icon:
+                type: string
+                maxLength: 50
+                description: Icon identifier
+    responses:
+      200:
+        description: Partner category updated successfully
+      404:
+        description: Partner category not found
+
+  delete:
+    tags:
+      - Website/Partner Categories
+    summary: Delete partner category by ID
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Partner category deleted successfully
+      404:
+        description: Partner category not found
+      409:
+        description: Cannot delete category with existing partners
+
+/website/partner-categories/{id}/partners:
+  get:
+    tags:
+      - Website/Partner Categories
+    summary: Get partner category with all its partners
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Partner category with partners retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    icon:
+                      type: string
+                    createdAt:
+                      type: string
+                      format: date-time
+                    updatedAt:
+                      type: string
+                      format: date-time
+                    partners:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                          name:
+                            type: string
+                          description:
+                            type: string
+                          logoUrl:
+                            type: string
+                          websiteUrl:
+                            type: string
+                            nullable: true
+                          keyImpact:
+                            type: string
+                            nullable: true
+                          createdAt:
+                            type: string
+                            format: date-time
+                          updatedAt:
+                            type: string
+                            format: date-time
+      404:
+        description: Partner category not found

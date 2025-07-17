@@ -34,6 +34,44 @@ const trackingDevicesDocs = yaml.load(
   fs.readFileSync(path.join(__dirname, 'trackingDevicesDocs.yaml'), 'utf8')
 ) as Record<string, any>;
 
+// Website Docs
+const valueDocs = yaml.load(
+  fs.readFileSync(path.join(__dirname, 'website/valueDocs.yaml'), 'utf8')
+) as Record<string, any>;
+const technologyDocs = yaml.load(
+  fs.readFileSync(path.join(__dirname, 'website/technologyDocs.yaml'), 'utf8')
+) as Record<string, any>;
+const partnershipReasonDocs = yaml.load(
+  fs.readFileSync(path.join(__dirname, 'website/partnershipReasonDocs.yaml'), 'utf8')
+) as Record<string, any>;
+const teamDocs = yaml.load(
+  fs.readFileSync(path.join(__dirname, 'website/teamDocs.yaml'), 'utf8')
+) as Record<string, any>;
+const advisoryBoardDocs = yaml.load(
+  fs.readFileSync(path.join(__dirname, 'website/advisoryBoardDocs.yaml'), 'utf8')
+) as Record<string, any>;
+const ContactMessageDocs = yaml.load(
+  fs.readFileSync(path.join(__dirname, 'website/contactMessageDocs.yaml'), 'utf8')
+) as Record<string, any>;
+const PartnerCategoryDocs = yaml.load(
+  fs.readFileSync(path.join(__dirname, 'website/partnerCategoryDocs.yaml'), 'utf8')
+) as Record<string, any>;
+const PartnerDocs = yaml.load(
+  fs.readFileSync(path.join(__dirname, 'website/partnerDocs.yaml'), 'utf8')
+) as Record<string, any>;
+const FeatureDocs = yaml.load(
+  fs.readFileSync(path.join(__dirname, 'website/featureDocs.yaml'), 'utf8')
+) as Record<string, any>;
+const ProductDocs = yaml.load(
+  fs.readFileSync(path.join(__dirname, 'website/productDocs.yaml'), 'utf8')
+) as Record<string, any>;
+const SolutionDocs = yaml.load(
+  fs.readFileSync(path.join(__dirname, 'website/solutionDocs.yaml'), 'utf8')
+) as Record<string, any>;
+const TestimonialDocs = yaml.load(
+  fs.readFileSync(path.join(__dirname, 'website/testimonialDocs.yaml'), 'utf8')
+) as Record<string, any>;
+
 const swaggerSpec = {
   openapi: '3.0.0',
   info: {
@@ -55,7 +93,23 @@ const swaggerSpec = {
     { name: 'Vehicles', description: 'Vehicle operations' },
     { name: 'TrackingDevices', description: 'Vehicle tracking endpoints' },
     { name: 'Emissions', description: 'Emission data endpoints' },
+    { name: 'GPS Data', description: 'GPS data endpoints' },
+    { name: 'Fuel Data', description: 'Fuel data endpoints' },
+    { name: 'OBD Data', description: 'OBD data endpoints' },
+    { name: 'Website/Values', description: 'Website value operations' },
+    { name: 'Website/Technologies', description: 'Website technology operations' },
+    { name: 'Website/Partnership Reasons', description: 'Website partnership reason operations' },
+    { name: 'Website/Team', description: 'Website team member operations' },
+    { name: 'Website/Advisory Board', description: 'Website advisory board member operations' },
+    { name: 'Website/Contact Messages', description: 'Website contact message operations' },
+    { name: 'Website/Partner Categories', description: 'Website partner category operations' },
+    { name: 'Website/Partners', description: 'Website partner operations' },
+    { name: 'Website/Features', description: 'Website feature operations' },
+    { name: 'Website/Products', description: 'Website product operations' },
+    { name: 'Website/Solutions', description: 'Website solution operations' },
+    { name: 'Website/Testimonials', description: 'Website testimonial operations' },
 
+   
   ],
   components: {
     securitySchemes: {
@@ -637,6 +691,18 @@ const swaggerSpec = {
     ...gpsDataDocs,
     ...fuelDataDocs,
     ...obdDataDocs,
+    ...valueDocs,
+    ...technologyDocs,
+    ...partnershipReasonDocs,
+    ...teamDocs,
+    ...advisoryBoardDocs,
+    ...ContactMessageDocs,
+    ...PartnerCategoryDocs,
+    ...PartnerDocs,
+    ...FeatureDocs,
+    ...ProductDocs,
+    ...SolutionDocs,
+    ...TestimonialDocs,
     '/__show-models': {
       get: {
         summary: 'Force schema display',

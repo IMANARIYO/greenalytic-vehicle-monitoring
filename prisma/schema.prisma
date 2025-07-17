@@ -106,6 +106,7 @@ model User {
   otp                     String?
   token                   String?
   verified                Boolean    @default(false)
+  blogPosts               BlogPost[]
   deletedAt               DateTime?
   createdAt               DateTime   @default(now())
   updatedAt               DateTime   @updatedAt
@@ -413,4 +414,184 @@ model UserNotification {
   @@index([userId])
   @@index([type])
   @@index([isRead])
+}
+
+// Schemas for the website
+model Solution {
+  id                   Int          @id @default(autoincrement())
+  title                String
+  subtitle             String
+  description          String
+  content              String
+  icon             String
+  type                 SolutionType
+  testimonials         Testimonial[]
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  @@index([title])
+}
+enum SolutionType {
+  LOW_RISK
+  PROVEN_TECH
+  HIGH_IMPACT
+}
+model Testimonial {
+  id                   Int          @id @default(autoincrement())
+  name                 String
+  position             String
+  company              String
+  content              String
+  imageUrl             String?
+  solutionId           Int
+  usedSolution         Solution     @relation(fields: [solutionId], references: [id])
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  @@index([name])
+}
+
+model Value {
+  id                   Int          @id @default(autoincrement())
+  title                String
+  description          String
+  icon                 String
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  @@index([title])
+}
+model Product {
+  id                   Int          @id @default(autoincrement())
+  name                 String
+  description          String
+  content              String
+  icon             String
+  iconBackgroundColor String
+  features            Feature[]
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  @@index([name])
+}
+
+model Feature {
+  id                   Int          @id @default(autoincrement())
+  title                String
+  description          String
+  icon                 String
+  productId            Int
+  product              Product      @relation(fields: [productId], references: [id])
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  @@index([title])
+}
+model Technology {
+  id                   Int          @id @default(autoincrement())
+  name                 String
+  description          String
+  icon                 String
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  @@index([name])
+}
+model Team {
+  id                   Int          @id @default(autoincrement())
+  name                 String
+  position             String
+  department           Department
+  description          String
+  imageUrl             String
+  socialLinks          Json?
+  experienceYears     Int?
+  location            String?
+  profileUrl           String?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  @@index([name])
+}
+enum Department {
+  LEADERSHIP
+  ENGINEERING
+  OPERATIONS
+}
+model AdvisoryBoard {
+  id                   Int          @id @default(autoincrement())
+  name                 String
+  position             String
+  company              String
+  highlight            String?
+  description          String
+  imageUrl             String
+  socialLinks          Json?
+  fullBioLink          String?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  @@index([name])
+}
+model PartnerCategory {
+  id                   Int          @id @default(autoincrement())
+  name                 String
+  icon                 String
+  partners            Partner[]
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  @@index([name])
+}
+model Partner {
+  id                   Int          @id @default(autoincrement())
+  name                 String
+  description          String
+  logoUrl              String
+  websiteUrl           String?
+  categoryId           Int
+  category             PartnerCategory @relation(fields: [categoryId], references: [id])
+  keyImpact             String?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  @@index([name])
+}
+model PartnershipReason {
+  id                   Int          @id @default(autoincrement())
+  title                String
+  description          String
+  icon                 String
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  @@index([title])
+}
+model BlogPost {
+  id                   Int          @id @default(autoincrement())
+  title                String
+  slug                 String       @unique
+  content              String
+  summary              String
+  imageUrl             String?
+  authorId             Int
+  author               User         @relation(fields: [authorId], references: [id])
+  tags                 String[]
+  category             String?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  @@index([slug])
+}
+model ContactMessage {
+  id                   Int          @id @default(autoincrement())
+  name                 String
+  email                String
+  subject              String
+  message              String
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  @@index([email])
+  @@index([createdAt])
 }
