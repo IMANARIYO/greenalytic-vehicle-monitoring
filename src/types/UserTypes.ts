@@ -168,12 +168,15 @@ export interface UserListQueryDTO extends PaginationParams {
     status?: UserStatus;
     role?: UserRole;
     verified?: boolean;
+     gender?: string;
+    language?: string;
+    companyName?: string;
   };
   includeDeleted?: boolean;
   deletedOnly?: boolean;
 }
 
-// --- Response Types ---
+
 export interface UserListResponse {
   data: UserListItemWithCounts[];
   meta: PaginationMeta;

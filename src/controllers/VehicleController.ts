@@ -55,25 +55,8 @@ class VehicleController {
 
   listVehicles = catchAsync(async (req: AuthenticatedRequest, res: ExpressResponse) => {
     const isAdmin = req.userRole === 'ADMIN' || req.userRole === 'FLEET_MANAGER';
-    
-    const params = {
-      page: parseInt(req.query.page as string) || 1,
-      limit: parseInt(req.query.limit as string) || 10,
-      filters: {
-        status: req.query.status as any,
-        emissionStatus: req.query.emissionStatus as any,
-        vehicleType: req.query.vehicleType as string,
-        userId: isAdmin
-          ? req.query.userId
-            ? parseInt(req.query.userId as string)
-            : undefined
-          : req.userId,
-      },
-      sortBy: req.query.sortBy as any,
-      sortOrder: req.query.sortOrder as 'asc' | 'desc' || 'desc',
-      search: req.query.search as string,
-    };
-
+const params=req.query
+console.log("the  query was *****************************",params)
     const result = await this.vehicleService.listVehicles(params);
     return Response.success(res, result, 'Vehicles listed successfully');
   });

@@ -6,6 +6,7 @@ import { GpsDataRouter } from './gpsdata-routes';
 import { OBDDataRouter } from './obddata-routes'; // Uncomment if OBDDataRouter is defined
 import VehiclesRouter from './vehicle-routes';
 import TrackingdevicesRouter from './trackingdevice-routes';
+
 import { ValueRouter } from './website/value-routes';
 import { TechnologyRouter } from './website/technology-routes'; // Import the TechnologyRouter
 import { PartnershipReasonRouter } from './website/partnership-reason-routes'; // Import the PartnershipReasonRouter
@@ -19,7 +20,10 @@ import { ProductRouter } from './website/product-routes'; // Import the ProductR
 import { SolutionRouter } from './website/solution-routes'; // Import the SolutionRouter
 import { TestimonialRouter } from './website/testimonial-routes'; // Import the TestimonialRouter
 
+import authRoutes from './authRoutes';
+
 const MainRouter = Router();
+MainRouter.use("/auth", authRoutes);
 MainRouter.use('/users', UserRouter)
 MainRouter.use('/vehicles', VehiclesRouter)
 MainRouter.use('/emissions', EmissionRouter);
