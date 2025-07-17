@@ -16,7 +16,7 @@
     "seed": "node --loader ts-node/esm prisma/seed.ts",
     "dev": "nodemon --exec \"node --loader ts-node/esm src/index.ts\"",
     "start": "node --loader ts-node/esm src/index.ts",
-    "build": "tsc --project tsconfig.json",
+ "build": "tsc",
     "start:prod": "node dist/index.js"
   },
   "prisma": {
