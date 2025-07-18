@@ -2,6 +2,7 @@ import { DeviceStatus, CommunicationProtocol, DeviceCategory, ConnectionStatus }
 import { TrackingDeviceRepository } from '../repositories/TrackingDeviceRepository';
 import logger from '../utils/logger';
 import { AppError, HttpStatusCode } from '../middlewares/errorHandler';
+import { errorMonitor } from 'events';
 
 export class TrackingDeviceService {
   // Basic CRUD Operations
@@ -40,6 +41,7 @@ export class TrackingDeviceService {
         status: 'INACTIVE' // Default status for new devices
       });
     } catch (error) {
+
       logger.error('TrackingDeviceService::createDevice', error);
       throw error;
     }
@@ -142,6 +144,7 @@ export class TrackingDeviceService {
 
       return await TrackingDeviceRepository.listDevices(params);
     } catch (error) {
+      console.log("TrackingDeviceService::listDevices",errorMonitor)
       logger.error('TrackingDeviceService::listDevices', error);
       throw error;
     }

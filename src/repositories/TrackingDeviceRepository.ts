@@ -4,7 +4,17 @@ import logger from '../utils/logger';
 import prisma from '../config/db';
 import { AppError, HttpStatusCode, handlePrismaError } from '../middlewares/errorHandler';
 import { getNextValidStates, isValidTransition } from '../deviceStateMachine';
-
+import { PaginationParams } from '../types/GlobalTypes';
+import { parseBoolean, sanitizeFilters } from '../queryUtils';
+export interface DeviceListQueryParams extends PaginationParams {
+  filters?: {
+    status?: DeviceStatus;
+    deviceCategory?: DeviceCategory;
+    protocol?: CommunicationProtocol;
+    userId?: number;
+    vehicleId?: number;
+  };
+}
 
 export class TrackingDeviceRepository {
   // Basic CRUD Operations
@@ -107,105 +117,139 @@ export class TrackingDeviceRepository {
   }
 
   // List and Search Operations
-  static async listDevices(params: {
-    page?: number;
-    limit?: number;
-    search?: string;
-    filters?: {
-      status?: DeviceStatus;
-      deviceCategory?: DeviceCategory;
-      protocol?: CommunicationProtocol;
-      userId?: number;
-      vehicleId?: number;
+static async listDevices(params: DeviceListQueryParams) {
+  try {
+    const {
+      page: rawPage = 1,
+      limit: rawLimit = 10,
+      search,
+      filters = {},
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+      includeDeleted = false,
+      deletedOnly = false,
+    } = params;
+
+    // 🧼 Sanitize inputs
+    const page = Number(rawPage )||1;
+    const limit = Number(rawLimit)||10;
+    const skip = (page - 1) * limit;
+    const cleanFilters = sanitizeFilters(filters);
+    const isDeletedOnly = parseBoolean(deletedOnly);
+    const isIncludeDeleted = parseBoolean(includeDeleted);
+
+    // 🧾 Log for comparison
+    logger.info('TrackingDeviceRepository::listDevices — Sanitized Inputs', {
+      rawPage,
+      rawLimit,
+      page,
+      limit,
+      filters,
+      cleanFilters,
+      deletedOnly,
+      includeDeleted,
+      isDeletedOnly,
+      isIncludeDeleted,
+    });
+
+    // 🧱 Deleted filter logic
+    const deletedFilter =
+      isDeletedOnly
+        ? { not: null }
+        : isIncludeDeleted
+        ? undefined
+        : null;
+
+    // 🔍 Build where clause
+    const whereClause: Prisma.TrackingDeviceWhereInput = {
+      ...(deletedFilter !== undefined ? { deletedAt: deletedFilter } : {}),
+      ...(cleanFilters.status && { status: cleanFilters.status }),
+      ...(cleanFilters.deviceCategory && { deviceCategory: cleanFilters.deviceCategory }),
+      ...(cleanFilters.protocol && { communicationProtocol: cleanFilters.protocol }),
+      ...(cleanFilters.userId && { userId: cleanFilters.userId }),
+      ...(cleanFilters.vehicleId && { vehicleId: cleanFilters.vehicleId }),
     };
-    sortBy?: string;
-    sortOrder?: 'asc' | 'desc';
-  }) {
-    try {
-      const { page = 1, limit = 10, search, filters = {}, sortBy = 'createdAt', sortOrder = 'desc' } = params;
-      const skip = (page - 1) * limit;
 
-      const whereClause: Prisma.TrackingDeviceWhereInput = {
-        deletedAt: null,
-        ...(filters.status && { status: filters.status }),
-        ...(filters.deviceCategory && { deviceCategory: filters.deviceCategory }),
-        ...(filters.protocol && { communicationProtocol: filters.protocol }),
-        ...(filters.userId && { userId: filters.userId }),
-        ...(filters.vehicleId && { vehicleId: filters.vehicleId }),
-      };
-
-      if (search) {
-        whereClause.OR = [
-          { serialNumber: { contains: search, mode: 'insensitive' } },
-          { model: { contains: search, mode: 'insensitive' } },
-          { type: { contains: search, mode: 'insensitive' } },
-          { plateNumber: { contains: search, mode: 'insensitive' } },
-          {
-            user: {
-              OR: [
-                { username: { contains: search, mode: 'insensitive' } },
-                { email: { contains: search, mode: 'insensitive' } }
-              ]
-            }
-          }
-        ];
-      }
-
-      const [devices, total] = await Promise.all([
-        prisma.trackingDevice.findMany({
-          where: whereClause,
-          include: {
-            user: {
-              select: {
-                id: true,
-                username: true,
-                email: true,
-                role: true,
-              }
-            },
-            vehicle: {
-              select: {
-                id: true,
-                plateNumber: true,
-                vehicleType: true
-              }
-            }
+    if (search) {
+      whereClause.OR = [
+        { serialNumber: { contains: search, mode: 'insensitive' } },
+        { model: { contains: search, mode: 'insensitive' } },
+        { type: { contains: search, mode: 'insensitive' } },
+        { plateNumber: { contains: search, mode: 'insensitive' } },
+        {
+          user: {
+            OR: [
+              { username: { contains: search, mode: 'insensitive' } },
+              { email: { contains: search, mode: 'insensitive' } },
+            ],
           },
-          skip,
-          take: limit,
-          orderBy: {
-            [sortBy]: sortOrder
-          }
-        }),
-        prisma.trackingDevice.count({ where: whereClause })
-      ]);
-
-      const totalPages = Math.ceil(total / limit);
-      const hasNextPage = page < totalPages;
-      const hasPrevPage = page > 1;
-
-      return {
-        data: devices,
-        meta: {
-          page,
-          limit,
-          totalItems: total,
-          totalPages,
-          hasNextPage,
-          hasPrevPage,
-          nextPage: hasNextPage ? page + 1 : undefined,
-          prevPage: hasPrevPage ? page - 1 : undefined,
-          sortBy,
-          sortOrder
-        }
-      };
-    } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        throw handlePrismaError(error);
-      }
-      throw new AppError('Failed to list devices', HttpStatusCode.INTERNAL_SERVER_ERROR);
+        },
+      ];
     }
+
+    logger.info('TrackingDeviceRepository::listDevices — Final Where Clause', whereClause);
+
+    const [devices, total] = await Promise.all([
+      prisma.trackingDevice.findMany({
+        where: whereClause,
+        include: {
+          user: { select: { id: true, username: true, email: true, role: true } },
+          vehicle: { select: { id: true, plateNumber: true, vehicleType: true } },
+        },
+        skip,
+        take: limit,
+        orderBy: { [sortBy]: sortOrder },
+      }),
+      prisma.trackingDevice.count({ where: whereClause }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+
+    return {
+      data: devices,
+      meta: {
+        page,
+        limit,
+        totalItems: total,
+        totalPages,
+        hasNextPage,
+        hasPrevPage,
+        nextPage: hasNextPage ? page + 1 : undefined,
+        prevPage: hasPrevPage ? page - 1 : undefined,
+        sortBy,
+        sortOrder,
+      },
+    };
+  } catch (error: unknown) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      const appError = handlePrismaError(error);
+      logger.error('TrackingDeviceRepository::listDevices', appError);
+      throw appError;
+    }
+
+    if (error instanceof Error) {
+      const appError = new AppError(
+        error.message || 'Failed to list devices',
+        HttpStatusCode.INTERNAL_SERVER_ERROR
+      );
+      logger.error('TrackingDeviceRepository::listDevices', appError);
+      throw appError;
+    }
+
+    const appError = new AppError(
+      'Failed to list devices',
+      HttpStatusCode.INTERNAL_SERVER_ERROR
+    );
+    logger.error('TrackingDeviceRepository::listDevices', appError);
+    throw appError;
   }
+}
+
+
+
+
 
   // Device Assignment Operations
   static async assignToVehicle(deviceId: number, vehicleId: number) {

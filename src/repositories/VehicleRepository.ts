@@ -205,7 +205,6 @@ async listVehicles(params: PaginationParams): Promise<{ data: VehicleListItemWit
    page: rawPage = 1,
   limit: rawLimit = 10,
       search,
-      filters = {},
       sortBy = 'createdAt',
       sortOrder = 'desc',
       includeDeleted,
