@@ -11,6 +11,8 @@ console.log("from filters i received   the ",filters)
       if (value === '' || value === 'all') continue;
     }
 
+    
+    
     const match = key.match(/^filters\[(.+)\]$/);
     if (match) {
       const cleanKey = match[1];
