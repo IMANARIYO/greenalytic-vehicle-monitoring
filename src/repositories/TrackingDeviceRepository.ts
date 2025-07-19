@@ -4,19 +4,27 @@ import logger from '../utils/logger';
 import prisma from '../config/db';
 import { AppError, HttpStatusCode, handlePrismaError } from '../middlewares/errorHandler';
 import { getNextValidStates, isValidTransition } from '../deviceStateMachine';
-import { PaginationParams } from '../types/GlobalTypes';
-import { parseBoolean, sanitizeFilters } from '../queryUtils';
-export interface DeviceListQueryParams extends PaginationParams {
-  filters?: {
-    status?: DeviceStatus;
-    deviceCategory?: DeviceCategory;
-    protocol?: CommunicationProtocol;
-    userId?: number;
-    vehicleId?: number;
-  };
-}
 
+import { parseBoolean, sanitizeFilters } from '../queryUtils';
+import { PaginationParams } from '../types/GlobalTypes';
+
+export interface DeviceFilters {
+  status?: DeviceStatus;
+  deviceCategory?: DeviceCategory;
+  protocol?: CommunicationProtocol;
+  userId?: number;
+  vehicleId?: number;
+}
 export class TrackingDeviceRepository {
+    static async findActiveDeviceBySerialNumber(serialNumber: string) {
+    return prisma.trackingDevice.findFirst({
+      where: {
+        status: 'ACTIVE',
+        serialNumber,
+      },
+    });
+  }
+  
   // Basic CRUD Operations
   static async createDevice(data: Prisma.TrackingDeviceCreateInput) {
     try {
@@ -117,7 +125,7 @@ export class TrackingDeviceRepository {
   }
 
   // List and Search Operations
-static async listDevices(params: DeviceListQueryParams) {
+static async listDevices(params: PaginationParams<DeviceFilters>) {
   try {
     const {
       page: rawPage = 1,
@@ -128,8 +136,7 @@ static async listDevices(params: DeviceListQueryParams) {
       sortOrder = 'desc',
       includeDeleted = false,
       deletedOnly = false,
-    } = params;
-
+    } = params;console.log("the recieved params is the ",params)
     // 🧼 Sanitize inputs
     const page = Number(rawPage )||1;
     const limit = Number(rawLimit)||10;
@@ -138,19 +145,7 @@ static async listDevices(params: DeviceListQueryParams) {
     const isDeletedOnly = parseBoolean(deletedOnly);
     const isIncludeDeleted = parseBoolean(includeDeleted);
 
-    // 🧾 Log for comparison
-    logger.info('TrackingDeviceRepository::listDevices — Sanitized Inputs', {
-      rawPage,
-      rawLimit,
-      page,
-      limit,
-      filters,
-      cleanFilters,
-      deletedOnly,
-      includeDeleted,
-      isDeletedOnly,
-      isIncludeDeleted,
-    });
+
 
     // 🧱 Deleted filter logic
     const deletedFilter =
@@ -186,7 +181,7 @@ static async listDevices(params: DeviceListQueryParams) {
         },
       ];
     }
-
+console.log("from tacking devices the final     whre  clodse is the____________________ ",whereClause)
     logger.info('TrackingDeviceRepository::listDevices — Final Where Clause', whereClause);
 
     const [devices, total] = await Promise.all([

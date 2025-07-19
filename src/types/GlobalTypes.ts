@@ -10,13 +10,13 @@ export interface PaginationMeta {
   sortBy?: string;          // optional: sorting field (e.g., 'createdAt')
   sortOrder?: 'asc' | 'desc'; // optional: sort direction
 }
-export interface PaginationParams {
+export  interface PaginationParams<T = any>  {
   page?: number;
   limit?: number;
   sortBy?: string;           
   sortOrder?: 'asc' | 'desc';  
   search?: string;              
-  filters?: Record<string, any>;
+  filters?: T;
   includeDeleted?: boolean;     
   deletedOnly?: boolean;
   

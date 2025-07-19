@@ -1,8 +1,9 @@
 import { DeviceStatus, CommunicationProtocol, DeviceCategory, ConnectionStatus } from '@prisma/client';
-import { TrackingDeviceRepository } from '../repositories/TrackingDeviceRepository';
+import { DeviceFilters, TrackingDeviceRepository } from '../repositories/TrackingDeviceRepository';
 import logger from '../utils/logger';
 import { AppError, HttpStatusCode } from '../middlewares/errorHandler';
 import { errorMonitor } from 'events';
+import { PaginationParams } from '../types/GlobalTypes';
 
 export class TrackingDeviceService {
   // Basic CRUD Operations
@@ -21,28 +22,37 @@ export class TrackingDeviceService {
   }) {
     try {
       // Validate required fields
-      if (!data.serialNumber || !data.model || !data.type || !data.plateNumber || !data.deviceCategory) {
-        throw new AppError('Missing required fields', HttpStatusCode.BAD_REQUEST);
+      if (
+        !data.serialNumber ||
+        !data.model ||
+        !data.type ||
+        !data.plateNumber ||
+        !data.deviceCategory
+      ) {
+        throw new AppError(
+          "Missing required fields",
+          HttpStatusCode.BAD_REQUEST
+        );
       }
 
       // Check if device with same serial number exists
-      const existingDevice = await TrackingDeviceRepository.listDevices({
-        filters: { status: 'ACTIVE' },
-        search: data.serialNumber,
-        limit: 1
-      });
+const existingDevice = await TrackingDeviceRepository.findActiveDeviceBySerialNumber(data.serialNumber);
 
-      if (existingDevice.data.length > 0) {
-        throw new AppError('Device with this serial number already exists', HttpStatusCode.CONFLICT);
-      }
+if (existingDevice) {
+  throw new AppError(
+    "Device with this serial number already exists",
+    HttpStatusCode.CONFLICT,
+
+  );
+}
+
 
       return await TrackingDeviceRepository.createDevice({
         ...data,
-        status: 'INACTIVE' // Default status for new devices
+        status: "INACTIVE", // Default status for new devices
       });
     } catch (error) {
-
-      logger.error('TrackingDeviceService::createDevice', error);
+      logger.error("TrackingDeviceService::createDevice", error);
       throw error;
     }
   }
@@ -51,36 +61,39 @@ export class TrackingDeviceService {
     try {
       return await TrackingDeviceRepository.getDeviceById(id);
     } catch (error) {
-      logger.error('TrackingDeviceService::getDeviceById', error);
+      logger.error("TrackingDeviceService::getDeviceById", error);
       throw error;
     }
   }
 
-  static async updateDevice(id: number, data: {
-    model?: string;
-    type?: string;
-    plateNumber?: string;
-    batteryLevel?: number;
-    signalStrength?: number;
-    firmwareVersion?: string;
-    simCardNumber?: string;
-    communicationProtocol?: CommunicationProtocol;
-    dataTransmissionInterval?: string;
-    enableOBDMonitoring?: boolean;
-    enableGPSTracking?: boolean;
-    enableEmissionMonitoring?: boolean;
-    enableFuelMonitoring?: boolean;
-    status?: DeviceStatus;
-    userId?: number;
-    vehicleId?: number | null;
-  }) {
+  static async updateDevice(
+    id: number,
+    data: {
+      model?: string;
+      type?: string;
+      plateNumber?: string;
+      batteryLevel?: number;
+      signalStrength?: number;
+      firmwareVersion?: string;
+      simCardNumber?: string;
+      communicationProtocol?: CommunicationProtocol;
+      dataTransmissionInterval?: string;
+      enableOBDMonitoring?: boolean;
+      enableGPSTracking?: boolean;
+      enableEmissionMonitoring?: boolean;
+      enableFuelMonitoring?: boolean;
+      status?: DeviceStatus;
+      userId?: number;
+      vehicleId?: number | null;
+    }
+  ) {
     try {
       // Check if device exists
       await TrackingDeviceRepository.getDeviceById(id);
 
       return await TrackingDeviceRepository.updateDevice(id, data);
     } catch (error) {
-      logger.error('TrackingDeviceService::updateDevice', error);
+      logger.error("TrackingDeviceService::updateDevice", error);
       throw error;
     }
   }
@@ -92,7 +105,7 @@ export class TrackingDeviceService {
 
       return await TrackingDeviceRepository.softDeleteDevice(id);
     } catch (error) {
-      logger.error('TrackingDeviceService::softDeleteDevice', error);
+      logger.error("TrackingDeviceService::softDeleteDevice", error);
       throw error;
     }
   }
@@ -101,7 +114,7 @@ export class TrackingDeviceService {
     try {
       return await TrackingDeviceRepository.restoreDevice(id);
     } catch (error) {
-      logger.error('TrackingDeviceService::restoreDevice', error);
+      logger.error("TrackingDeviceService::restoreDevice", error);
       throw error;
     }
   }
@@ -113,39 +126,33 @@ export class TrackingDeviceService {
 
       return await TrackingDeviceRepository.deleteDevicePermanently(id);
     } catch (error) {
-      logger.error('TrackingDeviceService::deleteDevicePermanently', error);
+      logger.error("TrackingDeviceService::deleteDevicePermanently", error);
       throw error;
     }
   }
 
   // List and Search Operations
-  static async listDevices(params: {
-    page?: number;
-    limit?: number;
-    search?: string;
-    filters?: {
-      status?: DeviceStatus;
-      deviceCategory?: DeviceCategory;
-      protocol?: CommunicationProtocol;
-      userId?: number;
-      vehicleId?: number;
-    };
-    sortBy?: string;
-    sortOrder?: 'asc' | 'desc';
-  }) {
+static async listDevices(params: PaginationParams<DeviceFilters>) {
+
     try {
       // Validate pagination parameters
       if (params.page && params.page < 1) {
-        throw new AppError('Page must be greater than 0', HttpStatusCode.BAD_REQUEST);
+        throw new AppError(
+          "Page must be greater than 0",
+          HttpStatusCode.BAD_REQUEST
+        );
       }
       if (params.limit && (params.limit < 1 || params.limit > 100)) {
-        throw new AppError('Limit must be between 1 and 100', HttpStatusCode.BAD_REQUEST);
+        throw new AppError(
+          "Limit must be between 1 and 100",
+          HttpStatusCode.BAD_REQUEST
+        );
       }
 
       return await TrackingDeviceRepository.listDevices(params);
     } catch (error) {
-      console.log("TrackingDeviceService::listDevices",errorMonitor)
-      logger.error('TrackingDeviceService::listDevices', error);
+      console.log("TrackingDeviceService::listDevices", errorMonitor);
+      logger.error("TrackingDeviceService::listDevices", error);
       throw error;
     }
   }
@@ -158,17 +165,26 @@ export class TrackingDeviceService {
 
       // Check if device is already assigned to this vehicle
       if (device.vehicleId === vehicleId) {
-        throw new AppError('Device is already assigned to this vehicle', HttpStatusCode.BAD_REQUEST);
+        throw new AppError(
+          "Device is already assigned to this vehicle",
+          HttpStatusCode.BAD_REQUEST
+        );
       }
 
       // Check if device is active
-      if (device.status !== 'ACTIVE') {
-        throw new AppError('Only ACTIVE devices can be assigned to vehicles', HttpStatusCode.BAD_REQUEST);
+      if (device.status !== "ACTIVE") {
+        throw new AppError(
+          "Only ACTIVE devices can be assigned to vehicles",
+          HttpStatusCode.BAD_REQUEST
+        );
       }
 
-      return await TrackingDeviceRepository.assignToVehicle(deviceId, vehicleId);
+      return await TrackingDeviceRepository.assignToVehicle(
+        deviceId,
+        vehicleId
+      );
     } catch (error) {
-      logger.error('TrackingDeviceService::assignToVehicle', error);
+      logger.error("TrackingDeviceService::assignToVehicle", error);
       throw error;
     }
   }
@@ -180,12 +196,15 @@ export class TrackingDeviceService {
 
       // Check if device is already unassigned
       if (!device.vehicleId) {
-        throw new AppError('Device is not assigned to any vehicle', HttpStatusCode.BAD_REQUEST);
+        throw new AppError(
+          "Device is not assigned to any vehicle",
+          HttpStatusCode.BAD_REQUEST
+        );
       }
 
       return await TrackingDeviceRepository.unassignFromVehicle(deviceId);
     } catch (error) {
-      logger.error('TrackingDeviceService::unassignFromVehicle', error);
+      logger.error("TrackingDeviceService::unassignFromVehicle", error);
       throw error;
     }
   }
@@ -209,7 +228,7 @@ export class TrackingDeviceService {
         options
       );
     } catch (error) {
-      logger.error('TrackingDeviceService::updateDeviceStatus', error);
+      logger.error("TrackingDeviceService::updateDeviceStatus", error);
       throw error;
     }
   }
@@ -224,11 +243,17 @@ export class TrackingDeviceService {
   ) {
     try {
       if (deviceIds.length === 0) {
-        throw new AppError('No device IDs provided', HttpStatusCode.BAD_REQUEST);
+        throw new AppError(
+          "No device IDs provided",
+          HttpStatusCode.BAD_REQUEST
+        );
       }
 
       if (deviceIds.length > 100) {
-        throw new AppError('Cannot update more than 100 devices at once', HttpStatusCode.BAD_REQUEST);
+        throw new AppError(
+          "Cannot update more than 100 devices at once",
+          HttpStatusCode.BAD_REQUEST
+        );
       }
 
       return await TrackingDeviceRepository.batchUpdateStatuses(
@@ -237,7 +262,7 @@ export class TrackingDeviceService {
         options
       );
     } catch (error) {
-      logger.error('TrackingDeviceService::batchUpdateStatuses', error);
+      logger.error("TrackingDeviceService::batchUpdateStatuses", error);
       throw error;
     }
   }
@@ -256,7 +281,6 @@ export class TrackingDeviceService {
     } = { ignoreStatusCheck: false }
   ) {
     try {
-
       await TrackingDeviceRepository.getDeviceById(deviceId);
 
       return await TrackingDeviceRepository.toggleMonitoringFeature(
@@ -265,7 +289,7 @@ export class TrackingDeviceService {
         options
       );
     } catch (error) {
-      logger.error('TrackingDeviceService::toggleMonitoringFeature', error);
+      logger.error("TrackingDeviceService::toggleMonitoringFeature", error);
       throw error;
     }
   }
@@ -277,7 +301,7 @@ export class TrackingDeviceService {
 
       return await TrackingDeviceRepository.getMonitoringFeatures(deviceId);
     } catch (error) {
-      logger.error('TrackingDeviceService::getMonitoringFeatures', error);
+      logger.error("TrackingDeviceService::getMonitoringFeatures", error);
       throw error;
     }
   }
@@ -287,9 +311,11 @@ export class TrackingDeviceService {
       // Check if device exists
       await TrackingDeviceRepository.getDeviceById(deviceId);
 
-      return await TrackingDeviceRepository.resetAllMonitoringFeatures(deviceId);
+      return await TrackingDeviceRepository.resetAllMonitoringFeatures(
+        deviceId
+      );
     } catch (error) {
-      logger.error('TrackingDeviceService::resetAllMonitoringFeatures', error);
+      logger.error("TrackingDeviceService::resetAllMonitoringFeatures", error);
       throw error;
     }
   }
@@ -309,7 +335,7 @@ export class TrackingDeviceService {
 
       return await TrackingDeviceRepository.recordHeartbeat(deviceId, data);
     } catch (error) {
-      logger.error('TrackingDeviceService::recordHeartbeat', error);
+      logger.error("TrackingDeviceService::recordHeartbeat", error);
       throw error;
     }
   }
@@ -317,16 +343,23 @@ export class TrackingDeviceService {
   static async getDeviceHealth(deviceId: number, hoursBack = 24) {
     try {
       // Validate hoursBack parameter
-      if (hoursBack < 1 || hoursBack > 720) { // 30 days max
-        throw new AppError('hoursBack must be between 1 and 720 (30 days)', HttpStatusCode.BAD_REQUEST);
+      if (hoursBack < 1 || hoursBack > 720) {
+        // 30 days max
+        throw new AppError(
+          "hoursBack must be between 1 and 720 (30 days)",
+          HttpStatusCode.BAD_REQUEST
+        );
       }
 
       // Check if device exists
       await TrackingDeviceRepository.getDeviceById(deviceId);
 
-      return await TrackingDeviceRepository.getDeviceHealth(deviceId, hoursBack);
+      return await TrackingDeviceRepository.getDeviceHealth(
+        deviceId,
+        hoursBack
+      );
     } catch (error) {
-      logger.error('TrackingDeviceService::getDeviceHealth', error);
+      logger.error("TrackingDeviceService::getDeviceHealth", error);
       throw error;
     }
   }
@@ -335,19 +368,22 @@ export class TrackingDeviceService {
   static async getTopDevicesByStatus(status: DeviceStatus, limit: number = 5) {
     try {
       if (limit < 1 || limit > 20) {
-        throw new AppError('Limit must be between 1 and 20', HttpStatusCode.BAD_REQUEST);
+        throw new AppError(
+          "Limit must be between 1 and 20",
+          HttpStatusCode.BAD_REQUEST
+        );
       }
 
       const devices = await TrackingDeviceRepository.listDevices({
         filters: { status },
         limit,
-        sortBy: 'lastPing',
-        sortOrder: 'desc'
+        sortBy: "lastPing",
+        sortOrder: "desc",
       });
 
       return devices.data;
     } catch (error) {
-      logger.error('TrackingDeviceService::getTopDevicesByStatus', error);
+      logger.error("TrackingDeviceService::getTopDevicesByStatus", error);
       throw error;
     }
   }
@@ -355,11 +391,11 @@ export class TrackingDeviceService {
   static async countDevicesByStatus(status?: DeviceStatus) {
     try {
       const count = await TrackingDeviceRepository.listDevices({
-        filters: status ? { status } : undefined
+        filters: status ? { status } : undefined,
       });
       return count.meta.totalItems;
     } catch (error) {
-      logger.error('TrackingDeviceService::countDevicesByStatus', error);
+      logger.error("TrackingDeviceService::countDevicesByStatus", error);
       throw error;
     }
   }
@@ -368,15 +404,21 @@ export class TrackingDeviceService {
     try {
       // Validate daysBack parameter
       if (daysBack < 1 || daysBack > 365) {
-        throw new AppError('daysBack must be between 1 and 365', HttpStatusCode.BAD_REQUEST);
+        throw new AppError(
+          "daysBack must be between 1 and 365",
+          HttpStatusCode.BAD_REQUEST
+        );
       }
 
       // Check if device exists
       await TrackingDeviceRepository.getDeviceById(deviceId);
 
-      return await TrackingDeviceRepository.getStatusHistory(deviceId, daysBack);
+      return await TrackingDeviceRepository.getStatusHistory(
+        deviceId,
+        daysBack
+      );
     } catch (error) {
-      logger.error('TrackingDeviceService::getStatusHistory', error);
+      logger.error("TrackingDeviceService::getStatusHistory", error);
       throw error;
     }
   }
@@ -386,57 +428,65 @@ export class TrackingDeviceService {
     try {
       const result = await TrackingDeviceRepository.listDevices({
         search: serialNumber,
-        limit: 1
+        limit: 1,
       });
 
       if (result.data.length === 0) {
-        throw new AppError('Device not found', HttpStatusCode.NOT_FOUND);
+        throw new AppError("Device not found", HttpStatusCode.NOT_FOUND);
       }
 
       return result.data[0];
     } catch (error) {
-      logger.error('TrackingDeviceService::getDeviceBySerialNumber', error);
+      logger.error("TrackingDeviceService::getDeviceBySerialNumber", error);
       throw error;
     }
   }
 
-  static async bulkCreateDevices(devices: Array<{
-    serialNumber: string;
-    model: string;
-    type: string;
-    plateNumber: string;
-    deviceCategory: DeviceCategory;
-    firmwareVersion?: string;
-    simCardNumber?: string;
-    communicationProtocol: CommunicationProtocol;
-    dataTransmissionInterval: string;
-    userId?: number;
-  }>) {
+  static async bulkCreateDevices(
+    devices: Array<{
+      serialNumber: string;
+      model: string;
+      type: string;
+      plateNumber: string;
+      deviceCategory: DeviceCategory;
+      firmwareVersion?: string;
+      simCardNumber?: string;
+      communicationProtocol: CommunicationProtocol;
+      dataTransmissionInterval: string;
+      userId?: number;
+    }>
+  ) {
     try {
       if (devices.length === 0) {
-        throw new AppError('No devices provided', HttpStatusCode.BAD_REQUEST);
+        throw new AppError("No devices provided", HttpStatusCode.BAD_REQUEST);
       }
 
       if (devices.length > 100) {
-        throw new AppError('Cannot create more than 100 devices at once', HttpStatusCode.BAD_REQUEST);
+        throw new AppError(
+          "Cannot create more than 100 devices at once",
+          HttpStatusCode.BAD_REQUEST
+        );
       }
 
       // Check for duplicate serial numbers in the input
-      const serialNumbers = devices.map(d => d.serialNumber);
+      const serialNumbers = devices.map((d) => d.serialNumber);
       if (new Set(serialNumbers).size !== serialNumbers.length) {
-        throw new AppError('Duplicate serial numbers in the input', HttpStatusCode.BAD_REQUEST);
+        throw new AppError(
+          "Duplicate serial numbers in the input",
+          HttpStatusCode.BAD_REQUEST
+        );
       }
 
       // Check if any serial numbers already exist in the database
       const existingDevices = await TrackingDeviceRepository.listDevices({
-        search: serialNumbers.join(' '),
-        limit: 100
+        search: serialNumbers.join(" "),
+        limit: 100,
       });
 
       if (existingDevices.data.length > 0) {
-        const existingSerials = existingDevices.data.map(d => d.serialNumber);
+        const existingSerials = existingDevices.data.map((d) => d.serialNumber);
         throw new AppError(
-          `Devices with these serial numbers already exist: ${existingSerials.join(', ')}`,
+          `Devices with these serial numbers already exist: ${existingSerials.join(", ")}`,
           HttpStatusCode.CONFLICT
         );
       }
@@ -446,14 +496,14 @@ export class TrackingDeviceService {
       for (const device of devices) {
         const createdDevice = await TrackingDeviceRepository.createDevice({
           ...device,
-          status: 'INACTIVE'
+          status: "INACTIVE",
         });
         createdDevices.push(createdDevice);
       }
 
       return createdDevices;
     } catch (error) {
-      logger.error('TrackingDeviceService::bulkCreateDevices', error);
+      logger.error("TrackingDeviceService::bulkCreateDevices", error);
       throw error;
     }
   }

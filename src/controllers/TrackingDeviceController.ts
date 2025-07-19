@@ -3,7 +3,10 @@ import { TrackingDeviceService } from '../services/TrackingDeviceService';
 import Response from '../utils/response';
 import logger from '../utils/logger';
 import { AuthenticatedRequest } from '../utils/jwtFunctions';
-import { DeviceStatus, ConnectionStatus } from '@prisma/client';
+import { DeviceStatus, ConnectionStatus, CommunicationProtocol, DeviceCategory } from '@prisma/client';
+import { DeviceFilters } from '../repositories/TrackingDeviceRepository';
+import { PaginationParams } from '../types/GlobalTypes';
+import { parseBoolean, parseNumber } from '../queryUtils';
 
 export class TrackingDeviceController {
   // Basic CRUD Operations
@@ -75,20 +78,23 @@ export class TrackingDeviceController {
   // List and Search Operations
   static async listDevices(req: AuthenticatedRequest, res: ExpressResponse) {
     try {
-      const params = {
-        page: parseInt(req.query.page as string) || 1,
-        limit: parseInt(req.query.limit as string) || 10,
-        search: req.query.search as string,
-        filters: {
-          status: req.query.status as DeviceStatus,
-          deviceCategory: req.query.deviceCategory as any,
-          protocol: req.query.protocol as any,
-          userId: req.query.userId ? parseInt(req.query.userId as string) : undefined,
-          vehicleId: req.query.vehicleId ? parseInt(req.query.vehicleId as string) : undefined,
-        },
-        sortBy: req.query.sortBy as string || 'createdAt',
-        sortOrder: req.query.sortOrder as 'asc' | 'desc' || 'desc'
-      };
+const params: PaginationParams<DeviceFilters> = {
+  page: Number(req.query.page),
+  limit: Number(req.query.limit),
+  search: req.query.search as string,
+  sortBy: (req.query.sortBy as string) || "createdAt",
+  sortOrder: (req.query.sortOrder as "asc" | "desc") || "desc",
+  includeDeleted: parseBoolean(req.query.includeDeleted),
+  deletedOnly: parseBoolean(req.query.deletedOnly),
+  filters: {
+    status: req.query["filters[status]"] as DeviceStatus,
+    deviceCategory: req.query["filters[deviceCategory]"] as DeviceCategory,
+    protocol: req.query["filters[protocol]"] as CommunicationProtocol,
+    userId: Number(req.query["filters[userId]"]),
+    vehicleId: Number(req.query["filters[vehicleId]"])
+  }
+};
+
 
       const result = await TrackingDeviceService.listDevices(params);
       return Response.success(res, result, 'Devices listed successfully');

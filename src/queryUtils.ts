@@ -28,3 +28,10 @@ export function parseBoolean(value: unknown): boolean {
   if (typeof value === 'string') return value.toLowerCase() === 'true';
   return false;
 }
+
+// src/queryUtils.ts
+
+export function parseNumber(value: any, defaultValue: number | null = null): number | null {
+  const parsed = Number(value);
+  return !isNaN(parsed) ? parsed : defaultValue;
+}
