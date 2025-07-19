@@ -256,7 +256,7 @@ export class TrackingDeviceService {
     } = { ignoreStatusCheck: false }
   ) {
     try {
-      // Check if device exists
+
       await TrackingDeviceRepository.getDeviceById(deviceId);
 
       return await TrackingDeviceRepository.toggleMonitoringFeature(

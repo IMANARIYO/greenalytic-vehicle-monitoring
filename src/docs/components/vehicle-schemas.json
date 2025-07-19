@@ -1,0 +1,59 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "properties": {
+        "chassisNumber": {
+            "type": "string"
+        },
+        "fuelType": {
+            "enum": [
+                "DIESEL",
+                "ELECTRIC",
+                "HYBRID",
+                "PETROL"
+            ],
+            "type": "string"
+        },
+        "lastMaintenanceDate": {
+            "anyOf": [
+                {
+                    "format": "date-time",
+                    "type": "string"
+                },
+                {
+                    "type": "string"
+                }
+            ]
+        },
+        "plateNumber": {
+            "type": "string"
+        },
+        "registrationNumber": {
+            "type": "string"
+        },
+        "usage": {
+            "type": "string"
+        },
+        "userId": {
+            "type": "number"
+        },
+        "vehicleModel": {
+            "type": "string"
+        },
+        "vehicleType": {
+            "type": "string"
+        },
+        "yearOfManufacture": {
+            "type": "number"
+        }
+    },
+    "required": [
+        "plateNumber",
+        "usage",
+        "userId",
+        "vehicleModel",
+        "vehicleType",
+        "yearOfManufacture"
+    ],
+    "type": "object"
+}
+

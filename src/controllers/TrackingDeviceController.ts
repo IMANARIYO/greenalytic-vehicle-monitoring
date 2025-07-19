@@ -169,16 +169,12 @@ export class TrackingDeviceController {
   static async toggleMonitoringFeature(req: AuthenticatedRequest, res: ExpressResponse) {
     try {
       const deviceId = parseInt(req.params.deviceId);
-      const feature = req.body.feature as {
-        obd?: boolean;
-        gps?: boolean;
-        emission?: boolean;
-        fuel?: boolean;
-      };
+    const { obd, gps, emission, fuel, ignoreStatusCheck } = req.body;
+
       const options = {
         ignoreStatusCheck: req.body.ignoreStatusCheck === true
       };
-
+    const feature = { obd, gps, emission, fuel };
       const device = await TrackingDeviceService.toggleMonitoringFeature(
         deviceId,
         feature,

@@ -10,8 +10,6 @@ generator jsonSchema {
   provider = "prisma-json-schema-generator"
   output   = "./json-schema"
 }
-
-
 enum UserRole {
   ADMIN
   USER
@@ -88,7 +86,7 @@ model User {
   id                      Int        @id @default(autoincrement())
   username                String?
   email                   String     @unique
-  image                   String?     @default("https://st3.depositphotos.com/15648834/17930/v/450/depositphotos_179308454-stock-illustration-unknown-person-silhouette-glasses-profile.jpg")
+  image                   String?    @default("https://st3.depositphotos.com/15648834/17930/v/450/depositphotos_179308454-stock-illustration-unknown-person-silhouette-glasses-profile.jpg")
   password                String
   nationalId              String?
   gender                  String?
@@ -110,8 +108,8 @@ model User {
   deletedAt               DateTime?
   createdAt               DateTime   @default(now())
   updatedAt               DateTime   @updatedAt
-  oauthProvider     String?   
-  oauthProviderId   String?   
+  oauthProvider           String?   
+  oauthProviderId         String?   
 
   vehicles                Vehicle[]
   trackingDevices         TrackingDevice[]
@@ -138,7 +136,7 @@ model Vehicle {
   status                VehicleStatus  @default(NORMAL_EMISSION)
   emissionStatus        EmissionStatus @default(LOW)
   lastMaintenanceDate   DateTime?
-user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId                Int
   emissionData          EmissionData[]
   gpsData               GpsData[]
@@ -151,6 +149,7 @@ user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt             DateTime       @default(now())
   updatedAt             DateTime       @updatedAt
   deletedAt             DateTime?
+  
   @@index([userId])
   @@index([deletedAt])
   @@index([vehicleType])
@@ -174,7 +173,7 @@ model TrackingDevice {
   enableOBDMonitoring  Boolean              @default(false)
   enableGPSTracking    Boolean              @default(false)
   enableEmissionMonitoring Boolean           @default(false)
-  enableFuelMonitoring Boolean               @default(false)
+  enableFuelMonitoring Boolean              @default(false)
   isActive             Boolean              @default(true)
   status               DeviceStatus         @default(ACTIVE)
   lastPing             DateTime?
@@ -182,15 +181,11 @@ model TrackingDevice {
   fuelData             FuelData[]
   emissionData         EmissionData[]
   obdData              OBDData[]
-
-  user                 User?                @relation(fields: [userId], references: [id])
+  user                 User?                @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId               Int?
-
-  vehicle              Vehicle?             @relation(fields: [vehicleId], references: [id])
+  vehicle              Vehicle?             @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
   vehicleId            Int?
-
-  deviceHeartbeats     DeviceHeartbeat[]
-
+  deviceHeartbeats     DeviceHeartbeat[]   
   createdAt            DateTime             @default(now())
   updatedAt            DateTime             @updatedAt
   deletedAt            DateTime?
@@ -206,13 +201,10 @@ model FuelData {
   fuelLevel           Float
   fuelConsumption     Float
   plateNumber         String
-
   trackingDevice      TrackingDevice @relation(fields: [trackingDeviceId], references: [id], onDelete: Cascade)
   trackingDeviceId    Int
-
-  vehicle             Vehicle       @relation(fields: [vehicleId], references: [id])
+  vehicle             Vehicle       @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
   vehicleId           Int
-
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
 
@@ -227,18 +219,13 @@ model EmissionData {
   coPercentage        Float
   o2Percentage        Float
   hcPPM               Int
-
   noxPPM              Float?
   pm25Level           Float?
-
-  vehicle             Vehicle       @relation(fields: [vehicleId], references: [id])
+  vehicle             Vehicle       @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
   vehicleId           Int
-
   plateNumber         String?
-
   trackingDevice      TrackingDevice @relation(fields: [trackingDeviceId], references: [id], onDelete: Cascade)
   trackingDeviceId    Int
-
   createdAt           DateTime      @default(now())
   deletedAt           DateTime?
 
@@ -256,15 +243,11 @@ model GpsData {
   speed                Float
   accuracy             Float?
   timestamp            DateTime       @default(now())
-
   vehicle              Vehicle        @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
   vehicleId            Int
-
   trackingStatus       Boolean        @default(false)
-
-  trackingDevice       TrackingDevice? @relation(fields: [trackingDeviceId], references: [id],onDelete: Cascade)
+  trackingDevice       TrackingDevice? @relation(fields: [trackingDeviceId], references: [id], onDelete: Cascade)
   trackingDeviceId     Int?
-
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
 
@@ -282,13 +265,10 @@ model OBDData {
   engineTemperature    Float?
   engineStatus         String?
   faultCodes           String[]
-
-  vehicle              Vehicle       @relation(fields: [vehicleId], references: [id])
+  vehicle              Vehicle       @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
   vehicleId            Int
-
   trackingDevice       TrackingDevice @relation(fields: [trackingDeviceId], references: [id], onDelete: Cascade)
   trackingDeviceId     Int
-
   createdAt            DateTime      @default(now())
 
   @@index([vehicleId])
@@ -302,16 +282,12 @@ model Alert {
   title                String
   message              String
   isRead               Boolean          @default(false)
-
   triggerValue         String?
   triggerThreshold     String?
-
   vehicle              Vehicle          @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
   vehicleId            Int
-
-  user                 User?            @relation(fields: [userId], references: [id])
+  user                 User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId               Int?
-
   createdAt            DateTime         @default(now())
 
   @@index([vehicleId])
@@ -322,7 +298,7 @@ model Alert {
 
 model ConnectionState {
   id                   Int          @id @default(autoincrement())
-  vehicle               Vehicle      @relation(fields: [vehicleId], references: [id])
+  vehicle               Vehicle      @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
   vehicleId             Int          @unique
   socketId              String
   status                ConnectionStatus
@@ -335,15 +311,12 @@ model Report {
   type                 String
   format               String
   filePath             String?
-
   dateFrom             DateTime?
   dateTo               DateTime?
   vehicleIds           Int[]
   status               String?
-
-  generatedBy          User         @relation(fields: [userId], references: [id])
+  generatedBy          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId               Int
-
   createdAt            DateTime     @default(now())
 
   @@index([userId])
@@ -359,21 +332,24 @@ model MaintenanceRecord {
   cost                 Float?
   performedAt          DateTime
   nextDueDate          DateTime?
-  vehicle              Vehicle      @relation(fields: [vehicleId], references: [id])
+  vehicle              Vehicle      @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
   vehicleId            Int
   createdAt            DateTime     @default(now())
   updatedAt            DateTime     @updatedAt
+  
   @@index([vehicleId])
   @@index([performedAt])
   @@index([nextDueDate])
 }
+
 model ActivityLog {
   id                   Int          @id @default(autoincrement())
-  user                 User         @relation(fields: [userId], references: [id])
+  user                 User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId               Int
   action               String
   metadata             Json?
   timestamp            DateTime     @default(now())
+  
   @@index([userId])
   @@index([timestamp])
 }
@@ -395,15 +371,17 @@ model ThresholdConfig {
 }
 model DeviceHeartbeat {
   id                   Int          @id @default(autoincrement())
-  trackingDevice       TrackingDevice @relation(fields: [deviceId], references: [id])
+  trackingDevice       TrackingDevice @relation(fields: [deviceId], references: [id], onDelete: Cascade)
   deviceId             Int
   status               ConnectionStatus
   timestamp            DateTime     @default(now())
+  
   @@index([deviceId])
 }
+
 model UserNotification {
   id                   Int          @id @default(autoincrement())
-  user                 User         @relation(fields: [userId], references: [id])
+  user                 User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId               Int
   type                 NotificationType
   title                String
@@ -416,7 +394,7 @@ model UserNotification {
   @@index([isRead])
 }
 
-// Schemas for the website
+// ... (website models remain the same, as they don't need cascading deletes) ...
 model Solution {
   id                   Int          @id @default(autoincrement())
   title                String
@@ -575,7 +553,7 @@ model BlogPost {
   summary              String
   imageUrl             String?
   authorId             Int
-  author               User         @relation(fields: [authorId], references: [id])
+  author               User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
   tags                 String[]
   category             String?
   createdAt            DateTime     @default(now())
