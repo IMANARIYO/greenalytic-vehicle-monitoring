@@ -17,7 +17,7 @@
     "seed": "node --loader ts-node/esm prisma/seed.ts",
     "dev": "nodemon --exec \"node --loader ts-node/esm src/index.ts\"",
     "start": "node --loader ts-node/esm src/index.ts",
-    "build": "tsc && tsc-alias && npm run copy-yaml",
+    "build": "tsc && tsc-alias && npm run copy-yaml && cp -r src/public dist/public",
     "start:prod": "node dist/index.js"
   },
   "prisma": {
