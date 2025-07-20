@@ -34,42 +34,42 @@ const trackingDevicesDocs = yaml.load(
   fs.readFileSync(path.join(__dirname, 'trackingDevicesDocs.yaml'), 'utf8')
 ) as Record<string, any>;
 
-const valueDocs = yaml.load(
-  fs.readFileSync(path.join(__dirname, 'valueDocs.yaml'), 'utf8')
-) as Record<string, any>;
-const technologyDocs = yaml.load(
-  fs.readFileSync(path.join(__dirname, 'TechnologyDocs.yaml'), 'utf8')
-) as Record<string, any>;
-const partnershipReasonDocs = yaml.load(
-  fs.readFileSync(path.join(__dirname, 'partnershipReasonDocs.yaml'), 'utf8')
-) as Record<string, any>;
-const teamDocs = yaml.load(
-  fs.readFileSync(path.join(__dirname, 'teamDocs.yaml'), 'utf8')
-) as Record<string, any>;
-const advisoryBoardDocs = yaml.load(
-  fs.readFileSync(path.join(__dirname, 'advisoryBoardDocs.yaml'), 'utf8')
-) as Record<string, any>;
-const ContactMessageDocs = yaml.load(
-  fs.readFileSync(path.join(__dirname, 'contactMessageDocs.yaml'), 'utf8')
-) as Record<string, any>;
-const PartnerCategoryDocs = yaml.load(
-  fs.readFileSync(path.join(__dirname, 'partnerCategoryDocs.yaml'), 'utf8')
-) as Record<string, any>;
-const PartnerDocs = yaml.load(
-  fs.readFileSync(path.join(__dirname, 'partnerDocs.yaml'), 'utf8')
-) as Record<string, any>;
-const FeatureDocs = yaml.load(
-  fs.readFileSync(path.join(__dirname, 'featureDocs.yaml'), 'utf8')
-) as Record<string, any>;
-const ProductDocs = yaml.load(
-  fs.readFileSync(path.join(__dirname, 'productDocs.yaml'), 'utf8')
-) as Record<string, any>;
-const SolutionDocs = yaml.load(
-  fs.readFileSync(path.join(__dirname, 'solutionDocs.yaml'), 'utf8')
-) as Record<string, any>;
-const TestimonialDocs = yaml.load(
-  fs.readFileSync(path.join(__dirname, 'testimonialDocs.yaml'), 'utf8')
-) as Record<string, any>;
+// const valueDocs = yaml.load(
+//   fs.readFileSync(path.join(__dirname, 'valueDocs.yaml'), 'utf8')
+// ) as Record<string, any>;
+// const technologyDocs = yaml.load(
+//   fs.readFileSync(path.join(__dirname, 'TechnologyDocs.yaml'), 'utf8')
+// ) as Record<string, any>;
+// const partnershipReasonDocs = yaml.load(
+//   fs.readFileSync(path.join(__dirname, 'PartnershipReasonDocs.yaml'), 'utf8')
+// ) as Record<string, any>;
+// const teamDocs = yaml.load(
+//   fs.readFileSync(path.join(__dirname, 'TeamDocs.yaml'), 'utf8')
+// ) as Record<string, any>;
+// const advisoryBoardDocs = yaml.load(
+//   fs.readFileSync(path.join(__dirname, 'AdvisoryBoardDocs.yaml'), 'utf8')
+// ) as Record<string, any>;
+// const ContactMessageDocs = yaml.load(
+//   fs.readFileSync(path.join(__dirname, 'contactMessageDocs.yaml'), 'utf8')
+// ) as Record<string, any>;
+// const PartnerCategoryDocs = yaml.load(
+//   fs.readFileSync(path.join(__dirname, 'partnerCategoryDocs.yaml'), 'utf8')
+// ) as Record<string, any>;
+// const PartnerDocs = yaml.load(
+//   fs.readFileSync(path.join(__dirname, 'partnerDocs.yaml'), 'utf8')
+// ) as Record<string, any>;
+// const FeatureDocs = yaml.load(
+//   fs.readFileSync(path.join(__dirname, 'featureDocs.yaml'), 'utf8')
+// ) as Record<string, any>;
+// const ProductDocs = yaml.load(
+//   fs.readFileSync(path.join(__dirname, 'productDocs.yaml'), 'utf8')
+// ) as Record<string, any>;
+// const SolutionDocs = yaml.load(
+//   fs.readFileSync(path.join(__dirname, 'solutionDocs.yaml'), 'utf8')
+// ) as Record<string, any>;
+// const TestimonialDocs = yaml.load(
+//   fs.readFileSync(path.join(__dirname, 'testimonialDocs.yaml'), 'utf8')
+// ) as Record<string, any>;
 
 const swaggerSpec = {
   openapi: '3.0.0',
@@ -690,18 +690,18 @@ const swaggerSpec = {
     ...gpsDataDocs,
     ...fuelDataDocs,
     ...obdDataDocs,
-    ...valueDocs,
-    ...technologyDocs,
-    ...partnershipReasonDocs,
-    ...teamDocs,
-    ...advisoryBoardDocs,
-    ...ContactMessageDocs,
-    ...PartnerCategoryDocs,
-    ...PartnerDocs,
-    ...FeatureDocs,
-    ...ProductDocs,
-    ...SolutionDocs,
-    ...TestimonialDocs,
+    // ...valueDocs,
+    // ...technologyDocs,
+    // ...partnershipReasonDocs,
+    // ...teamDocs,
+    // ...advisoryBoardDocs,
+    // ...ContactMessageDocs,
+    // ...PartnerCategoryDocs,
+    // ...PartnerDocs,
+    // ...FeatureDocs,
+    // ...ProductDocs,
+    // ...SolutionDocs,
+    // ...TestimonialDocs,
     '/__show-models': {
       get: {
         summary: 'Force schema display',
