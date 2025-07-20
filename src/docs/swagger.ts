@@ -120,7 +120,6 @@ const swaggerSpec = {
     },
     schemas: {
       ...schema.definitions,
-      // Vehicle Request Schemas
       VehicleCreateRequest: {
         type: "object",
         required: ["plateNumber", "usage", "userId", "vehicleModel", "vehicleType", "yearOfManufacture"],
@@ -153,7 +152,7 @@ const swaggerSpec = {
         }
       },
       
-      // Vehicle Response Schemas
+
       VehicleListItem: {
         type: 'object',
         properties: {
@@ -216,7 +215,7 @@ const swaggerSpec = {
         }
       },
       
-      // Supporting Schemas
+
       UserBasicInfo: {
         type: 'object',
         properties: {

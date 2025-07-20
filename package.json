@@ -18,7 +18,7 @@
     "dev": "nodemon --exec \"node --loader ts-node/esm src/index.ts\"",
     "start": "node --loader ts-node/esm src/index.ts",
     "build": "tsc && tsc-alias && npm run copy-yaml",
-    "start:prod": " tsc && node dist/index.js"
+    "start:prod": "node dist/index.js"
   },
   "prisma": {
     "seed": "node --loader ts-node/esm prisma/seed.ts"
