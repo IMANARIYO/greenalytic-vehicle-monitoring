@@ -1,4 +1,4 @@
-# Value API Endpoints
+
 /website/values:
   get:
     tags:

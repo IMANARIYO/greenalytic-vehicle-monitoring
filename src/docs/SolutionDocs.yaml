@@ -1,4 +1,4 @@
-# Solution API Endpoints
+
 /website/solutions:
   get:
     tags:
