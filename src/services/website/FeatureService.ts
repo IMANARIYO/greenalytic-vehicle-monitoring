@@ -7,12 +7,12 @@ import {
   CreateFeatureResponseDTO,
   FeatureWithProductResponseDTO,
   FeatureWithProductListResponseDTO
-} from '../../types/webiste/dtos/FeatureDto';
-import { PaginationMeta, PaginationParams } from '../../types/GlobalTypes';
-import FeatureRepository from '../../repositories/website/FeatureRepository';
-import ProductRepository from '../../repositories/website/ProductRepository';
-import { AppError, HttpStatusCode } from '../../middlewares/errorHandler';
-import logger from '../../utils/logger';
+} from '../../types/webiste/dtos/FeatureDto.js';
+import { PaginationMeta, PaginationParams } from '../../types/GlobalTypes.js';
+import FeatureRepository from '../../repositories/website/FeatureRepository.js';
+import ProductRepository from '../../repositories/website/ProductRepository.js';
+import { AppError, HttpStatusCode } from '../../middlewares/errorHandler.js';
+import logger from '../../utils/logger.js';
 
 export class FeatureService {
   

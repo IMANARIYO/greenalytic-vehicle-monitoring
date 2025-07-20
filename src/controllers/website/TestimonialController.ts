@@ -1,9 +1,9 @@
 import { Request, Response as ExpressResponse } from 'express';
-import { AuthenticatedRequest } from '../../utils/jwtFunctions';
-import { catchAsync } from '../../middlewares/errorHandler';
-import Response from '../../utils/response';
-import TestimonialService from '../../services/website/TestimonialService';
-import { CreateTestimonialDTO, UpdateTestimonialDTO, TestimonialQueryDTO } from '../../types/webiste/dtos/TestimonialDto';
+import { AuthenticatedRequest } from '../../utils/jwtFunctions.js';
+import { catchAsync } from '../../middlewares/errorHandler.js';
+import Response from '../../utils/response.js';
+import TestimonialService from '../../services/website/TestimonialService.js';
+import { CreateTestimonialDTO, UpdateTestimonialDTO, TestimonialQueryDTO } from '../../types/webiste/dtos/TestimonialDto.js';
 
 class TestimonialController {
 

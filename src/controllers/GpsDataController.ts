@@ -1,9 +1,9 @@
 import { Request, Response as ExpressResponse } from 'express';
-import { AuthenticatedRequest } from '../utils/jwtFunctions';
-import { catchAsync } from '../middlewares/errorHandler';
-import Response from '../utils/response';
-import GpsDataService from '../services/GpsDataService';
-import { CreateGpsDataDTO, UpdateGpsDataDTO, GpsDataQueryDTO } from '../types/dtos/GpsDataDto';
+import { AuthenticatedRequest } from '../utils/jwtFunctions.js';
+import { catchAsync } from '../middlewares/errorHandler.js';
+import Response from '../utils/response.js';
+import GpsDataService from '../services/GpsDataService.js';
+import { CreateGpsDataDTO, UpdateGpsDataDTO, GpsDataQueryDTO } from '../types/dtos/GpsDataDto.js';
 
 class GpsDataController {
   createGpsData = catchAsync(async (req: Request, res: ExpressResponse) => {

@@ -1,7 +1,7 @@
 import { Response, NextFunction } from 'express';
-import ResponseUtil from '../utils/response';
-import { AuthenticatedRequest, verifyingtoken } from '../utils/jwtFunctions';
-import { catchAsync } from './errorHandler';
+import ResponseUtil from '../utils/response.js';
+import { AuthenticatedRequest, verifyingtoken } from '../utils/jwtFunctions.js';
+import { catchAsync } from './errorHandler.js';
 
 
 export const hasRole = (roles: string[]) => {

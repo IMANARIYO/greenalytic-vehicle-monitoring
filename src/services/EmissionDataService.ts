@@ -9,14 +9,14 @@ import {
   CreateEmissionDataResponseDTO,
   EmissionThresholds,
   EmissionDataWithAnalysisDTO
-} from '../types/dtos/EmissionDataDto';
-import { PaginationMeta, PaginationParams } from '../types/GlobalTypes';
-import EmissionDataRepository from '../repositories/EmissionDataRepository';
-import VehicleRepository from '../repositories/VehicleRepository';
-import {TrackingDeviceRepository} from '../repositories/TrackingDeviceRepository';
-import { AlertRepository } from '../repositories/AlertRepository';
-import { AppError, HttpStatusCode } from '../middlewares/errorHandler';
-import logger from '../utils/logger';
+} from '../types/dtos/EmissionDataDto.js';
+import { PaginationMeta, PaginationParams } from '../types/GlobalTypes.js';
+import EmissionDataRepository from '../repositories/EmissionDataRepository.js';
+import VehicleRepository from '../repositories/VehicleRepository.js';
+import {TrackingDeviceRepository} from '../repositories/TrackingDeviceRepository.js';
+import { AlertRepository } from '../repositories/AlertRepository.js';
+import { AppError, HttpStatusCode } from '../middlewares/errorHandler.js';
+import logger from '../utils/logger.js';
 
 // Emission thresholds - These need to be confirmed with Emmanuel
 const EMISSION_THRESHOLDS: EmissionThresholds = {

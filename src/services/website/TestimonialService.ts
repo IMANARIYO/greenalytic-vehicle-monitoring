@@ -7,12 +7,12 @@ import {
   CreateTestimonialResponseDTO,
   TestimonialWithSolutionResponseDTO,
   TestimonialWithSolutionListResponseDTO
-} from '../../types/webiste/dtos/TestimonialDto';
-import { PaginationMeta, PaginationParams } from '../../types/GlobalTypes';
-import TestimonialRepository from '../../repositories/website/TestimonialRepository';
-import SolutionRepository from '../../repositories/website/SolutionRepository';
-import { AppError, HttpStatusCode } from '../../middlewares/errorHandler';
-import logger from '../../utils/logger';
+} from '../../types/webiste/dtos/TestimonialDto.js';
+import { PaginationMeta, PaginationParams } from '../../types/GlobalTypes.js';
+import TestimonialRepository from '../../repositories/website/TestimonialRepository.js';
+import SolutionRepository from '../../repositories/website/SolutionRepository.js';
+import { AppError, HttpStatusCode } from '../../middlewares/errorHandler.js';
+import logger from '../../utils/logger.js';
 
 export class TestimonialService {
   

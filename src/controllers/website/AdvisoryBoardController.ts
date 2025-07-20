@@ -1,9 +1,9 @@
 import { Request, Response as ExpressResponse } from 'express';
-import { AuthenticatedRequest } from '../../utils/jwtFunctions';
-import { catchAsync } from '../../middlewares/errorHandler';
-import Response from '../../utils/response';
-import AdvisoryBoardService from '../../services/website/AdvisoryBoardService';
-import { CreateAdvisoryBoardDTO, UpdateAdvisoryBoardDTO, AdvisoryBoardQueryDTO } from '../../types/webiste/dtos/AdvisoryBoardDto';
+import { AuthenticatedRequest } from '../../utils/jwtFunctions.js';
+import { catchAsync } from '../../middlewares/errorHandler.js';
+import Response from '../../utils/response.js';
+import AdvisoryBoardService from '../../services/website/AdvisoryBoardService.js';
+import { CreateAdvisoryBoardDTO, UpdateAdvisoryBoardDTO, AdvisoryBoardQueryDTO } from '../../types/webiste/dtos/AdvisoryBoardDto.js';
 
 class AdvisoryBoardController {
 

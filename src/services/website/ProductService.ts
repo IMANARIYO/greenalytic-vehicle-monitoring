@@ -6,11 +6,11 @@ import {
   ProductListResponseDTO,
   CreateProductResponseDTO,
   ProductWithFeaturesResponseDTO
-} from '../../types/webiste/dtos/ProductDto';
-import { PaginationMeta, PaginationParams } from '../../types/GlobalTypes';
-import ProductRepository from '../../repositories/website/ProductRepository';
-import { AppError, HttpStatusCode } from '../../middlewares/errorHandler';
-import logger from '../../utils/logger';
+} from '../../types/webiste/dtos/ProductDto.js';
+import { PaginationMeta, PaginationParams } from '../../types/GlobalTypes.js';
+import ProductRepository from '../../repositories/website/ProductRepository.js';
+import { AppError, HttpStatusCode } from '../../middlewares/errorHandler.js';
+import logger from '../../utils/logger.js';
 
 export class ProductService {
   

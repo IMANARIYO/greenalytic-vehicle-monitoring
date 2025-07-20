@@ -5,11 +5,11 @@ import {
   TechnologyResponseDTO,
   TechnologyListResponseDTO,
   CreateTechnologyResponseDTO
-} from '../../types/webiste/dtos/TechnologyDto';
-import { PaginationMeta, PaginationParams } from '../../types/GlobalTypes';
-import TechnologyRepository from '../../repositories/website/TechnologyRepository';
-import { AppError, HttpStatusCode } from '../../middlewares/errorHandler';
-import logger from '../../utils/logger';
+} from '../../types/webiste/dtos/TechnologyDto.js';
+import { PaginationMeta, PaginationParams } from '../../types/GlobalTypes.js';
+import TechnologyRepository from '../../repositories/website/TechnologyRepository.js';
+import { AppError, HttpStatusCode } from '../../middlewares/errorHandler.js';
+import logger from '../../utils/logger.js';
 
 export class TechnologyService {
   

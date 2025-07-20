@@ -1,9 +1,9 @@
 import { Request, Response as ExpressResponse } from 'express';
-import { AuthenticatedRequest } from '../../utils/jwtFunctions';
-import { catchAsync } from '../../middlewares/errorHandler';
-import Response from '../../utils/response';
-import SolutionService from '../../services/website/SolutionService';
-import { CreateSolutionDTO, UpdateSolutionDTO, SolutionQueryDTO} from '../../types/webiste/dtos/SolutionDto';
+import { AuthenticatedRequest } from '../../utils/jwtFunctions.js';
+import { catchAsync } from '../../middlewares/errorHandler.js';
+import Response from '../../utils/response.js';
+import SolutionService from '../../services/website/SolutionService.js';
+import { CreateSolutionDTO, UpdateSolutionDTO, SolutionQueryDTO} from '../../types/webiste/dtos/SolutionDto.js';
 import { SolutionType } from '@prisma/client';
 
 class SolutionController {

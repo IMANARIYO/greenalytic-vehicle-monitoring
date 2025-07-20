@@ -1,10 +1,10 @@
 import jwt from 'jsonwebtoken';
 import { Request, Response as ExpressResponse, NextFunction } from 'express';
-import { ENV } from '../config/env';
-import { JwtPayload } from '../types/jwtPayload';
-import Response from './response';
-import { catchAsync } from '../middlewares/errorHandler'; // Adjust path as needed
-import logger from './logger';
+import { ENV } from '../config/env.js';
+import { JwtPayload } from '../types/jwtPayload.js';
+import Response from './response.js';
+import { catchAsync } from '../middlewares/errorHandler.js'; // Adjust path as needed
+import logger from './logger.js';
 
 export interface AuthenticatedRequest extends Request {
   userId?: number;
@@ -43,7 +43,7 @@ export const verifyingtoken = catchAsync(async (
   const token = auth?.split(' ')[1];
 
   if (!token) {
-console.log("provide the token  plaease*********************************************************",auth)
+
     return Response.unauthorized(res, 'No access token provided');
   }
 

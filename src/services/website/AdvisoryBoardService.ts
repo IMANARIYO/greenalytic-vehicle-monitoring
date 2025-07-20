@@ -6,11 +6,11 @@ import {
   AdvisoryBoardListResponseDTO,
   CreateAdvisoryBoardResponseDTO,
   SocialLinks
-} from '../../types/webiste/dtos/AdvisoryBoardDto';
-import { PaginationMeta, PaginationParams } from '../../types/GlobalTypes';
-import AdvisoryBoardRepository from '../../repositories/website/AdvisoryBoardRepository';
-import { AppError, HttpStatusCode } from '../../middlewares/errorHandler';
-import logger from '../../utils/logger';
+} from '../../types/webiste/dtos/AdvisoryBoardDto.js';
+import { PaginationMeta, PaginationParams } from '../../types/GlobalTypes.js';
+import AdvisoryBoardRepository from '../../repositories/website/AdvisoryBoardRepository.js';
+import { AppError, HttpStatusCode } from '../../middlewares/errorHandler.js';
+import logger from '../../utils/logger.js';
 
 export class AdvisoryBoardService {
   

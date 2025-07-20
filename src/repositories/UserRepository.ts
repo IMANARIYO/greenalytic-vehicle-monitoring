@@ -1,11 +1,11 @@
-import prisma from '../config/db';
+import prisma from '../config/db.js';
+
 import { Prisma, User, UserStatus, UserRole } from '@prisma/client';
 
-import { PaginationMeta } from '../types/GlobalTypes';
-import logger from '../utils/logger';
-import { AppError, handlePrismaError, HttpStatusCode } from '../middlewares/errorHandler';
-import { CreateUserDTO, GetUserByIdResponse, InternalUser, UpdateUserDTO, UserBasicInfo, UserListItemWithCounts, UserListQueryDTO } from '../types';
-
+import { PaginationMeta } from '../types/GlobalTypes.js';
+import logger from '../utils/logger.js';
+import { AppError, handlePrismaError, HttpStatusCode } from '../middlewares/errorHandler.js';
+import { CreateUserDTO, GetUserByIdResponse, InternalUser, UpdateUserDTO, UserBasicInfo, UserListItemWithCounts, UserListQueryDTO } from "./../types/UserTypes";
 
 class UserRepository {
   private readonly tag = '[UserRepository]';

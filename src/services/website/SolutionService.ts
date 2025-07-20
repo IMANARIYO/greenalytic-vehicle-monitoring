@@ -7,12 +7,12 @@ import {
   CreateSolutionResponseDTO,
   SolutionWithTestimonialsResponseDTO,
   SolutionWithTestimonialsListResponseDTO,
-} from '../../types/webiste/dtos/SolutionDto';
+} from '../../types/webiste/dtos/SolutionDto.js';
 import { SolutionType } from '@prisma/client';
-import { PaginationMeta, PaginationParams } from '../../types/GlobalTypes';
-import SolutionRepository from '../../repositories/website/SolutionRepository';
-import { AppError, HttpStatusCode } from '../../middlewares/errorHandler';
-import logger from '../../utils/logger';
+import { PaginationMeta, PaginationParams } from '../../types/GlobalTypes.js';
+import SolutionRepository from '../../repositories/website/SolutionRepository.js';
+import { AppError, HttpStatusCode } from '../../middlewares/errorHandler.js';
+import logger from '../../utils/logger.js';
 
 export class SolutionService {
   

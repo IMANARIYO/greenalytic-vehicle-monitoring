@@ -1,9 +1,9 @@
 import { Request, Response as ExpressResponse } from 'express';
-import { AuthenticatedRequest } from '../utils/jwtFunctions';
-import { catchAsync } from '../middlewares/errorHandler';
-import Response from '../utils/response';
-import { VehicleService } from '../services/VehicleService';
-import logger from '../utils/logger';
+import { AuthenticatedRequest } from '../utils/jwtFunctions.js';
+import { catchAsync } from '../middlewares/errorHandler.js';
+import Response from '../utils/response.js';
+import { VehicleService } from '../services/VehicleService.js';
+import logger from '../utils/logger.js';
 
 class VehicleController {
   private vehicleService: VehicleService;

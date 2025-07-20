@@ -1,9 +1,9 @@
 import { Request, Response as ExpressResponse } from 'express';
-import { AuthenticatedRequest } from '../utils/jwtFunctions';
-import { catchAsync } from '../middlewares/errorHandler';
-import Response from '../utils/response';
-import FuelDataService from '../services/FuelDataService';
-import { CreateFuelDataDTO, UpdateFuelDataDTO, FuelDataQueryDTO } from '../types/dtos/FuelDataDto';
+import { AuthenticatedRequest } from '../utils/jwtFunctions.js';
+import { catchAsync } from '../middlewares/errorHandler.js';
+import Response from '../utils/response.js';
+import FuelDataService from '../services/FuelDataService.js';
+import { CreateFuelDataDTO, UpdateFuelDataDTO, FuelDataQueryDTO } from '../types/dtos/FuelDataDto.js';
 
 class FuelDataController {
   createFuelData = catchAsync(async (req: Request, res: ExpressResponse) => {

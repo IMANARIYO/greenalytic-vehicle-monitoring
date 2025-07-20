@@ -1,8 +1,8 @@
 import { Request, Response as ExpressResponse } from "express";
-import UserService from "../services/UserService";
-import Response from "../utils/response";
-import { tokengenerating } from "../utils/jwtFunctions";
-import { PaginationParams } from "../types/GlobalTypes";
+import UserService from "../services/UserService.js";
+import Response from "../utils/response.js";
+import { tokengenerating } from "../utils/jwtFunctions.js";
+import { PaginationParams } from "../types/GlobalTypes.js";
 
 declare global {
   namespace Express {

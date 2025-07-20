@@ -1,8 +1,8 @@
 import { Router, Request, Response, NextFunction } from 'express';
-// import { hasRole } from '../middlewares/hasRole';
-// import { isLoggedIn } from '../middlewares/isLoggedIn';
-import { AuthenticatedRequest } from '../../utils/jwtFunctions';
-import SolutionController from '../../controllers/website/SolutionController';
+// import { hasRole } from '../middlewares/hasRole.js';
+// import { isLoggedIn } from '../middlewares/isLoggedIn.js';
+import { AuthenticatedRequest } from '../../utils/jwtFunctions.js';
+import SolutionController from '../../controllers/website/SolutionController.js';
 
 export const SolutionRouter = Router();
 

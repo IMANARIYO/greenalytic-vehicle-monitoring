@@ -1,15 +1,16 @@
 import { Prisma as PrismaTypes, User, UserRole, UserStatus } from '@prisma/client';
-import UserRepo from '../repositories/UserRepository';
-import { generateOTP, isOTPValid, passComparer, passHashing } from '../utils/passwordFunctions';
+import UserRepo from '../repositories/UserRepository.js';
+import { generateOTP, isOTPValid, passComparer, passHashing } from '../utils/passwordFunctions.js';
 
 
-import { tokengenerating } from '../utils/jwtFunctions';
-import { ChangePasswordDTO, CreateUserDTO, GetUserByIdResponse, LoginDTO, ResetPasswordDTO, SignupDTO, UpdateUserDTO, UserBasicInfo, UserListItemWithCounts, UserListQueryDTO } from '../types';
+import { tokengenerating } from '../utils/jwtFunctions.js';
 
-import logger from '../utils/logger';
-import { AppError, HttpStatusCode, NotFoundError } from '../middlewares/errorHandler';
-import { sendEmail } from '../emailUtils';
-import { PaginationMeta } from '../types/GlobalTypes';
+
+import logger from '../utils/logger.js';
+import { AppError, HttpStatusCode, NotFoundError } from '../middlewares/errorHandler.js';
+import { sendEmail } from '../emailUtils.js';
+import { PaginationMeta } from '../types/GlobalTypes.js';
+import { ChangePasswordDTO, CreateUserDTO, GetUserByIdResponse, LoginDTO, ResetPasswordDTO, SignupDTO, UpdateUserDTO, UserBasicInfo, UserListItemWithCounts, UserListQueryDTO } from '../types/UserTypes.js';
 
 function removeNulls<T extends object>(obj: T): T {
   const cleanedObj: any = {};

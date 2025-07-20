@@ -1,8 +1,8 @@
 import { Team, Prisma, Department } from '@prisma/client';
-import logger from '../../utils/logger';
-import { AppError, handlePrismaError, HttpStatusCode, NotFoundError } from '../../middlewares/errorHandler';
-import prisma from '../../config/db';
-import { SocialLinks } from '../../types/webiste/dtos/TeamDto';
+import logger from '../../utils/logger.js';
+import { AppError, handlePrismaError, HttpStatusCode, NotFoundError } from '../../middlewares/errorHandler.js';
+import prisma from '../../config/db.js';
+import { SocialLinks } from '../../types/webiste/dtos/TeamDto.js';
 
 interface TeamCreateInput {
   name: string;

@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
-import { ENV } from './config/env';
-import { AppError } from './middlewares/errorHandler';
+import { ENV } from './config/env.js';
+import { AppError } from './middlewares/errorHandler.js';
 
 
 const validateEmailConfig = (): void => {

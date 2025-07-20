@@ -5,11 +5,11 @@ import {
   PartnershipReasonResponseDTO,
   PartnershipReasonListResponseDTO,
   CreatePartnershipReasonResponseDTO
-} from '../../types/webiste/dtos/PartnershipReasonDto';
-import { PaginationMeta, PaginationParams } from '../../types/GlobalTypes';
-import PartnershipReasonRepository from '../../repositories/website/PartnershipReasonRepository';
-import { AppError, HttpStatusCode } from '../../middlewares/errorHandler';
-import logger from '../../utils/logger';
+} from '../../types/webiste/dtos/PartnershipReasonDto.js';
+import { PaginationMeta, PaginationParams } from '../../types/GlobalTypes.js';
+import PartnershipReasonRepository from '../../repositories/website/PartnershipReasonRepository.js';
+import { AppError, HttpStatusCode } from '../../middlewares/errorHandler.js';
+import logger from '../../utils/logger.js';
 
 export class PartnershipReasonService {
   

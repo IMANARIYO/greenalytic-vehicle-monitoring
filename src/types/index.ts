@@ -1,18 +1,18 @@
-﻿export * from './AlertTypes';
-export * from './ConnectionStateTypes';
-export * from './DeviceHeartbeatTypes';
-export * from './EmissionDataTypes';
-export * from './FuelDataTypes';
-export * from './GpsDataTypes';
-export * from './InventoryItemTypes';
-export * from './MaintenanceRecordTypes';
-export * from './OBDDataTypes';
-export * from './ReportTypes';
-export * from './ThresholdConfigTypes';
-export * from './TrackingDeviceTypes';
-export * from './UserNotificationTypes';
-export * from './UserTypes';
-export * from './VehicleTypes';
+﻿export * from './AlertTypes.js';
+export * from './ConnectionStateTypes.js';
+export * from './DeviceHeartbeatTypes.js';
+export * from './EmissionDataTypes.js';
+export * from './FuelDataTypes.js';
+export * from './GpsDataTypes.js';
+export * from './InventoryItemTypes.js';
+export * from './MaintenanceRecordTypes.js';
+export * from './OBDDataTypes.js';
+export * from './ReportTypes.js';
+export * from './ThresholdConfigTypes.js';
+export * from './TrackingDeviceTypes.js';
+export * from './UserNotificationTypes.js';
+export * from './UserTypes.js';
+export * from './VehicleTypes.js';
 
 // src/types/prisma-types.ts
 import {

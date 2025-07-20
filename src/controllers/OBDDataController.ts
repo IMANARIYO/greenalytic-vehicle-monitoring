@@ -1,9 +1,9 @@
 import { Request, Response as ExpressResponse } from 'express';
-import { AuthenticatedRequest } from '../utils/jwtFunctions';
-import { catchAsync } from '../middlewares/errorHandler';
-import Response from '../utils/response';
-import OBDDataService from '../services/OBDDataService';
-import { CreateOBDDataDTO, UpdateOBDDataDTO, OBDDataQueryDTO } from '../types/dtos/OBDDataDto';
+import { AuthenticatedRequest } from '../utils/jwtFunctions.js';
+import { catchAsync } from '../middlewares/errorHandler.js';
+import Response from '../utils/response.js';
+import OBDDataService from '../services/OBDDataService.js';
+import { CreateOBDDataDTO, UpdateOBDDataDTO, OBDDataQueryDTO } from '../types/dtos/OBDDataDto.js';
 
 class OBDDataController {
   createOBDData = catchAsync(async (req: Request, res: ExpressResponse) => {

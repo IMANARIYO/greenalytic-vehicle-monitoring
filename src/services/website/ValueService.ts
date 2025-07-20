@@ -5,11 +5,11 @@ import {
   ValueResponseDTO,
   ValueListResponseDTO,
   CreateValueResponseDTO
-} from '../../types/webiste/dtos/ValueDto';
-import { PaginationMeta, PaginationParams } from '../../types/GlobalTypes';
-import ValueRepository from '../../repositories/website/ValueRepository';
-import { AppError, HttpStatusCode } from '../../middlewares/errorHandler';
-import logger from '../../utils/logger';
+} from '../../types/webiste/dtos/ValueDto.js';
+import { PaginationMeta, PaginationParams } from '../../types/GlobalTypes.js';
+import ValueRepository from '../../repositories/website/ValueRepository.js';
+import { AppError, HttpStatusCode } from '../../middlewares/errorHandler.js';
+import logger from '../../utils/logger.js';
 
 export class ValueService {
   

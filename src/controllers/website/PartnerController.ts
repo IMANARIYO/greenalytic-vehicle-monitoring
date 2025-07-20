@@ -1,9 +1,9 @@
 import { Request, Response as ExpressResponse } from 'express';
-import { AuthenticatedRequest } from '../../utils/jwtFunctions';
-import { catchAsync } from '../../middlewares/errorHandler';
-import Response from '../../utils/response';
-import PartnerService from '../../services/website/PartnerService';
-import { CreatePartnerDTO, UpdatePartnerDTO, PartnerQueryDTO } from '../../types/webiste/dtos/PartnerDto';
+import { AuthenticatedRequest } from '../../utils/jwtFunctions.js';
+import { catchAsync } from '../../middlewares/errorHandler.js';
+import Response from '../../utils/response.js';
+import PartnerService from '../../services/website/PartnerService.js';
+import { CreatePartnerDTO, UpdatePartnerDTO, PartnerQueryDTO } from '../../types/webiste/dtos/PartnerDto.js';
 
 class PartnerController {
 

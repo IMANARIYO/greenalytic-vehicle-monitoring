@@ -1,9 +1,9 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import VehicleController from '../controllers/VehicleController';
-import { AuthenticatedRequest, verifyingtoken } from '../utils/jwtFunctions';
-import { hasRole } from '../middlewares/hasRole';
+import VehicleController from '../controllers/VehicleController.js';
+import { AuthenticatedRequest, verifyingtoken } from '../utils/jwtFunctions.js';
+import { hasRole } from '../middlewares/hasRole.js';
 import { UserRole } from '@prisma/client';
-import { isLoggedIn } from '../middlewares/isLoggedIn';
+import { isLoggedIn } from '../middlewares/isLoggedIn.js';
 
 const VehiclesRouter = Router();
 

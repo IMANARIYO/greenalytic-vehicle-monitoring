@@ -1,9 +1,9 @@
 import { Request, Response as ExpressResponse } from 'express';
-import { AuthenticatedRequest } from '../../utils/jwtFunctions';
-import { catchAsync } from '../../middlewares/errorHandler';
-import Response from '../../utils/response';
-import PartnershipReasonService from '../../services/website/ParnershipReasonService';
-import { CreatePartnershipReasonDTO, UpdatePartnershipReasonDTO, PartnershipReasonQueryDTO } from '../../types/webiste/dtos/PartnershipReasonDto';
+import { AuthenticatedRequest } from '../../utils/jwtFunctions.js';
+import { catchAsync } from '../../middlewares/errorHandler.js';
+import Response from '../../utils/response.js';
+import PartnershipReasonService from '../../services/website/ParnershipReasonService.js';
+import { CreatePartnershipReasonDTO, UpdatePartnershipReasonDTO, PartnershipReasonQueryDTO } from '../../types/webiste/dtos/PartnershipReasonDto.js';
 
 class PartnershipReasonController {
 

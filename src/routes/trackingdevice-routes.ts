@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import { TrackingDeviceController } from '../controllers/TrackingDeviceController';
-import { isLoggedIn } from '../middlewares/isLoggedIn';
-import { hasRole } from '../middlewares/hasRole';
+import { TrackingDeviceController } from '../controllers/TrackingDeviceController.js';
+import { isLoggedIn } from '../middlewares/isLoggedIn.js';
+import { hasRole } from '../middlewares/hasRole.js';
 import { UserRole } from '@prisma/client';
-import { catchAsync } from '../middlewares/errorHandler';
+import { catchAsync } from '../middlewares/errorHandler.js';
 
 const TrackingDeviceRouter = Router();
 

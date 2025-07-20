@@ -1,26 +1,26 @@
 import { Router, Request, Response } from 'express';
-import { UserRouter } from './userRoutes';
-import { EmissionRouter } from './emissiondata-routes';
-import { FuelDataRouter } from './fueldata-routes';
-import { GpsDataRouter } from './gpsdata-routes';
-import { OBDDataRouter } from './obddata-routes'; // Uncomment if OBDDataRouter is defined
-import VehiclesRouter from './vehicle-routes';
-import TrackingdevicesRouter from './trackingdevice-routes';
+import { UserRouter } from './userRoutes.js';
+import { EmissionRouter } from './emissiondata-routes.js';
+import { FuelDataRouter } from './fueldata-routes.js';
+import { GpsDataRouter } from './gpsdata-routes.js';
+import { OBDDataRouter } from './obddata-routes.js'; // Uncomment if OBDDataRouter is defined
+import VehiclesRouter from './vehicle-routes.js';
+import TrackingdevicesRouter from './trackingdevice-routes.js';
 
-import { ValueRouter } from './website/value-routes';
-import { TechnologyRouter } from './website/technology-routes'; // Import the TechnologyRouter
-import { PartnershipReasonRouter } from './website/partnership-reason-routes'; // Import the PartnershipReasonRouter
-import { TeamRouter } from './website/team-routes'; // Import the TeamRouter
-import { AdvisoryBoardRouter } from './website/advisory-board-routes';
-import { ContactMessageRouter } from './website/contact-message-routes'; // Import the ContactMessageRouter
-import { PartnerCategoryRouter } from './website/partner-category-routes'; // Import the PartnerCategoryRouter
-import { PartnerRouter } from './website/partner-routes'; // Import the PartnerRouter
-import { FeatureRouter } from './website/feature-routes'; // Import the FeatureRouter
-import { ProductRouter } from './website/product-routes'; // Import the ProductRouter
-import { SolutionRouter } from './website/solution-routes'; // Import the SolutionRouter
-import { TestimonialRouter } from './website/testimonial-routes'; // Import the TestimonialRouter
+import { ValueRouter } from './website/value-routes.js';
+import { TechnologyRouter } from './website/technology-routes.js'; // Import the TechnologyRouter
+import { PartnershipReasonRouter } from './website/partnership-reason-routes.js'; // Import the PartnershipReasonRouter
+import { TeamRouter } from './website/team-routes.js'; // Import the TeamRouter
+import { AdvisoryBoardRouter } from './website/advisory-board-routes.js';
+import { ContactMessageRouter } from './website/contact-message-routes.js'; // Import the ContactMessageRouter
+import { PartnerCategoryRouter } from './website/partner-category-routes.js'; // Import the PartnerCategoryRouter
+import { PartnerRouter } from './website/partner-routes.js'; // Import the PartnerRouter
+import { FeatureRouter } from './website/feature-routes.js'; // Import the FeatureRouter
+import { ProductRouter } from './website/product-routes.js'; // Import the ProductRouter
+import { SolutionRouter } from './website/solution-routes.js'; // Import the SolutionRouter
+import { TestimonialRouter } from './website/testimonial-routes.js'; // Import the TestimonialRouter
 
-import authRoutes from './authRoutes';
+import authRoutes from './authRoutes.js';
 
 const MainRouter = Router();
 MainRouter.use("/auth", authRoutes);

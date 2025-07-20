@@ -1,9 +1,9 @@
 import { Request, Response as ExpressResponse } from 'express';
-import { AuthenticatedRequest } from '../utils/jwtFunctions';
-import { catchAsync } from '../middlewares/errorHandler';
-import Response from '../utils/response';
-import {EmissionDataService} from '../services/EmissionDataService';
-import { CreateEmissionDataDTO, UpdateEmissionDataDTO, EmissionDataQueryDTO } from '../types/dtos/EmissionDataDto';
+import { AuthenticatedRequest } from '../utils/jwtFunctions.js';
+import { catchAsync } from '../middlewares/errorHandler.js';
+import Response from '../utils/response.js';
+import {EmissionDataService} from '../services/EmissionDataService.js';
+import { CreateEmissionDataDTO, UpdateEmissionDataDTO, EmissionDataQueryDTO } from '../types/dtos/EmissionDataDto.js';
 
 class EmissionDataController {
   private emissionDataService: EmissionDataService;

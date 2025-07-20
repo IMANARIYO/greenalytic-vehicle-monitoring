@@ -1,8 +1,8 @@
 import { EmissionData, Prisma } from '@prisma/client';
-import logger from '../utils/logger';
-import { PaginationMeta, PaginationParams } from '../types/GlobalTypes';
-import { AppError, handlePrismaError, HttpStatusCode, NotFoundError } from '../middlewares/errorHandler';
-import prisma from '../config/db';
+import logger from '../utils/logger.js';
+import { PaginationMeta, PaginationParams } from '../types/GlobalTypes.js';
+import { AppError, handlePrismaError, HttpStatusCode, NotFoundError } from '../middlewares/errorHandler.js';
+import prisma from '../config/db.js';
 
 interface EmissionDataWithRelations extends EmissionData {
   vehicle?: {

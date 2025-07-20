@@ -1,8 +1,8 @@
 import { Router, Request, Response, NextFunction } from 'express';
-// import { hasRole } from '../middlewares/hasRole';
-// import { isLoggedIn } from '../middlewares/isLoggedIn';
-import { AuthenticatedRequest } from '../../utils/jwtFunctions';
-import ValueController from '../../controllers/website/ValueController';
+// import { hasRole } from '../middlewares/hasRole.js';
+// import { isLoggedIn } from '../middlewares/isLoggedIn.js';
+import { AuthenticatedRequest } from '../../utils/jwtFunctions.js';
+import ValueController from '../../controllers/website/ValueController.js';
 
 export const ValueRouter = Router();
 

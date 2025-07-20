@@ -1,4 +1,4 @@
-import prisma from "../src/config/db";
+import prisma from "../src/config/db.js";
 import {
   UserRole,
   UserStatus,
@@ -15,7 +15,7 @@ import {
   Vehicle,
   Prisma
 } from '@prisma/client';
-import { passHashing } from '../src/utils/passwordfunctions';
+import { passHashing } from '../src/utils/passwordfunctions.js';
 import { faker } from '@faker-js/faker';
 
 

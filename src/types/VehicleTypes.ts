@@ -7,7 +7,7 @@ import {
   ConnectionStatus,
   Vehicle,
 } from '@prisma/client';
-import { UserBasicInfo } from './UserTypes';
+import { UserBasicInfo } from './UserTypes.js';
 
 export interface VehicleListItemWithUser extends Pick<
   Vehicle,

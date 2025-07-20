@@ -1,9 +1,9 @@
 import { Router, Request, Response, NextFunction } from 'express';
-// import { hasRole } from '../middlewares/hasRole';
-// import { isLoggedIn } from '../middlewares/isLoggedIn';
-import { AuthenticatedRequest } from '../utils/jwtFunctions';
-import EmissionDataController from '../controllers/EmissionDataController';
-// import VehicleDataController from '../controllers/VehicleDataController';
+// import { hasRole } from '../middlewares/hasRole.js';
+// import { isLoggedIn } from '../middlewares/isLoggedIn.js';
+import { AuthenticatedRequest } from '../utils/jwtFunctions.js';
+import EmissionDataController from '../controllers/EmissionDataController.js';
+// import VehicleDataController from '../controllers/VehicleDataController.js';
 
 export const EmissionRouter = Router();
 

@@ -1,5 +1,5 @@
 import { Response as ExpressResponse } from "express";
-import logger from './logger'; // adjust path as needed
+import logger from './logger.js'; // adjust path as needed
 
 class Response {
   static success<T>(

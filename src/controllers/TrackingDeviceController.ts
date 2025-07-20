@@ -1,12 +1,12 @@
 import { Response as ExpressResponse } from 'express';
-import { TrackingDeviceService } from '../services/TrackingDeviceService';
-import Response from '../utils/response';
-import logger from '../utils/logger';
-import { AuthenticatedRequest } from '../utils/jwtFunctions';
+import { TrackingDeviceService } from '../services/TrackingDeviceService.js';
+import Response from '../utils/response.js';
+import logger from '../utils/logger.js';
+import { AuthenticatedRequest } from '../utils/jwtFunctions.js';
 import { DeviceStatus, ConnectionStatus, CommunicationProtocol, DeviceCategory } from '@prisma/client';
-import { DeviceFilters } from '../repositories/TrackingDeviceRepository';
-import { PaginationParams } from '../types/GlobalTypes';
-import { parseBoolean, parseNumber } from '../queryUtils';
+import { DeviceFilters } from '../repositories/TrackingDeviceRepository.js';
+import { PaginationParams } from '../types/GlobalTypes.js';
+import { parseBoolean, parseNumber } from '../queryUtils.js';
 
 export class TrackingDeviceController {
   // Basic CRUD Operations

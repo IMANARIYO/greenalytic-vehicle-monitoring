@@ -4,12 +4,12 @@ import {
   VehicleUpdateRequest,
   VehicleFullDetails,
   VehicleListItemWithUser,
-} from '../types/VehicleTypes';
-import logger from '../utils/logger';
-import { PaginationMeta, PaginationParams } from '../types/GlobalTypes';
-import prisma from '../config/db';
-import { AppError, handlePrismaError, HttpStatusCode, NotFoundError } from '../middlewares/errorHandler';
-import { parseBoolean, sanitizeFilters } from '../queryUtils';
+} from '../types/VehicleTypes.js';
+import logger from '../utils/logger.js';
+import { PaginationMeta, PaginationParams } from '../types/GlobalTypes.js';
+import prisma from '../config/db.js';
+import { AppError, handlePrismaError, HttpStatusCode, NotFoundError } from '../middlewares/errorHandler.js';
+import { parseBoolean, sanitizeFilters } from '../queryUtils.js';
 
 class VehicleRepository {
     private readonly tag = '[VehicleRepository]';

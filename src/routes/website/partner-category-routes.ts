@@ -1,8 +1,8 @@
 import { Router, Request, Response, NextFunction } from 'express';
-// import { hasRole } from '../middlewares/hasRole';
-// import { isLoggedIn } from '../middlewares/isLoggedIn';
-import { AuthenticatedRequest } from '../../utils/jwtFunctions';
-import PartnerCategoryController from '../../controllers/website/PartnerCategoryController';
+// import { hasRole } from '../middlewares/hasRole.js';
+// import { isLoggedIn } from '../middlewares/isLoggedIn.js';
+import { AuthenticatedRequest } from '../../utils/jwtFunctions.js';
+import PartnerCategoryController from '../../controllers/website/PartnerCategoryController.js';
 
 export const PartnerCategoryRouter = Router();
 

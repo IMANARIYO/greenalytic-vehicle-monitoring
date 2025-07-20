@@ -1,10 +1,10 @@
-import { VehicleCreateRequest, VehicleUpdateRequest, VehicleFullDetails, VehicleListItemWithUser } from '../types/VehicleTypes';
+import { VehicleCreateRequest, VehicleUpdateRequest, VehicleFullDetails, VehicleListItemWithUser } from '../types/VehicleTypes.js';
 import { VehicleStatus, EmissionStatus, UserStatus, UserRole } from '@prisma/client';
-import { PaginationMeta, PaginationParams } from '../types/GlobalTypes';
-import logger from '../utils/logger';
-import VehicleRepository from '../repositories/VehicleRepository';
-import { AppError, HttpStatusCode, NotFoundError } from '../middlewares/errorHandler';
-import UserRepository from '../repositories/UserRepository';
+import { PaginationMeta, PaginationParams } from '../types/GlobalTypes.js';
+import logger from '../utils/logger.js';
+import VehicleRepository from '../repositories/VehicleRepository.js';
+import { AppError, HttpStatusCode, NotFoundError } from '../middlewares/errorHandler.js';
+import UserRepository from '../repositories/UserRepository.js';
 
 export class VehicleService {
 

@@ -42,7 +42,7 @@ This ensures **consistent response structure** across the entire project:
 
 ```ts
 // Example usage in controllers
-import Response from '../utils/response';
+import Response from '../utils/response.js';
 
 class UserController {
   static async getUser(req, res) {

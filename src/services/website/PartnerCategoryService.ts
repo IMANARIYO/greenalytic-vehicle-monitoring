@@ -6,11 +6,11 @@ import {
   PartnerCategoryListResponseDTO,
   CreatePartnerCategoryResponseDTO,
   PartnerCategoryWithPartnersDTO
-} from '../../types/webiste/dtos/PartnerCategoryDto';
-import { PaginationMeta, PaginationParams } from '../../types/GlobalTypes';
-import PartnerCategoryRepository from '../../repositories/website/PartnerCategoryRepository';
-import { AppError, HttpStatusCode } from '../../middlewares/errorHandler';
-import logger from '../../utils/logger';
+} from '../../types/webiste/dtos/PartnerCategoryDto.js';
+import { PaginationMeta, PaginationParams } from '../../types/GlobalTypes.js';
+import PartnerCategoryRepository from '../../repositories/website/PartnerCategoryRepository.js';
+import { AppError, HttpStatusCode } from '../../middlewares/errorHandler.js';
+import logger from '../../utils/logger.js';
 
 export class PartnerCategoryService {
   

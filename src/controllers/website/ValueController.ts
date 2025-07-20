@@ -1,9 +1,9 @@
 import { Request, Response as ExpressResponse } from 'express';
-import { AuthenticatedRequest } from '../../utils/jwtFunctions';
-import { catchAsync } from '../../middlewares/errorHandler';
-import Response from '../../utils/response';
-import ValueService from '../../services/website/ValueService';
-import { CreateValueDTO, UpdateValueDTO, ValueQueryDTO } from '../../types/webiste/dtos/ValueDto';
+import { AuthenticatedRequest } from '../../utils/jwtFunctions.js';
+import { catchAsync } from '../../middlewares/errorHandler.js';
+import Response from '../../utils/response.js';
+import ValueService from '../../services/website/ValueService.js';
+import { CreateValueDTO, UpdateValueDTO, ValueQueryDTO } from '../../types/webiste/dtos/ValueDto.js';
 
 class ValueController {
 

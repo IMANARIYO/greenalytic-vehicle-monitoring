@@ -1,7 +1,7 @@
 
 import prisma from"../src/config/db"
 import { UserRole, UserStatus, FuelType, VehicleStatus, NotificationType, DeviceCategory, CommunicationProtocol, DeviceStatus } from '@prisma/client'
-import {passHashing} from '../src/utils/passwordfunctions'
+import {passHashing} from '../src/utils/passwordfunctions.js'
 // Predefined IDs for relationships
 const USER_IDS = {
   ADMIN: 1,

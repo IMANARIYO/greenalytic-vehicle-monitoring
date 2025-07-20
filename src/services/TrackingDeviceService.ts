@@ -1,9 +1,9 @@
 import { DeviceStatus, CommunicationProtocol, DeviceCategory, ConnectionStatus } from '@prisma/client';
-import { DeviceFilters, TrackingDeviceRepository } from '../repositories/TrackingDeviceRepository';
-import logger from '../utils/logger';
-import { AppError, HttpStatusCode } from '../middlewares/errorHandler';
+import { DeviceFilters, TrackingDeviceRepository } from '../repositories/TrackingDeviceRepository.js';
+import logger from '../utils/logger.js';
+import { AppError, HttpStatusCode } from '../middlewares/errorHandler.js';
 import { errorMonitor } from 'events';
-import { PaginationParams } from '../types/GlobalTypes';
+import { PaginationParams } from '../types/GlobalTypes.js';
 
 export class TrackingDeviceService {
   // Basic CRUD Operations

@@ -1,12 +1,12 @@
 import { ConnectionStatus, Prisma } from '@prisma/client';
 import { DeviceStatus, CommunicationProtocol, DeviceCategory } from '@prisma/client';
-import logger from '../utils/logger';
-import prisma from '../config/db';
-import { AppError, HttpStatusCode, handlePrismaError } from '../middlewares/errorHandler';
-import { getNextValidStates, isValidTransition } from '../deviceStateMachine';
+import logger from '../utils/logger.js';
+import prisma from '../config/db.js';
+import { AppError, HttpStatusCode, handlePrismaError } from '../middlewares/errorHandler.js';
+import { getNextValidStates, isValidTransition } from '../deviceStateMachine.js';
 
-import { parseBoolean, sanitizeFilters } from '../queryUtils';
-import { PaginationParams } from '../types/GlobalTypes';
+import { parseBoolean, sanitizeFilters } from '../queryUtils.js';
+import { PaginationParams } from '../types/GlobalTypes.js';
 
 export interface DeviceFilters {
   status?: DeviceStatus;

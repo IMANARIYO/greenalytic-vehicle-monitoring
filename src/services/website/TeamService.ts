@@ -7,11 +7,11 @@ import {
   CreateTeamResponseDTO,
   Department,
   SocialLinks
-} from '../../types/webiste/dtos/TeamDto';
-import { PaginationMeta, PaginationParams } from '../../types/GlobalTypes';
-import TeamRepository from '../../repositories/website/TeamRepository';
-import { AppError, HttpStatusCode } from '../../middlewares/errorHandler';
-import logger from '../../utils/logger';
+} from '../../types/webiste/dtos/TeamDto.js';
+import { PaginationMeta, PaginationParams } from '../../types/GlobalTypes.js';
+import TeamRepository from '../../repositories/website/TeamRepository.js';
+import { AppError, HttpStatusCode } from '../../middlewares/errorHandler.js';
+import logger from '../../utils/logger.js';
 
 export class TeamService {
   

@@ -1,9 +1,9 @@
 import { Request, Response as ExpressResponse } from 'express';
-import { AuthenticatedRequest } from '../../utils/jwtFunctions';
-import { catchAsync } from '../../middlewares/errorHandler';
-import Response from '../../utils/response';
-import ProductService from '../../services/website/ProductService';
-import { CreateProductDTO, UpdateProductDTO, ProductQueryDTO } from '../../types/webiste/dtos/ProductDto';
+import { AuthenticatedRequest } from '../../utils/jwtFunctions.js';
+import { catchAsync } from '../../middlewares/errorHandler.js';
+import Response from '../../utils/response.js';
+import ProductService from '../../services/website/ProductService.js';
+import { CreateProductDTO, UpdateProductDTO, ProductQueryDTO } from '../../types/webiste/dtos/ProductDto.js';
 
 class ProductController {
 

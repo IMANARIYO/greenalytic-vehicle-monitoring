@@ -73,9 +73,9 @@ export interface CreateUserRequest {
 ### 2. Controller: UserController.ts
 ```typescript
 import { Request, Response } from 'express';
-import { UserService } from '../services/UserService';
-import { CreateUserRequest } from '../types/dtos/CreateUserRequest';
-import ResponseHandler from '../utils/Response';
+import { UserService } from '../services/UserService.js';
+import { CreateUserRequest } from '../types/dtos/CreateUserRequest.js';
+import ResponseHandler from '../utils/Response.js';
 
 export class UserController {
   static async createUser(req: Request, res: Response) {
@@ -92,10 +92,10 @@ export class UserController {
 
 ### 3. Service: UserService.ts
 ```typescript
-import { CreateUserRequest } from '../types/dtos/CreateUserRequest';
-import { UserRepository } from '../repositories/UserRepository';
-import { passHashing } from '../utils/hash';
-import logger from '../utils/logger';
+import { CreateUserRequest } from '../types/dtos/CreateUserRequest.js';
+import { UserRepository } from '../repositories/UserRepository.js';
+import { passHashing } from '../utils/hash.js';
+import logger from '../utils/logger.js';
 
 export class UserService {
   static async createUser(dto: CreateUserRequest) {
@@ -127,9 +127,9 @@ export class UserService {
 
 ### 4. Repository: UserRepository.ts
 ```typescript
-import prisma from '../config/db';
+import prisma from '../config/db.js';
 import { Prisma } from '@prisma/client';
-import logger from '../utils/logger';
+import logger from '../utils/logger.js';
 
 export class UserRepository {
   static async create(data: Prisma.UserCreateInput) {
@@ -176,10 +176,10 @@ export const validateCreateUser = [
 ### 6. Route Setup: UserRoutes.ts
 ```typescript
 import express from 'express';
-import { UserController } from '../controllers/UserController';
-import { validateCreateUser } from '../middlewares/validateCreateUser';
-import isLoggedIn from '../middlewares/isLoggedIn';
-import hasRole from '../middlewares/hasRole';
+import { UserController } from '../controllers/UserController.js';
+import { validateCreateUser } from '../middlewares/validateCreateUser.js';
+import isLoggedIn from '../middlewares/isLoggedIn.js';
+import hasRole from '../middlewares/hasRole.js';
 
 const router = express.Router();
 

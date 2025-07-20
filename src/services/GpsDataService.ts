@@ -8,14 +8,14 @@ import {
   GpsDataWithRouteAnalysisDTO,
   LocationRadiusResponseDTO,
   SpeedRangeResponseDTO
-} from '../types/dtos/GpsDataDto';
-import { PaginationMeta, PaginationParams } from '../types/GlobalTypes';
-import GpsDataRepository from '../repositories/GpsDataRepository';
-import VehicleRepository from '../repositories/VehicleRepository';
-import {TrackingDeviceRepository} from '../repositories/TrackingDeviceRepository';
-import { AlertRepository } from '../repositories/AlertRepository';
-import { AppError, HttpStatusCode } from '../middlewares/errorHandler';
-import logger from '../utils/logger';
+} from '../types/dtos/GpsDataDto.js';
+import { PaginationMeta, PaginationParams } from '../types/GlobalTypes.js';
+import GpsDataRepository from '../repositories/GpsDataRepository.js';
+import VehicleRepository from '../repositories/VehicleRepository.js';
+import {TrackingDeviceRepository} from '../repositories/TrackingDeviceRepository.js';
+import { AlertRepository } from '../repositories/AlertRepository.js';
+import { AppError, HttpStatusCode } from '../middlewares/errorHandler.js';
+import logger from '../utils/logger.js';
 
 // GPS speed thresholds - These need to be confirmed with Emmanuel
 const SPEED_THRESHOLDS: SpeedThresholds = {

@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
-import { ENV } from '../config/env';  // Adjust path to your env.ts
+import { ENV } from '../config/env.js';  // Adjust path to your env.ts
 
 // Hash password
 export const passHashing = async (password: string): Promise<string> => {

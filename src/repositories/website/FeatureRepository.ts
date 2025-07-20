@@ -1,7 +1,7 @@
 import { Feature, Prisma } from '@prisma/client';
-import logger from '../../utils/logger';
-import { AppError, handlePrismaError, HttpStatusCode, NotFoundError } from '../../middlewares/errorHandler';
-import prisma from '../../config/db';
+import logger from '../../utils/logger.js';
+import { AppError, handlePrismaError, HttpStatusCode, NotFoundError } from '../../middlewares/errorHandler.js';
+import prisma from '../../config/db.js';
 
 interface FeatureCreateInput {
   title: string;

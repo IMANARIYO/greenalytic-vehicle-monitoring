@@ -11,14 +11,14 @@ import {
   FuelDataWithEfficiencyDTO,
   ConsumptionRangeResponseDTO,
   FuelEfficiencyAnalysisDTO
-} from '../types/dtos/FuelDataDto';
-import { PaginationMeta, PaginationParams } from '../types/GlobalTypes';
-import FuelDataRepository from '../repositories/FuelDataRepository';
-import VehicleRepository from '../repositories/VehicleRepository';
-import {TrackingDeviceRepository} from '../repositories/TrackingDeviceRepository';
-import { AlertRepository } from '../repositories/AlertRepository';
-import { AppError, HttpStatusCode } from '../middlewares/errorHandler';
-import logger from '../utils/logger';
+} from '../types/dtos/FuelDataDto.js';
+import { PaginationMeta, PaginationParams } from '../types/GlobalTypes.js';
+import FuelDataRepository from '../repositories/FuelDataRepository.js';
+import VehicleRepository from '../repositories/VehicleRepository.js';
+import {TrackingDeviceRepository} from '../repositories/TrackingDeviceRepository.js';
+import { AlertRepository } from '../repositories/AlertRepository.js';
+import { AppError, HttpStatusCode } from '../middlewares/errorHandler.js';
+import logger from '../utils/logger.js';
 
 // Fuel consumption thresholds - These need to be confirmed with Emmanuel
 const FUEL_THRESHOLDS: FuelConsumptionThresholds = {

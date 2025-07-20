@@ -1,4 +1,4 @@
-import { PaginationParams } from "./types/GlobalTypes";
+import { PaginationParams } from "./types/GlobalTypes.js";
 
 export function parsePaginationParams(raw: any): PaginationParams {
     return {

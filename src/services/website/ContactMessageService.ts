@@ -5,11 +5,11 @@ import {
   ContactMessageResponseDTO,
   ContactMessageListResponseDTO,
   CreateContactMessageResponseDTO
-} from '../../types/webiste/dtos/ContactMessageDto';
-import { PaginationMeta, PaginationParams } from '../../types/GlobalTypes';
-import ContactMessageRepository from '../../repositories/website/ContactMessageRepository';
-import { AppError, HttpStatusCode } from '../../middlewares/errorHandler';
-import logger from '../../utils/logger';
+} from '../../types/webiste/dtos/ContactMessageDto.js';
+import { PaginationMeta, PaginationParams } from '../../types/GlobalTypes.js';
+import ContactMessageRepository from '../../repositories/website/ContactMessageRepository.js';
+import { AppError, HttpStatusCode } from '../../middlewares/errorHandler.js';
+import logger from '../../utils/logger.js';
 
 export class ContactMessageService {
   

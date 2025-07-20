@@ -1,8 +1,8 @@
 import { Router, Request, Response } from 'express';
-import UserController from '../controllers/UserController';
-import { hasRole } from '../middlewares/hasRole';
-import { AuthenticatedRequest } from '../utils/jwtFunctions';
-import { isLoggedIn } from '../middlewares/isLoggedIn';
+import UserController from '../controllers/UserController.js';
+import { hasRole } from '../middlewares/hasRole.js';
+import { AuthenticatedRequest } from '../utils/jwtFunctions.js';
+import { isLoggedIn } from '../middlewares/isLoggedIn.js';
 
 export const UserRouter = Router();
 const userController = new UserController();

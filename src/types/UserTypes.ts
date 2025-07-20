@@ -1,5 +1,5 @@
 ﻿import { Prisma, User, UserRole, UserStatus } from '@prisma/client';
-import { PaginationMeta, PaginationParams } from './GlobalTypes';
+import { PaginationMeta, PaginationParams } from './GlobalTypes.js';
 
 
 

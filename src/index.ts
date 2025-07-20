@@ -3,18 +3,18 @@ dotenv.config();
 import express from 'express';
 import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
-import swaggerSpec from './docs/swagger';
-import MainRouter from './routes/allroutes';
+import swaggerSpec from './docs/swagger.js';
+import MainRouter from './routes/allroutes.js';
 
-import passport from './utils/passport';
+import passport from './utils/passport.js';
 import session from 'express-session';
-import { globalErrorHandler, handleNotFoundRoutes } from './middlewares/errorHandler';
+import { globalErrorHandler, handleNotFoundRoutes } from './middlewares/errorHandler.js';
 dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-
+    // "build": "tsc && tsc-alias && npm run copy-yaml",
 // Swagger UI at /api-docs
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api', MainRouter);
