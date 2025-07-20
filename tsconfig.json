@@ -14,7 +14,7 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "resolveJsonModule": true,
-    "noEmit": true,
+    "noEmit": false,
     "types": ["node"],
     "allowSyntheticDefaultImports": true,
     "plugins": [{ "transform": "tsc-alias" }]
