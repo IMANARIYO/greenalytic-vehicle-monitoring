@@ -1,0 +1,417 @@
+# Team API Endpoints
+/website/team:
+  get:
+    tags:
+      - Website/Team
+    summary: Get all team members with filters and pagination
+    parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Items per page
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search in name, position, or description
+      - in: query
+        name: department
+        schema:
+          type: string
+          enum: [LEADERSHIP, ENGINEERING, OPERATIONS]
+        description: Filter by department
+      - in: query
+        name: location
+        schema:
+          type: string
+        description: Filter by location
+      - in: query
+        name: sortBy
+        schema:
+          type: string
+          enum: [id, name, position, department, experienceYears, createdAt, updatedAt]
+        description: Field to sort by
+      - in: query
+        name: sortOrder
+        schema:
+          type: string
+          enum: [asc, desc]
+        description: Sort order
+    responses:
+      200:
+        description: Team members retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
+                      position:
+                        type: string
+                      department:
+                        type: string
+                        enum: [LEADERSHIP, ENGINEERING, OPERATIONS]
+                      description:
+                        type: string
+                      imageUrl:
+                        type: string
+                      socialLinks:
+                        type: object
+                        properties:
+                          linkedin:
+                            type: string
+                          twitter:
+                            type: string
+                          github:
+                            type: string
+                          email:
+                            type: string
+                          website:
+                            type: string
+                      experienceYears:
+                        type: integer
+                        nullable: true
+                      location:
+                        type: string
+                        nullable: true
+                      profileUrl:
+                        type: string
+                        nullable: true
+                      createdAt:
+                        type: string
+                        format: date-time
+                      updatedAt:
+                        type: string
+                        format: date-time
+                meta:
+                  type: object
+                  properties:
+                    page:
+                      type: integer
+                    limit:
+                      type: integer
+                    totalItems:
+                      type: integer
+                    totalPages:
+                      type: integer
+                    hasNextPage:
+                      type: boolean
+                    hasPrevPage:
+                      type: boolean
+
+  post:
+    tags:
+      - Website/Team
+    summary: Create new team member
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - name
+              - position
+              - department
+              - description
+              - imageUrl
+            properties:
+              name:
+                type: string
+                maxLength: 100
+                description: Team member name
+              position:
+                type: string
+                maxLength: 100
+                description: Team member position
+              department:
+                type: string
+                enum: [LEADERSHIP, ENGINEERING, OPERATIONS]
+                description: Department
+              description:
+                type: string
+                maxLength: 1000
+                description: Team member description
+              imageUrl:
+                type: string
+                maxLength: 500
+                description: Profile image URL
+              socialLinks:
+                type: object
+                properties:
+                  linkedin:
+                    type: string
+                  twitter:
+                    type: string
+                  github:
+                    type: string
+                  email:
+                    type: string
+                  website:
+                    type: string
+              experienceYears:
+                type: integer
+                minimum: 0
+                maximum: 50
+                description: Years of experience
+              location:
+                type: string
+                maxLength: 100
+                description: Location
+              profileUrl:
+                type: string
+                maxLength: 500
+                description: Profile URL
+    responses:
+      201:
+        description: Team member created successfully
+      400:
+        description: Bad request - validation error
+      409:
+        description: Conflict - team member with name and position already exists
+
+/website/team/department/{department}:
+  get:
+    tags:
+      - Website/Team
+    summary: Get team members by department
+    parameters:
+      - in: path
+        name: department
+        required: true
+        schema:
+          type: string
+          enum: [LEADERSHIP, ENGINEERING, OPERATIONS]
+    responses:
+      200:
+        description: Team members retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
+                      position:
+                        type: string
+                      department:
+                        type: string
+                        enum: [LEADERSHIP, ENGINEERING, OPERATIONS]
+                      description:
+                        type: string
+                      imageUrl:
+                        type: string
+                      socialLinks:
+                        type: object
+                        nullable: true
+                      experienceYears:
+                        type: integer
+                        nullable: true
+                      location:
+                        type: string
+                        nullable: true
+                      profileUrl:
+                        type: string
+                        nullable: true
+                      createdAt:
+                        type: string
+                        format: date-time
+                      updatedAt:
+                        type: string
+                        format: date-time
+      400:
+        description: Invalid department
+
+/website/team/{id}:
+  get:
+    tags:
+      - Website/Team
+    summary: Get team member by ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Team member retrieved successfully
+      404:
+        description: Team member not found
+
+  put:
+    tags:
+      - Website/Team
+    summary: Update team member by ID
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                maxLength: 100
+              position:
+                type: string
+                maxLength: 100
+              department:
+                type: string
+                enum: [LEADERSHIP, ENGINEERING, OPERATIONS]
+              description:
+                type: string
+                maxLength: 1000
+              imageUrl:
+                type: string
+                maxLength: 500
+              socialLinks:
+                type: object
+                properties:
+                  linkedin:
+                    type: string
+                  twitter:
+                    type: string
+                  github:
+                    type: string
+                  email:
+                    type: string
+                  website:
+                    type: string
+              experienceYears:
+                type: integer
+                minimum: 0
+                maximum: 50
+              location:
+                type: string
+                maxLength: 100
+              profileUrl:
+                type: string
+                maxLength: 500
+    responses:
+      200:
+        description: Team member updated successfully
+      404:
+        description: Team member not found
+      409:
+        description: Conflict - team member with name and position already exists
+
+  patch:
+    tags:
+      - Website/Team
+    summary: Partially update team member by ID
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                maxLength: 100
+              position:
+                type: string
+                maxLength: 100
+              department:
+                type: string
+                enum: [LEADERSHIP, ENGINEERING, OPERATIONS]
+              description:
+                type: string
+                maxLength: 1000
+              imageUrl:
+                type: string
+                maxLength: 500
+              socialLinks:
+                type: object
+                properties:
+                  linkedin:
+                    type: string
+                  twitter:
+                    type: string
+                  github:
+                    type: string
+                  email:
+                    type: string
+                  website:
+                    type: string
+              experienceYears:
+                type: integer
+                minimum: 0
+                maximum: 50
+              location:
+                type: string
+                maxLength: 100
+              profileUrl:
+                type: string
+                maxLength: 500
+    responses:
+      200:
+        description: Team member updated successfully
+      404:
+        description: Team member not found
+
+  delete:
+    tags:
+      - Website/Team
+    summary: Delete team member by ID
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Team member deleted successfully
+      404:
+        description: Team member not found

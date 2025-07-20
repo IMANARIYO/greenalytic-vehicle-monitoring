@@ -1,0 +1,390 @@
+# Advisory Board API Endpoints
+/website/advisory-board:
+  get:
+    tags:
+      - Website/Advisory Board
+    summary: Get all advisory board members with filters and pagination
+    parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Items per page
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search in name, position, company, or description
+      - in: query
+        name: company
+        schema:
+          type: string
+        description: Filter by company
+      - in: query
+        name: sortBy
+        schema:
+          type: string
+          enum: [id, name, position, company, createdAt, updatedAt]
+        description: Field to sort by
+      - in: query
+        name: sortOrder
+        schema:
+          type: string
+          enum: [asc, desc]
+        description: Sort order
+    responses:
+      200:
+        description: Advisory board members retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
+                      position:
+                        type: string
+                      company:
+                        type: string
+                      highlight:
+                        type: string
+                        nullable: true
+                      description:
+                        type: string
+                      imageUrl:
+                        type: string
+                      socialLinks:
+                        type: object
+                        nullable: true
+                        properties:
+                          linkedin:
+                            type: string
+                          twitter:
+                            type: string
+                          github:
+                            type: string
+                          email:
+                            type: string
+                          website:
+                            type: string
+                      fullBioLink:
+                        type: string
+                        nullable: true
+                      createdAt:
+                        type: string
+                        format: date-time
+                      updatedAt:
+                        type: string
+                        format: date-time
+                meta:
+                  type: object
+                  properties:
+                    page:
+                      type: integer
+                    limit:
+                      type: integer
+                    totalItems:
+                      type: integer
+                    totalPages:
+                      type: integer
+                    hasNextPage:
+                      type: boolean
+                    hasPrevPage:
+                      type: boolean
+
+  post:
+    tags:
+      - Website/Advisory Board
+    summary: Create new advisory board member
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - name
+              - position
+              - company
+              - description
+              - imageUrl
+            properties:
+              name:
+                type: string
+                maxLength: 100
+                description: Advisory board member name
+              position:
+                type: string
+                maxLength: 100
+                description: Advisory board member position
+              company:
+                type: string
+                maxLength: 100
+                description: Company name
+              highlight:
+                type: string
+                maxLength: 200
+                description: Key highlight or achievement
+              description:
+                type: string
+                maxLength: 1000
+                description: Advisory board member description
+              imageUrl:
+                type: string
+                maxLength: 500
+                description: Profile image URL
+              socialLinks:
+                type: object
+                properties:
+                  linkedin:
+                    type: string
+                  twitter:
+                    type: string
+                  github:
+                    type: string
+                  email:
+                    type: string
+                  website:
+                    type: string
+              fullBioLink:
+                type: string
+                maxLength: 500
+                description: Link to full biography
+    responses:
+      201:
+        description: Advisory board member created successfully
+      400:
+        description: Bad request - validation error
+      409:
+        description: Conflict - advisory board member with name and company already exists
+
+/website/advisory-board/company/{company}:
+  get:
+    tags:
+      - Website/Advisory Board
+    summary: Get advisory board members by company
+    parameters:
+      - in: path
+        name: company
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Advisory board members retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
+                      position:
+                        type: string
+                      company:
+                        type: string
+                      highlight:
+                        type: string
+                        nullable: true
+                      description:
+                        type: string
+                      imageUrl:
+                        type: string
+                      socialLinks:
+                        type: object
+                        nullable: true
+                      fullBioLink:
+                        type: string
+                        nullable: true
+                      createdAt:
+                        type: string
+                        format: date-time
+                      updatedAt:
+                        type: string
+                        format: date-time
+      400:
+        description: Company parameter is required
+
+/website/advisory-board/{id}:
+  get:
+    tags:
+      - Website/Advisory Board
+    summary: Get advisory board member by ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Advisory board member retrieved successfully
+      404:
+        description: Advisory board member not found
+
+  put:
+    tags:
+      - Website/Advisory Board
+    summary: Update advisory board member by ID
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                maxLength: 100
+              position:
+                type: string
+                maxLength: 100
+              company:
+                type: string
+                maxLength: 100
+              highlight:
+                type: string
+                maxLength: 200
+              description:
+                type: string
+                maxLength: 1000
+              imageUrl:
+                type: string
+                maxLength: 500
+              socialLinks:
+                type: object
+                properties:
+                  linkedin:
+                    type: string
+                  twitter:
+                    type: string
+                  github:
+                    type: string
+                  email:
+                    type: string
+                  website:
+                    type: string
+              fullBioLink:
+                type: string
+                maxLength: 500
+    responses:
+      200:
+        description: Advisory board member updated successfully
+      404:
+        description: Advisory board member not found
+      409:
+        description: Conflict - advisory board member with name and company already exists
+
+  patch:
+    tags:
+      - Website/Advisory Board
+    summary: Partially update advisory board member by ID
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                maxLength: 100
+              position:
+                type: string
+                maxLength: 100
+              company:
+                type: string
+                maxLength: 100
+              highlight:
+                type: string
+                maxLength: 200
+              description:
+                type: string
+                maxLength: 1000
+              imageUrl:
+                type: string
+                maxLength: 500
+              socialLinks:
+                type: object
+                properties:
+                  linkedin:
+                    type: string
+                  twitter:
+                    type: string
+                  github:
+                    type: string
+                  email:
+                    type: string
+                  website:
+                    type: string
+              fullBioLink:
+                type: string
+                maxLength: 500
+    responses:
+      200:
+        description: Advisory board member updated successfully
+      404:
+        description: Advisory board member not found
+
+  delete:
+    tags:
+      - Website/Advisory Board
+    summary: Delete advisory board member by ID
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Advisory board member deleted successfully
+      404:
+        description: Advisory board member not found
