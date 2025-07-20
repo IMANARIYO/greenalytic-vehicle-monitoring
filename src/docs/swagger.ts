@@ -50,25 +50,25 @@ const advisoryBoardDocs = yaml.load(
   fs.readFileSync(path.join(__dirname, 'AdvisoryBoardDocs.yaml'), 'utf8')
 ) as Record<string, any>;
 const ContactMessageDocs = yaml.load(
-  fs.readFileSync(path.join(__dirname, 'contactMessageDocs.yaml'), 'utf8')
+  fs.readFileSync(path.join(__dirname, 'ContactMessageDocs.yaml'), 'utf8')
 ) as Record<string, any>;
 const PartnerCategoryDocs = yaml.load(
-  fs.readFileSync(path.join(__dirname, 'partnerCategoryDocs.yaml'), 'utf8')
+  fs.readFileSync(path.join(__dirname, 'PartnerCategoryDocs.yaml'), 'utf8')
 ) as Record<string, any>;
 const PartnerDocs = yaml.load(
-  fs.readFileSync(path.join(__dirname, 'partnerDocs.yaml'), 'utf8')
+  fs.readFileSync(path.join(__dirname, 'PartnerDocs.yaml'), 'utf8')
 ) as Record<string, any>;
 const FeatureDocs = yaml.load(
-  fs.readFileSync(path.join(__dirname, 'featureDocs.yaml'), 'utf8')
+  fs.readFileSync(path.join(__dirname, 'FeatureDocs.yaml'), 'utf8')
 ) as Record<string, any>;
 const ProductDocs = yaml.load(
-  fs.readFileSync(path.join(__dirname, 'productDocs.yaml'), 'utf8')
+  fs.readFileSync(path.join(__dirname, 'ProductDocs.yaml'), 'utf8')
 ) as Record<string, any>;
 const SolutionDocs = yaml.load(
-  fs.readFileSync(path.join(__dirname, 'solutionDocs.yaml'), 'utf8')
+  fs.readFileSync(path.join(__dirname, 'SolutionDocs.yaml'), 'utf8')
 ) as Record<string, any>;
 const TestimonialDocs = yaml.load(
-  fs.readFileSync(path.join(__dirname, 'testimonialDocs.yaml'), 'utf8')
+  fs.readFileSync(path.join(__dirname, 'TestimonialDocs.yaml'), 'utf8')
 ) as Record<string, any>;
 
 const swaggerSpec = {
