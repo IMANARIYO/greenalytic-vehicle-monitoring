@@ -34,12 +34,11 @@ const trackingDevicesDocs = yaml.load(
   fs.readFileSync(path.join(__dirname, 'trackingDevicesDocs.yaml'), 'utf8')
 ) as Record<string, any>;
 
-// Website Docs
 const valueDocs = yaml.load(
   fs.readFileSync(path.join(__dirname, 'valueDocs.yaml'), 'utf8')
 ) as Record<string, any>;
 const technologyDocs = yaml.load(
-  fs.readFileSync(path.join(__dirname, 'technologyDocs.yaml'), 'utf8')
+  fs.readFileSync(path.join(__dirname, 'TechnologyDocs.yaml'), 'utf8')
 ) as Record<string, any>;
 const partnershipReasonDocs = yaml.load(
   fs.readFileSync(path.join(__dirname, 'partnershipReasonDocs.yaml'), 'utf8')
