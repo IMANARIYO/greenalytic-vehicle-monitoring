@@ -13,7 +13,8 @@ import {
   SolutionType,
   Department,
   Vehicle,
-  Prisma
+  Prisma,
+  PartnerCategory
 } from '@prisma/client';
 import { passHashing } from '../src/utils/passwordfunctions.js';
 import { faker } from '@faker-js/faker';
@@ -559,62 +560,130 @@ const activityLogs: Prisma.ActivityLogCreateManyInput[] = [];
   console.log(`✅ Inserted ${thresholdConfigs.length} threshold configs`);
 
   // Seed Solutions
-  const solutions = Array.from({ length: 6 }, (_, i) => ({
-    title: faker.lorem.words(3),
-    subtitle: faker.lorem.sentence(),
-    description: faker.lorem.paragraph(),
-    content: faker.lorem.paragraphs(3),
-    icon: faker.image.urlLoremFlickr({ category: 'technology' }),
-    type: faker.helpers.arrayElement(Object.values(SolutionType)),
+  // Seed Solutions
+const solutions = [
+  {
+    icon: 'shield', // store as string for later mapping to <Shield />
+    title: 'Emissions Monitoring',
+    subtitle: 'Real-time tracking',
+    description:
+      "Best for regulatory compliance and fleet optimization, until you're ready for full electrification.",
+    content:'',
+    type: SolutionType.LOW_RISK,
     createdAt: new Date(),
-    updatedAt: new Date()
-  }));
-  
-  await prisma.solution.createMany({ data: solutions });
-  console.log(`✅ Inserted ${solutions.length} solutions`);
+    updatedAt: new Date(),
+  },
+  {
+    icon: 'zap',
+    title: 'Electric Tricycles',
+    subtitle: 'Zero emissions transport',
+    description:
+      'Purpose-built vehicles that earn steady performance and are considered ideal for rural logistics.',
+    content:'',
+    type: SolutionType.PROVEN_TECH,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    icon: 'trending-up',
+    title: 'IoT Fleet Management',
+    subtitle: 'Smart operations',
+    description:
+      'The data-driven method designed to maximize efficiency over the long term, while we automatically manage the insights.',
+    content:'',
+    type: SolutionType.HIGH_IMPACT,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+];
 
-  // Seed Testimonials
-  const createdSolutions = await prisma.solution.findMany({ select: { id: true } });
-const testimonials: Prisma.TestimonialCreateManyInput[] = [];
-  
-  for (const solution of createdSolutions) {
-    for (let i = 0; i < 3; i++) {
-      testimonials.push({
-        name: faker.person.fullName(),
-        position: faker.person.jobTitle(),
-        company: faker.company.name(),
-        content: faker.lorem.paragraph(),
-        imageUrl: faker.image.avatar(),
-        solutionId: solution.id,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      });
+
+await prisma.solution.createMany({ data: solutions });
+console.log(`✅ Inserted ${solutions.length} solutions`);
+
+// Seed Testimonials
+const createdSolutions = await prisma.solution.findMany({
+  select: { id: true, title: true },
+});
+
+const testimonials = [
+  {
+     quote:
+      'The single best resource for rural logistics and seeing our entire transport picture.',
+    name: 'Transport Ministry',
+    product: 'Emissions Monitoring',
+    position: 'Senior Accountability Orchestrator at Pollich',
+    company: 'Abshire and Corkery',
+  },
+  {
+    quote:
+      'The single best resource for rural logistics and seeing our entire transport picture.',
+    name: 'Agricultural Cooperative',
+    product: 'Electric Tricycles',
+    position: 'Senior Accountability Orchestrator at Pollich',
+    company: 'Abshire and Corkery',
+
+  },
+  {
+    quote:
+      'I LOVE Greenalytic and have moved almost all of our fleet monitoring there.',
+    name: 'Fleet Manager',
+    product: 'IoT Fleet Management',
+    position: 'Senior Accountability Orchestrator at Pollich',
+    company: 'Abshire and Corkery',
+  },
+];
+
+const testimonialsData = testimonials
+  .map((t) => {
+    const relatedSolution = createdSolutions.find(
+      (s) => s.title === t.product || t.product.includes(s.title)
+    );
+    
+    if (!relatedSolution) {
+      console.warn(`⚠️ No solution found for testimonial product: ${t.product}`);
+      return null;
     }
-  }
-  
-  await prisma.testimonial.createMany({ data: testimonials });
-  console.log(`✅ Inserted ${testimonials.length} testimonials`);
+    
+    return {
+      name: t.name,
+      position: t.position || 'Senior Accountability Orchestrator at Pollich',
+      company: t.company || 'Abshire and Corkery',
+      content: t.quote,
+      imageUrl: '',
+      solutionId: relatedSolution.id, // Now guaranteed to exist
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+  })
+  .filter((t): t is NonNullable<typeof t> => t !== null); // Remove nulls
+
+await prisma.testimonial.createMany({ data: testimonialsData });
+console.log(`✅ Inserted ${testimonialsData.length} testimonials`);
 
   // Seed Values
   const values = [
     {
       title: 'Innovation',
-      description: 'We constantly push boundaries to develop cutting-edge solutions.',
+      description: 'We design cutting-edge clean mobility solutions that suit local contexts and address real-world challenges.',
       icon: 'lightbulb',
+      iconBackgroundColor: 'bg-blue-500',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      title: 'Impact',
+      description: 'We aim for real change by empowering communities through green transport solutions that make a difference.',
+      icon: 'target',
+      iconBackgroundColor: 'bg-emerald-500',
       createdAt: new Date(),
       updatedAt: new Date()
     },
     {
       title: 'Sustainability',
-      description: 'Our solutions contribute to a greener and cleaner environment.',
+      description: 'Our technologies are built for long-term ecological and economic resilience across African markets.',
       icon: 'leaf',
-      createdAt: new Date(),
-      updatedAt: new Date()
-    },
-    {
-      title: 'Reliability',
-      description: 'Our systems are built to perform consistently under all conditions.',
-      icon: 'shield',
+      iconBackgroundColor: 'bg-green-500',
       createdAt: new Date(),
       updatedAt: new Date()
     }
@@ -626,28 +695,37 @@ const testimonials: Prisma.TestimonialCreateManyInput[] = [];
   // Seed Products
   const products = [
     {
-      name: 'Emission Tracker Pro',
-      description: 'Advanced emission monitoring for fleets',
-      content: faker.lorem.paragraphs(3),
-      icon: 'activity',
+      name: 'Emission Monitoring Device',
+      description: 'Smart real-time vehicle emissions tracking',
+      content: 'A comprehensive in-vehicle IoT device providing real-time data on emissions, GPS tracking, fuel consumption, speed monitoring, and intelligent alerts for enhanced fleet management and regulatory compliance.',
+      icon: 'monitor',
       iconBackgroundColor: '#3b82f6',
       createdAt: new Date(),
       updatedAt: new Date()
     },
     {
-      name: 'Fleet Manager',
-      description: 'Comprehensive fleet management solution',
-      content: faker.lorem.paragraphs(3),
-      icon: 'truck',
+      name: 'OBD II Scanner',
+      description: 'Advanced vehicle diagnostics tool',
+      content: 'Plug-and-play diagnostic device that tracks engine temperature, detects system faults, evaluates vehicle health status, and provides comprehensive maintenance insights for optimal vehicle performance.',
+      icon: 'search',
       iconBackgroundColor: '#10b981',
       createdAt: new Date(),
       updatedAt: new Date()
     },
     {
-      name: 'Fuel Efficiency Monitor',
-      description: 'Optimize fuel consumption across your fleet',
-      content: faker.lorem.paragraphs(3),
-      icon: 'droplet',
+      name: 'Electric Cargo Tricycle',
+      description: 'Zero-emission rural transport solution',
+      content: 'Specially engineered electric tricycle for transporting agricultural goods with extended range, minimal maintenance requirements, and ruggedized design optimized for challenging rural road conditions.',
+      icon: 'truck',
+      iconBackgroundColor: '#f59e0b',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      name: 'Vehicle Data Dashboard',
+      description: 'Comprehensive fleet management platform',
+      content: 'Web-based analytics platform offering emissions visualization, GPS tracking, fuel consumption analysis, and customizable fleet insights with real-time monitoring and comprehensive reporting capabilities.',
+      icon: 'bar-chart-3',
       iconBackgroundColor: '#f59e0b',
       createdAt: new Date(),
       updatedAt: new Date()
@@ -658,19 +736,121 @@ const testimonials: Prisma.TestimonialCreateManyInput[] = [];
   console.log(`✅ Inserted ${products.length} products`);
 
   // Seed Features
-  const createdProducts = await prisma.product.findMany({ select: { id: true } });
+const createdProducts = await prisma.product.findMany({ select: { id: true, name:true } });
 const features: Prisma.FeatureCreateManyInput[] = [];
 
   
+  const productFeatures: Record<string, { title: string; description: string; icon: string }[]> = {
+    // Emission Monitoring Device
+    "Emission Monitoring Device": [
+      {
+        title: "Real-time Data",
+        description: "Live emissions monitoring",
+        icon: "wifi",
+      },
+      {
+        title: "GPS Tracking",
+        description: "Precise location data",
+        icon: "map-pin",
+      },
+      {
+        title: "Compliance",
+        description: "Regulatory standards",
+        icon: "shield",
+      },
+      {
+        title: "Analysis",
+        description: "Performance insights",
+        icon: "bar-chart-3",
+      }
+
+    ],
+    // OBD II Scanner
+    "OBD II Scanner": [
+      {
+        title: "Engine Health",
+        description: "Temperature monitoring.",
+        icon: "monitor",
+      },
+      {
+        title: "Fault Detection",
+        description: "System diagnostics",
+        icon: "shield",
+      },
+      {
+        title: "Health Reports",
+        description: "Vehicle status",
+        icon: "bar-chart-3",
+      },
+      {
+        title: "Fault Code Lookup",
+        description: "Decode and explain OBD-II fault codes for quick troubleshooting.",
+        icon: "search",
+      },
+      {
+        title: "Quick Setup",
+        description: "Plug-and-play",
+        icon: "zap",
+      },
+    ],
+    // Electric Cargo Tricycle
+    "Electric Cargo Tricycle": [
+      {
+        title: "Zero Emissions",
+        description: "Clean electric power",
+        icon: "zap",
+      },
+      {
+        title: "Rugged Design",
+        description: "Built for rough roads",
+        icon: "shield",
+      },
+      {
+        title: "Long Range",
+        description: "Extended battery life",
+        icon: "bar-chart-3",
+      },
+      {
+        title: "Low Maintenance",
+        description: "Minimal upkeep",
+        icon: "monitor",
+      },
+    ],
+    // Vehicle Data Dashboard
+    "Vehicle Data Dashboard": [
+      {
+        title: "Data Visualization",
+        description: "Interactive charts",
+        icon: "bar-chart-3",
+      },
+      {
+        title: "Fleet Tracking",
+        description: "Real-time locations",
+        icon: "map-pin",
+      },
+      {
+        title: "Custom Reports",
+        description: "Tailored insights",
+        icon: "monitor",
+      },
+      {
+        title: "Live Updates",
+        description: "24/7 monitoring",
+        icon: "monitor",
+      },
+
+    ],
+  };
+
   for (const product of createdProducts) {
-    for (let i = 0; i < 5; i++) {
+    const productName = products.find(p => p.name === product.name)?.name || "";
+    const featuresForProduct = productFeatures[productName] || [];
+    for (const feature of featuresForProduct) {
       features.push({
-        title: faker.lorem.words(3),
-        description: faker.lorem.sentence(),
-        icon: faker.helpers.arrayElement(['settings', 'bar-chart', 'alert-circle', 'map', 'cpu']),
+        ...feature,
         productId: product.id,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       });
     }
   }
@@ -680,10 +860,9 @@ const features: Prisma.FeatureCreateManyInput[] = [];
 
   // Seed Technologies
   const technologies = [
-    { name: 'IoT', description: 'Internet of Things connectivity', icon: 'wifi' },
-    { name: 'AI Analytics', description: 'Artificial Intelligence for predictive analysis', icon: 'cpu' },
-    { name: 'Cloud Computing', description: 'Scalable cloud infrastructure', icon: 'cloud' },
-    { name: 'Big Data', description: 'Processing large datasets efficiently', icon: 'database' }
+    { name: 'IoT Integration', description: 'Advanced sensor networks for real-time data collection', icon: 'wifi', iconColor:'text-blue-600' },
+    { name: 'Cloud Analytics', description: 'Powerful data processing and visualization platform', icon: 'bar-chart-3', iconColor:'text-emerald-600' },
+    { name: 'Mobile First', description: 'Responsive design for on-the-go fleet management', icon: 'monitor', iconColor:'text-purple-600' },
   ].map(tech => ({
     ...tech,
     createdAt: new Date(),
@@ -694,93 +873,312 @@ const features: Prisma.FeatureCreateManyInput[] = [];
   console.log(`✅ Inserted ${technologies.length} technologies`);
 
   // Seed Team
-  const teamMembers = [
-    { name: 'John Doe', position: 'CEO', department: Department.LEADERSHIP },
-    { name: 'Jane Smith', position: 'CTO', department: Department.LEADERSHIP },
-    { name: 'Mike Johnson', position: 'Lead Engineer', department: Department.ENGINEERING },
-    { name: 'Sarah Williams', position: 'Operations Manager', department: Department.OPERATIONS }
-  ].map(member => ({
-    ...member,
-    description: faker.lorem.paragraph(),
-    imageUrl: faker.image.avatar(),
-    socialLinks: JSON.stringify({
-      twitter: faker.internet.url(),
-      linkedin: faker.internet.url()
-    }),
-    experienceYears: faker.number.int({ min: 5, max: 20 }),
-    location: faker.location.city(),
-    profileUrl: faker.internet.url(),
-    createdAt: new Date(),
-    updatedAt: new Date()
-  }));
-  
-  await prisma.team.createMany({ data: teamMembers });
-  console.log(`✅ Inserted ${teamMembers.length} team members`);
+  console.log('Creating Team Members...');
+    
+    const teamMembersData = [
+      {
+        name: 'Emmanuel Tuyizere',
+        position: 'Founder & CEO',
+        department: Department.LEADERSHIP,
+        description: 'Leads strategic vision, partnerships, and overall company direction. Oversees product development and drives clean mobility innovation across African markets.',
+        imageFile: '/uploads/team/emmanuel.jpg',
+        socialLinks: {
+          linkedin: '#',
+          email: 'emmanuel@greenalytic.rw'
+        },
+        experienceYears: 8,
+        location: 'Kigali, Rwanda',
+        profileUrl: null
+      },
+      {
+        name: 'Eng. Tugimana Musa',
+        position: 'Embedded Systems Engineer',
+        department: Department.ENGINEERING,
+        description: 'Designs and develops IoT hardware systems for emissions monitoring. Responsible for PCB design, sensor integration, and embedded firmware development.',
+        imageFile: '/uploads/team/emmanuel.jpg',
+        socialLinks: {
+          linkedin: '#',
+          email: 'mussa@greenalytic.rw'
+        },
+        experienceYears: 6,
+        location: 'Kigali, Rwanda',
+        profileUrl: null
+      },
+      // {
+      //   name: 'Jean Baptista',
+      //   position: 'Software Developer',
+      //   department: Department.ENGINEERING,
+      //   description: 'Builds web applications and dashboard interfaces for real-time data visualization. Develops APIs and manages system integration for client platforms.',
+      //   imageFile: '/uploads/team/emmanuel.jpg',
+      //   socialLinks: {
+      //     linkedin: '#',
+      //     email: 'baptista@greenalytic.rw'
+      //   },
+      //   experienceYears: 5,
+      //   location: 'Kigali, Rwanda',
+      //   profileUrl: null
+      // },
+      {
+        name: 'Kellia Inkindi',
+        position: 'Finance & Administration Officer',
+        department: Department.OPERATIONS,
+        description: 'Manages financial reporting, budget planning, and HR operations. Ensures compliance with grant requirements and oversees day-to-day administrative functions.',
+        imageFile: '/uploads/team/kellia.jpg',
+        socialLinks: {
+          linkedin: '#',
+          email: 'Kellia@greenalytic.rw'
+        },
+        experienceYears: 7,
+        location: 'Kigali, Rwanda',
+        profileUrl: null
+      }
+    ];
 
-  // Seed Advisory Board
-  const advisoryBoard = Array.from({ length: 5 }, (_, i) => ({
-    name: faker.person.fullName(),
-    position: faker.person.jobTitle(),
-    company: faker.company.name(),
-    highlight: faker.lorem.sentence(),
-    description: faker.lorem.paragraph(),
-    imageUrl: faker.image.avatar(),
-    socialLinks: JSON.stringify({
-      twitter: faker.internet.url(),
-      linkedin: faker.internet.url()
-    }),
-    fullBioLink: faker.internet.url(),
-    createdAt: new Date(),
-    updatedAt: new Date()
-  }));
-  
-  await prisma.advisoryBoard.createMany({ data: advisoryBoard });
-  console.log(`✅ Inserted ${advisoryBoard.length} advisory board members`);
+    for (const memberData of teamMembersData) {
+      // Copy image file if it exists
+      
+      const teamMember = await prisma.team.create({
+        data: {
+          name: memberData.name,
+          position: memberData.position,
+          department: memberData.department,
+          description: memberData.description,
+          imageUrl: memberData.imageFile,
+          socialLinks: memberData.socialLinks,
+          experienceYears: memberData.experienceYears,
+          location: memberData.location,
+          profileUrl: memberData.profileUrl
+        }
+      });
+      console.log(`✅ Created team member: ${teamMember.name} (${memberData.department})`);
+    }
+
+    // 2. Create Advisory Board Members
+    console.log('Creating Advisory Board Members...');
+    
+    const advisoryMembersData = [
+      {
+        name: 'Dr. Kalisa Egide',
+        position: 'Environmental Research Advisor',
+        company: 'Western University of Ontario',
+        highlight: 'PhD in Environmental Science',
+        description: 'Provides scientific guidance on air quality monitoring and climate change adaptation. Advises on environmental health impact assessment and policy development.',
+        imageFile: '/uploads/team/emmanuel.jpg',
+        socialLinks: {
+          linkedin: '#'
+        },
+        fullBioLink: null
+      },
+      {
+        name: 'Dr. Innocent Nkurikiyimfura',
+        position: 'Climate Innovation Advisor',
+        company: 'University of Rwanda',
+        highlight: '17+ years in energy systems',
+        description: 'Guides sustainable technology development and renewable energy integration. Advises on climate-resilient innovations and greenhouse gas inventory methodologies.',
+        imageFile: '/uploads/team/emmanuel.jpg',
+        socialLinks: {
+          linkedin: '#'
+        },
+        fullBioLink: null
+      }
+    ];
+
+    for (const advisorData of advisoryMembersData) {
+      // Copy image file if it exists
+    
+
+      const advisoryMember = await prisma.advisoryBoard.create({
+        data: {
+          name: advisorData.name,
+          position: advisorData.position,
+          company: advisorData.company,
+          highlight: advisorData.highlight,
+          description: advisorData.description,
+          imageUrl: advisorData.imageFile,
+          socialLinks: advisorData.socialLinks,
+          fullBioLink: advisorData.fullBioLink
+        }
+      });
+      console.log(`✅ Created advisory board member: ${advisoryMember.name}`);
+    }
+
+    // 3. Display summary
+    const teamCount = await prisma.team.count();
+    const advisoryCount = await prisma.advisoryBoard.count();
+    
+    console.log(`📊 Summary:`);
+    console.log(`   - Team Members: ${teamCount}`);
+    console.log(`   - Advisory Board Members: ${advisoryCount}`);
+    
+    // Show count by department
+    const departmentCounts = {
+      LEADERSHIP: await prisma.team.count({ where: { department: Department.LEADERSHIP } }),
+      ENGINEERING: await prisma.team.count({ where: { department: Department.ENGINEERING } }),
+      OPERATIONS: await prisma.team.count({ where: { department: Department.OPERATIONS } })
+    };
+    
+    console.log(`   - Leadership: ${departmentCounts.LEADERSHIP} members`);
+    console.log(`   - Engineering: ${departmentCounts.ENGINEERING} members`);
+    console.log(`   - Operations: ${departmentCounts.OPERATIONS} members`);
+
+    // Calculate total experience
+    const totalExperience = await prisma.team.aggregate({
+      _sum: {
+        experienceYears: true
+      }
+    });
+    console.log(`   - Total Experience: ${totalExperience._sum.experienceYears || 0} years`);
 
   // Seed Partner Categories
-  const partnerCategories = [
-    { name: 'Technology', icon: 'cpu' },
-    { name: 'Automotive', icon: 'car' },
-    { name: 'Government', icon: 'shield' },
-    { name: 'NGO', icon: 'heart' }
-  ].map(cat => ({
-    ...cat,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  }));
-  
-  await prisma.partnerCategory.createMany({ data: partnerCategories });
-  console.log(`✅ Inserted ${partnerCategories.length} partner categories`);
+  const categoriesData = [
+      {
+        name: 'Institutional',
+        icon: 'building'
+      },
+      {
+        name: 'Academic', 
+        icon: 'graduation-cap'
+      },
+      {
+        name: 'Manufacturing',
+        icon: 'factory'
+      },
+      {
+        name: 'Strategic',
+        icon: 'handshake'
+      }
+    ];
+
+    const createdCategories: PartnerCategory[] = [];
+    for (const categoryData of categoriesData) {
+      const category = await prisma.partnerCategory.create({
+        data: categoryData
+      });
+      createdCategories.push(category);
+      console.log(`✅ Created partner category: ${category.name}`);
+    }
 
   // Seed Partners
-  const createdCategories = await prisma.partnerCategory.findMany({ select: { id: true } });
-const partners: Prisma.PartnerCreateManyInput[] = [];
+  console.log('Creating Partners...');
+    
+    const partnersData = [
+      {
+        name: 'NCST – National Council for Science and Technology',
+        description: 'Funding and supporting cleantech innovation through research grants and infrastructure access.',
+        logoUrl: '/uploads/partners/NCST.png',
+        websiteUrl: 'https://www.ncst.gov.rw/',
+        keyImpact: 'Research & Development Support',
+        categoryName: 'Institutional'
+      },
+      {
+        name: 'CMU-Africa – Carnegie Mellon University Africa',
+        description: 'Technical partner providing research mentorship, systems design, and IoT collaboration.',
+        logoUrl: '/uploads/partners/CMU - AFRICA.png',
+        websiteUrl: 'https://www.africa.engineering.cmu.edu/',
+        keyImpact: 'Technical Expertise & Innovation',
+        categoryName: 'Academic'
+      },
+      {
+        name: 'Mastercard Foundation',
+        description: 'Supports youth employment, innovation, and inclusion in cleantech entrepreneurship.',
+        logoUrl: '/uploads/partners/MASTERCARD FOUNDATION.png',
+        websiteUrl: 'https://mastercardfdn.org/en/',
+        keyImpact: 'Capacity Building & Employment',
+        categoryName: 'Institutional'
+      },
+      {
+        name: 'Rwanda ICT Chamber',
+        description: 'Promotes local innovation, tech community building, and advocacy.',
+        logoUrl: '/uploads/partners/ICT_CHAMBER.png',
+        websiteUrl: 'https://rw.linkedin.com/company/rwanda-ict-chamber',
+        keyImpact: 'Industry Networking & Advocacy',
+        categoryName: 'Institutional'
+      },
+      {
+        name: 'Beno Holding Ltd',
+        description: 'Local engineering and production partner focused on scalable EV fabrication.',
+        logoUrl: '/uploads/partners/BENO.png',
+        websiteUrl: 'https://www.benoholdings.rw/',
+        keyImpact: 'Local Manufacturing & Assembly',
+        categoryName: 'Manufacturing'
+      },
+      {
+        name: '250STARTUP',
+        description: 'Incubation support, mentorship, and startup readiness acceleration.',
+        logoUrl: '/uploads/partners/250 (2).png',
+        websiteUrl: 'https://250.rw/',
+        keyImpact: 'Business Development & Mentorship',
+        categoryName: 'Strategic'
+      },
+      {
+        name: 'ESP Partners',
+        description: 'Strategic guidance on scaling operations and environmental impact finance.',
+        logoUrl: '/uploads/partners/ESP.png',
+        websiteUrl: 'https://espartners.co/',
+        keyImpact: 'Strategic Planning & Finance',
+        categoryName: 'Strategic'
+      },
+      {
+        name: 'Rwanda Electric Motors (REM)',
+        description: 'Partner in the e-mobility sector driving national adoption of electric vehicles.',
+        logoUrl: '/uploads/partners/REM.png',
+        websiteUrl: 'https://remrw.com/',
+        keyImpact: 'Market Development & Adoption',
+        categoryName: 'Strategic'
+      },
+      {
+        name: 'REMA – Rwanda Environment Management Authority',
+        description: 'Collaborates on air quality initiatives and emissions policy nationwide.',
+        logoUrl: '/uploads/partners/REMA.png',
+        websiteUrl: 'https://www.rema.gov.rw/home',
+        keyImpact: 'Policy Development & Compliance',
+        categoryName: 'Institutional'
+      },
+      {
+        name: 'Tianjin Luobei – EV Manufacturer (China)',
+        description: 'International partner supporting the design and supply of electric tricycle components.',
+        logoUrl: '', // No logo provided in original
+        websiteUrl: 'https://loboev.en.alibaba.com/',
+        keyImpact: 'Technology Transfer & Components',
+        categoryName: 'Manufacturing'
+      },
+      {
+        name: 'SSM Factory – Clean Cooking Stove Manufacturer',
+        description: 'Collaborates on local manufacturing strategies for sustainable energy technologies.',
+        logoUrl: '', // No logo provided in original
+        websiteUrl: 'https://www.ssmstove.com/',
+        keyImpact: 'Local Production Expertise',
+        categoryName: 'Manufacturing'
+      }
+    ];
 
-  
-  for (const category of createdCategories) {
-    for (let i = 0; i < 5; i++) {
-      partners.push({
-        name: faker.company.name(),
-        description: faker.lorem.paragraph(),
-        logoUrl: faker.image.urlLoremFlickr({ category: 'logo' }),
-        websiteUrl: faker.internet.url(),
-        categoryId: category.id,
-        keyImpact: faker.lorem.sentence(),
-        createdAt: new Date(),
-        updatedAt: new Date()
-      });
+    for (const partnerData of partnersData) {
+      // Find the category by name
+      const category = createdCategories.find(cat => cat.name === partnerData.categoryName);
+      
+      if (category) {
+        const partner = await prisma.partner.create({
+          data: {
+            name: partnerData.name,
+            description: partnerData.description,
+            logoUrl: partnerData.logoUrl,
+            websiteUrl: partnerData.websiteUrl,
+            keyImpact: partnerData.keyImpact,
+            categoryId: category.id
+          }
+        });
+        console.log(`✅ Created partner: ${partner.name} (${partnerData.categoryName})`);
+      } else {
+        console.error(`❌ Category '${partnerData.categoryName}' not found for partner: ${partnerData.name}`);
+      }
     }
-  }
-  
-  await prisma.partner.createMany({ data: partners });
-  console.log(`✅ Inserted ${partners.length} partners`);
 
   // Seed Partnership Reasons
   const partnershipReasons = [
-    { title: 'Shared Vision', description: 'Align with our mission for cleaner transportation', icon: 'eye' },
-    { title: 'Market Expansion', description: 'Access new markets and customers', icon: 'globe' },
-    { title: 'Technology Integration', description: 'Leverage our cutting-edge technology', icon: 'cpu' },
-    { title: 'Sustainability Goals', description: 'Achieve your environmental targets', icon: 'leaf' }
+    { title: 'Local Expertise', description: 'Deep understanding of African markets and conditions', icon: 'globe' },
+    { title: 'Proven Team', description: 'Experienced professionals with track record of success', icon: 'users' },
+    { title: 'Clear Impact', description: 'Measurable results in clean mobility and emissions reduction', icon: 'target' },
+    { title: 'Innovation Focus', description: 'Cutting-edge solutions designed for real-world challenges', icon: 'zap' }
   ].map(reason => ({
     ...reason,
     createdAt: new Date(),
@@ -801,7 +1199,7 @@ const blogPosts: Prisma.BlogPostCreateManyInput[] = [];
       slug: faker.helpers.slugify(faker.lorem.words(5)),
       content: faker.lorem.paragraphs(5),
       summary: faker.lorem.sentence(),
-      imageUrl: faker.image.urlLoremFlickr({ category: 'technology' }),
+      imageUrl: '/uploads/blog/emmanuel.jpg',
       authorId: user.id,
       tags: faker.helpers.arrayElements(
         ['Technology', 'Sustainability', 'Transport', 'Innovation', 'Fleet Management'],

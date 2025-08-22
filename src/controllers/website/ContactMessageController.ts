@@ -19,7 +19,7 @@ class ContactMessageController {
     };
 
     const result = await ContactMessageService.createContactMessage(dto);
-    return Response.created(res, result, 'Contact message sent successfully');
+    return Response.created(res, result, 'Contact message submitted successfully');
   });
 
   getAllContactMessages = catchAsync(async (req: AuthenticatedRequest, res: ExpressResponse) => {
@@ -28,8 +28,8 @@ class ContactMessageController {
       limit: req.query.limit ? parseInt(req.query.limit as string) : undefined,
       search: req.query.search as string,
       email: req.query.email as string,
-      dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined,
-      dateTo: req.query.dateTo ? new Date(req.query.dateTo as string) : undefined,
+      dateFrom: req.query.dateFrom as string,
+      dateTo: req.query.dateTo as string,
       sortBy: req.query.sortBy as string,
       sortOrder: req.query.sortOrder as 'asc' | 'desc'
     };
@@ -42,18 +42,6 @@ class ContactMessageController {
     const id = parseInt(req.params.id);
     const result = await ContactMessageService.getContactMessageById(id);
     return Response.success(res, result, 'Contact message retrieved successfully');
-  });
-
-  getContactMessagesByEmail = catchAsync(async (req: AuthenticatedRequest, res: ExpressResponse) => {
-    const email = req.params.email;
-    const result = await ContactMessageService.getContactMessagesByEmail(email);
-    return Response.success(res, result, 'Contact messages retrieved successfully');
-  });
-
-  getRecentContactMessages = catchAsync(async (req: AuthenticatedRequest, res: ExpressResponse) => {
-    const hours = req.query.hours ? parseInt(req.query.hours as string) : 24;
-    const result = await ContactMessageService.getRecentContactMessages(hours);
-    return Response.success(res, result, 'Recent contact messages retrieved successfully');
   });
 
   updateContactMessage = catchAsync(async (req: AuthenticatedRequest, res: ExpressResponse) => {
@@ -73,6 +61,29 @@ class ContactMessageController {
     const id = parseInt(req.params.id);
     await ContactMessageService.deleteContactMessage(id);
     return Response.success(res, null, 'Contact message deleted successfully');
+  });
+
+  getContactMessagesByEmail = catchAsync(async (req: AuthenticatedRequest, res: ExpressResponse) => {
+    const email = req.params.email;
+    const result = await ContactMessageService.getContactMessagesByEmail(email);
+    return Response.success(res, result, 'Contact messages by email retrieved successfully');
+  });
+
+  getRecentContactMessages = catchAsync(async (req: AuthenticatedRequest, res: ExpressResponse) => {
+    const days = req.query.days ? parseInt(req.query.days as string) : 7;
+    const result = await ContactMessageService.getRecentContactMessages(days);
+    return Response.success(res, result, 'Recent contact messages retrieved successfully');
+  });
+
+  getContactMessageCount = catchAsync(async (req: AuthenticatedRequest, res: ExpressResponse) => {
+    const result = await ContactMessageService.getContactMessageCount();
+    return Response.success(res, { count: result }, 'Contact message count retrieved successfully');
+  });
+
+  getContactMessageCountByEmail = catchAsync(async (req: AuthenticatedRequest, res: ExpressResponse) => {
+    const email = req.params.email;
+    const result = await ContactMessageService.getContactMessageCountByEmail(email);
+    return Response.success(res, { count: result }, 'Contact message count by email retrieved successfully');
   });
 }
 

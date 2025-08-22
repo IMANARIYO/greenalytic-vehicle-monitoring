@@ -1,0 +1,756 @@
+/blogs:
+  get:
+    tags:
+      - Website/Blog Posts
+    summary: Get all blog posts with filters and pagination
+    parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Items per page
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search in title, summary, or content
+      - in: query
+        name: category
+        schema:
+          type: string
+        description: Filter by category
+      - in: query
+        name: tags
+        schema:
+          type: array
+          items:
+            type: string
+        description: Filter by tags
+      - in: query
+        name: authorId
+        schema:
+          type: integer
+        description: Filter by author ID
+      - in: query
+        name: includeAuthor
+        schema:
+          type: boolean
+        description: Include author details in response
+      - in: query
+        name: sortBy
+        schema:
+          type: string
+          enum: [id, title, slug, createdAt, updatedAt]
+        description: Field to sort by
+      - in: query
+        name: sortOrder
+        schema:
+          type: string
+          enum: [asc, desc]
+        description: Sort order
+    responses:
+      200:
+        description: Blog posts retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    oneOf:
+                      - $ref: '#/components/schemas/BlogPost'
+                      - $ref: '#/components/schemas/BlogPostWithAuthor'
+                meta:
+                  type: object
+                  properties:
+                    page:
+                      type: integer
+                    limit:
+                      type: integer
+                    totalItems:
+                      type: integer
+                    totalPages:
+                      type: integer
+                    hasNextPage:
+                      type: boolean
+                    hasPrevPage:
+                      type: boolean
+
+  post:
+    tags:
+      - Website/Blog Posts
+    summary: Create new blog post
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - title
+              - slug
+              - content
+              - summary
+              - authorId
+            properties:
+              title:
+                type: string
+                maxLength: 500
+                description: Blog post title
+              slug:
+                type: string
+                maxLength: 500
+                pattern: '^[a-z0-9-]+$'
+                description: URL-friendly slug
+              content:
+                type: string
+                maxLength: 50000
+                description: Blog post content
+              summary:
+                type: string
+                maxLength: 1000
+                description: Blog post summary
+              imageUrl:
+                type: string
+                maxLength: 1000
+                description: Featured image URL
+              authorId:
+                type: integer
+                description: Author user ID
+              tags:
+                type: array
+                items:
+                  type: string
+                  maxLength: 50
+                maxItems: 20
+                description: Blog post tags
+              category:
+                type: string
+                maxLength: 100
+                description: Blog post category
+    responses:
+      201:
+        description: Blog post created successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  $ref: '#/components/schemas/BlogPost'
+      400:
+        description: Bad request - validation error
+      409:
+        description: Conflict - blog post with slug/title already exists
+
+/blogs/categories:
+  get:
+    tags:
+      - Website/Blog Posts
+    summary: Get all blog categories
+    responses:
+      200:
+        description: Blog categories retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    type: string
+
+/blogs/tags:
+  get:
+    tags:
+      - Website/Blog Posts
+    summary: Get all blog tags
+    responses:
+      200:
+        description: Blog tags retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    type: string
+
+/blogs/analytics:
+  get:
+    tags:
+      - Website/Blog Posts
+    summary: Get blog analytics (categories, tags, counts)
+    responses:
+      200:
+        description: Blog analytics retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  $ref: '#/components/schemas/BlogAnalytics'
+
+/blogs/category/{category}:
+  get:
+    tags:
+      - Website/Blog Posts
+    summary: Get blog posts by category
+    parameters:
+      - in: path
+        name: category
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Blog posts by category retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/BlogPost'
+      400:
+        description: Invalid category
+
+/blogs/category/{category}/count:
+  get:
+    tags:
+      - Website/Blog Posts
+    summary: Get blog post count by category
+    parameters:
+      - in: path
+        name: category
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Blog post count retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: object
+                  properties:
+                    count:
+                      type: integer
+
+/blogs/tag/{tag}:
+  get:
+    tags:
+      - Website/Blog Posts
+    summary: Get blog posts by tag
+    parameters:
+      - in: path
+        name: tag
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Blog posts by tag retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/BlogPost'
+      400:
+        description: Invalid tag
+
+/blogs/author/{authorId}:
+  get:
+    tags:
+      - Website/Blog Posts
+    summary: Get blog posts by author
+    parameters:
+      - in: path
+        name: authorId
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Blog posts by author retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/BlogPost'
+      400:
+        description: Invalid author ID
+
+/blogs/author/{authorId}/count:
+  get:
+    tags:
+      - Website/Blog Posts
+    summary: Get blog post count by author
+    parameters:
+      - in: path
+        name: authorId
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Blog post count retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: object
+                  properties:
+                    count:
+                      type: integer
+
+/blogs/slug/{slug}:
+  get:
+    tags:
+      - Website/Blog Posts
+    summary: Get blog post by slug
+    parameters:
+      - in: path
+        name: slug
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Blog post retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  $ref: '#/components/schemas/BlogPost'
+      404:
+        description: Blog post not found
+
+/blogs/slug/{slug}/author:
+  get:
+    tags:
+      - Website/Blog Posts
+    summary: Get blog post by slug with author details
+    parameters:
+      - in: path
+        name: slug
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Blog post with author retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  $ref: '#/components/schemas/BlogPostWithAuthor'
+      404:
+        description: Blog post not found
+
+/blogs/{id}:
+  get:
+    tags:
+      - Website/Blog Posts
+    summary: Get blog post by ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Blog post retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  $ref: '#/components/schemas/BlogPost'
+      404:
+        description: Blog post not found
+
+  put:
+    tags:
+      - Website/Blog Posts
+    summary: Update blog post by ID
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+                maxLength: 500
+                description: Blog post title
+              slug:
+                type: string
+                maxLength: 500
+                pattern: '^[a-z0-9-]+$'
+                description: URL-friendly slug
+              content:
+                type: string
+                maxLength: 50000
+                description: Blog post content
+              summary:
+                type: string
+                maxLength: 1000
+                description: Blog post summary
+              imageUrl:
+                type: string
+                maxLength: 1000
+                description: Featured image URL
+              tags:
+                type: array
+                items:
+                  type: string
+                  maxLength: 50
+                maxItems: 20
+                description: Blog post tags
+              category:
+                type: string
+                maxLength: 100
+                description: Blog post category
+    responses:
+      200:
+        description: Blog post updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  $ref: '#/components/schemas/BlogPost'
+      404:
+        description: Blog post not found
+      409:
+        description: Conflict - blog post with slug/title already exists
+
+  patch:
+    tags:
+      - Website/Blog Posts
+    summary: Partially update blog post by ID
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+                maxLength: 500
+                description: Blog post title
+              slug:
+                type: string
+                maxLength: 500
+                pattern: '^[a-z0-9-]+$'
+                description: URL-friendly slug
+              content:
+                type: string
+                maxLength: 50000
+                description: Blog post content
+              summary:
+                type: string
+                maxLength: 1000
+                description: Blog post summary
+              imageUrl:
+                type: string
+                maxLength: 1000
+                description: Featured image URL
+              tags:
+                type: array
+                items:
+                  type: string
+                  maxLength: 50
+                maxItems: 20
+                description: Blog post tags
+              category:
+                type: string
+                maxLength: 100
+                description: Blog post category
+    responses:
+      200:
+        description: Blog post updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  $ref: '#/components/schemas/BlogPost'
+      404:
+        description: Blog post not found
+
+  delete:
+    tags:
+      - Website/Blog Posts
+    summary: Delete blog post by ID
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Blog post deleted successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: null
+      404:
+        description: Blog post not found
+
+/blogs/{id}/author:
+  get:
+    tags:
+      - Website/Blog Posts
+    summary: Get blog post with author by ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Blog post with author retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  $ref: '#/components/schemas/BlogPostWithAuthor'
+      404:
+        description: Blog post not found
+
+components:
+  schemas:
+    BlogPost:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        slug:
+          type: string
+        content:
+          type: string
+        summary:
+          type: string
+        imageUrl:
+          type: string
+          nullable: true
+        authorId:
+          type: integer
+        tags:
+          type: array
+          items:
+            type: string
+        category:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    BlogPostWithAuthor:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        slug:
+          type: string
+        content:
+          type: string
+        summary:
+          type: string
+        imageUrl:
+          type: string
+          nullable: true
+        authorId:
+          type: integer
+        author:
+          type: object
+          properties:
+            id:
+              type: integer
+            username:
+              type: string
+              nullable: true
+            email:
+              type: string
+            image:
+              type: string
+              nullable: true
+        tags:
+          type: array
+          items:
+            type: string
+        category:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    BlogAnalytics:
+      type: object
+      properties:
+        categories:
+          type: array
+          items:
+            type: object
+            properties:
+              category:
+                type: string
+                nullable: true
+              count:
+                type: integer
+        tags:
+          type: array
+          items:
+            type: object
+            properties:
+              tag:
+                type: string
+              count:
+                type: integer
+        totalPosts:
+          type: integer

@@ -6,6 +6,7 @@ export interface CreatePartnerDTO {
   websiteUrl?: string;
   categoryId: number;
   keyImpact?: string;
+  logoFile?: File
 }
 
 // DTO for updating partner
@@ -16,6 +17,7 @@ export interface UpdatePartnerDTO {
   websiteUrl?: string;
   categoryId?: number;
   keyImpact?: string;
+  logoFile?: File
 }
 
 // DTO for querying partners with filters and pagination

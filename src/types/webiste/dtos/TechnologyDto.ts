@@ -3,6 +3,7 @@ export interface CreateTechnologyDTO {
   name: string;
   description: string;
   icon: string;
+  iconColor: string;
 }
 
 // DTO for updating technology

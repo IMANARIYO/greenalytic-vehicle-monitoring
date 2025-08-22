@@ -48,7 +48,8 @@ export class ValueService {
       const value = await ValueRepository.create({
         title: dto.title.trim(),
         description: dto.description.trim(),
-        icon: dto.icon.trim()
+        icon: dto.icon.trim(),
+        iconBackgroundColor: dto.iconBackgroundColor.trim()
       });
 
       logger.info('ValueService::createValue success', { 
