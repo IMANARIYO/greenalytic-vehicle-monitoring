@@ -14,7 +14,9 @@ class TechnologyController {
     const dto: CreateTechnologyDTO = {
       name: req.body.name,
       description: req.body.description,
-      icon: req.body.icon
+      icon: req.body.icon,
+      iconColor: req.body.iconColor,
+      
     };
 
     const result = await TechnologyService.createTechnology(dto);

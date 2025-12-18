@@ -401,7 +401,7 @@ model Solution {
   subtitle             String
   description          String
   content              String
-  icon             String
+  icon                 String
   type                 SolutionType
   testimonials         Testimonial[]
   createdAt            DateTime     @default(now())
@@ -434,6 +434,7 @@ model Value {
   title                String
   description          String
   icon                 String
+  iconBackgroundColor  String
   createdAt            DateTime     @default(now())
   updatedAt            DateTime     @updatedAt
 
@@ -444,7 +445,7 @@ model Product {
   name                 String
   description          String
   content              String
-  icon             String
+  icon                 String
   iconBackgroundColor String
   features            Feature[]
   createdAt            DateTime     @default(now())
@@ -470,6 +471,7 @@ model Technology {
   name                 String
   description          String
   icon                 String
+  iconColor            String
   createdAt            DateTime     @default(now())
   updatedAt            DateTime     @updatedAt
 

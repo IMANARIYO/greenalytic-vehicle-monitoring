@@ -3,6 +3,7 @@ export interface CreateValueDTO {
   title: string;
   description: string;
   icon: string;
+  iconBackgroundColor: string;
 }
 
 // DTO for updating value

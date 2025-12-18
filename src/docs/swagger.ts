@@ -70,6 +70,9 @@ const SolutionDocs = yaml.load(
 const TestimonialDocs = yaml.load(
   fs.readFileSync(path.join(__dirname, 'TestimonialDocs.yaml'), 'utf8')
 ) as Record<string, any>;
+const BlogPostDocs = yaml.load(
+  fs.readFileSync(path.join(__dirname, 'BlogPostDocs.yaml'), 'utf8')
+) as Record<string, any>;
 
 const swaggerSpec = {
   openapi: '3.0.0',
@@ -107,8 +110,8 @@ const swaggerSpec = {
     { name: 'Website/Products', description: 'Website product operations' },
     { name: 'Website/Solutions', description: 'Website solution operations' },
     { name: 'Website/Testimonials', description: 'Website testimonial operations' },
+    { name: 'Website/Blog Posts', description: 'Website blog post operations' },
 
-   
   ],
   components: {
     securitySchemes: {
@@ -701,6 +704,7 @@ const swaggerSpec = {
     ...ProductDocs,
     ...SolutionDocs,
     ...TestimonialDocs,
+    ...BlogPostDocs,
     '/__show-models': {
       get: {
         summary: 'Force schema display',
