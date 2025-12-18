@@ -10,6 +10,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import session from 'express-session';
 import { globalErrorHandler, handleNotFoundRoutes } from './middlewares/errorHandler.js';
+import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,6 +21,22 @@ app.use(cors());
 app.use(express.json());
 // app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api', MainRouter);
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+const uploadDirs = [
+  'uploads/partners/',
+  'uploads/team/',
+  'uploads/blog/',
+  'uploads/advisory/',
+  'uploads/solutions/',
+  'uploads/products/'
+];
+
+uploadDirs.forEach(dir => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+});
+
 app.get('/', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -33,6 +50,9 @@ app.get('/docs', (_req, res) => {
 });
 app.use(handleNotFoundRoutes);
 app.use(globalErrorHandler);
+
+
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET!,

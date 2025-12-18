@@ -7,12 +7,14 @@ interface ValueCreateInput {
   title: string;
   description: string;
   icon: string;
+  iconBackgroundColor: string;
 }
 
 interface ValueUpdateInput {
   title?: string;
   description?: string;
   icon?: string;
+  iconBackgroundColor?: string;
 }
 
 class ValueRepository {
@@ -22,7 +24,8 @@ class ValueRepository {
         data: {
           title: data.title,
           description: data.description,
-          icon: data.icon
+          icon: data.icon,
+          iconBackgroundColor: data.iconBackgroundColor
         }
       });
     } catch (error: any) {

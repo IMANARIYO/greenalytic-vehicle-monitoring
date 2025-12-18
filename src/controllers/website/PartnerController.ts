@@ -1,6 +1,7 @@
 import { Request, Response as ExpressResponse } from 'express';
 import { AuthenticatedRequest } from '../../utils/jwtFunctions.js';
 import { catchAsync } from '../../middlewares/errorHandler.js';
+import { AppError, handlePrismaError, HttpStatusCode, NotFoundError } from '../../middlewares/errorHandler.js';
 import Response from '../../utils/response.js';
 import PartnerService from '../../services/website/PartnerService.js';
 import { CreatePartnerDTO, UpdatePartnerDTO, PartnerQueryDTO } from '../../types/webiste/dtos/PartnerDto.js';
@@ -23,7 +24,14 @@ class PartnerController {
     const result = await PartnerService.createPartner(dto);
     return Response.created(res, result, 'Partner created successfully');
   });
+  uploadLogo = catchAsync(async (req: Request, res: ExpressResponse) => {
+    if (!req.file) {
+      throw new AppError('No file uploaded', HttpStatusCode.BAD_REQUEST);
+    }
 
+    const logoUrl = await PartnerService.uploadLogo(req.file);
+    return Response.success(res, { logoUrl }, 'Logo uploaded successfully');
+  });
   getAllPartners = catchAsync(async (req: Request, res: ExpressResponse) => {
     const query: PartnerQueryDTO = {
       page: req.query.page ? parseInt(req.query.page as string) : undefined,
