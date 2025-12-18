@@ -4,80 +4,54 @@ import {
   ContactMessageQueryDTO,
   ContactMessageResponseDTO,
   ContactMessageListResponseDTO,
-  CreateContactMessageResponseDTO
+  CreateContactMessageResponseDTO,
+  EmailStatusDTO
 } from '../../types/webiste/dtos/ContactMessageDto.js';
-import { PaginationMeta, PaginationParams } from '../../types/GlobalTypes.js';
+import { PaginationParams } from '../../types/GlobalTypes.js';
 import ContactMessageRepository from '../../repositories/website/ContactMessageRepository.js';
+import EmailService from '../../services/website/EmailService.js';
 import { AppError, HttpStatusCode } from '../../middlewares/errorHandler.js';
 import logger from '../../utils/logger.js';
 
 export class ContactMessageService {
   
-  // Helper function to validate email format
-  private validateEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  }
-
-  async createContactMessage(dto: CreateContactMessageDTO): Promise<CreateContactMessageResponseDTO> {
+  async createContactMessage(dto: CreateContactMessageDTO): Promise<CreateContactMessageResponseDTO & { emailStatus: EmailStatusDTO }> {
     try {
       // Validate required fields
       const requiredFields = ['name', 'email', 'subject', 'message'];
-      const missingFields = requiredFields.filter(field => 
-        !dto[field as keyof CreateContactMessageDTO] || 
-        dto[field as keyof CreateContactMessageDTO]?.trim().length === 0
-      );
+      const missingFields = requiredFields.filter(field => {
+        const value = dto[field as keyof CreateContactMessageDTO];
+        return value === undefined || value === null || (typeof value === 'string' && value.trim().length === 0);
+      });
       
       if (missingFields.length > 0) {
         throw new AppError(`Missing required fields: ${missingFields.join(', ')}`, HttpStatusCode.BAD_REQUEST);
       }
 
-      // Validate email format
-      if (!this.validateEmail(dto.email.trim())) {
-        throw new AppError('Please provide a valid email address', HttpStatusCode.BAD_REQUEST);
-      }
-
       // Validate field lengths
-      if (dto.name.trim().length > 100) {
-        throw new AppError('Name must be 100 characters or less', HttpStatusCode.BAD_REQUEST);
+      if (dto.name.trim().length > 255) {
+        throw new AppError('Name must be 255 characters or less', HttpStatusCode.BAD_REQUEST);
       }
 
       if (dto.email.trim().length > 255) {
         throw new AppError('Email must be 255 characters or less', HttpStatusCode.BAD_REQUEST);
       }
 
-      if (dto.subject.trim().length > 200) {
-        throw new AppError('Subject must be 200 characters or less', HttpStatusCode.BAD_REQUEST);
+      if (dto.subject.trim().length > 500) {
+        throw new AppError('Subject must be 500 characters or less', HttpStatusCode.BAD_REQUEST);
       }
 
-      if (dto.message.trim().length > 2000) {
-        throw new AppError('Message must be 2000 characters or less', HttpStatusCode.BAD_REQUEST);
+      if (dto.message.trim().length > 5000) {
+        throw new AppError('Message must be 5000 characters or less', HttpStatusCode.BAD_REQUEST);
       }
 
-      // Additional validation for minimum lengths
-      if (dto.name.trim().length < 2) {
-        throw new AppError('Name must be at least 2 characters long', HttpStatusCode.BAD_REQUEST);
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(dto.email.trim())) {
+        throw new AppError('Invalid email format', HttpStatusCode.BAD_REQUEST);
       }
 
-      if (dto.subject.trim().length < 5) {
-        throw new AppError('Subject must be at least 5 characters long', HttpStatusCode.BAD_REQUEST);
-      }
-
-      if (dto.message.trim().length < 10) {
-        throw new AppError('Message must be at least 10 characters long', HttpStatusCode.BAD_REQUEST);
-      }
-
-      // Rate limiting check - prevent spam (optional)
-      const recentMessages = await ContactMessageRepository.findRecentMessages(1); // Last 1 hour
-      const messagesFromThisEmail = recentMessages.filter(msg => 
-        msg.email.toLowerCase() === dto.email.trim().toLowerCase()
-      );
-
-      if (messagesFromThisEmail.length >= 3) {
-        throw new AppError('Too many messages sent recently. Please wait before sending another message.', HttpStatusCode.TOO_MANY_REQUESTS);
-      }
-
-      // Create contact message
+      // Create contact message first (save to DB even if email fails)
       const contactMessage = await ContactMessageRepository.create({
         name: dto.name.trim(),
         email: dto.email.trim().toLowerCase(),
@@ -87,24 +61,45 @@ export class ContactMessageService {
 
       logger.info('ContactMessageService::createContactMessage success', { 
         contactMessageId: contactMessage.id,
-        email: contactMessage.email,
-        subject: contactMessage.subject
+        name: contactMessage.name,
+        email: contactMessage.email
       });
 
+      // Send emails (non-blocking - even if emails fail, contact message is saved)
+      const emailData = {
+        name: contactMessage.name,
+        email: contactMessage.email,
+        subject: contactMessage.subject,
+        message: contactMessage.message,
+        submittedAt: contactMessage.createdAt
+      };
+
+      const emailStatus = await EmailService.sendContactEmails(emailData);
+
+      // Log email status
+      if (!emailStatus.userEmailSent || !emailStatus.adminEmailSent) {
+        logger.warn('ContactMessageService::createContactMessage email issues', {
+          contactMessageId: contactMessage.id,
+          userEmailSent: emailStatus.userEmailSent,
+          adminEmailSent: emailStatus.adminEmailSent,
+          userEmailError: emailStatus.userEmailError,
+          adminEmailError: emailStatus.adminEmailError
+        });
+      }
+
       return {
-        message: 'Thank you for your message! We will get back to you soon.',
-        data: contactMessage
+        message: 'Contact message submitted successfully',
+        data: contactMessage,
+        emailStatus
       };
     } catch (error: any) {
-      // If it's already an AppError (from repository or business logic), rethrow
       if (error instanceof AppError) {
         logger.error('ContactMessageService::createContactMessage', error);
         throw error;
       }
 
-      // For unexpected errors, wrap as generic AppError
       const appError = new AppError(
-        error.message || 'Failed to send contact message',
+        error.message || 'Failed to create contact message',
         HttpStatusCode.INTERNAL_SERVER_ERROR,
         undefined,
         false
@@ -117,11 +112,10 @@ export class ContactMessageService {
   async getAllContactMessages(params: PaginationParams & {
     search?: string;
     email?: string;
-    dateFrom?: Date;
-    dateTo?: Date;
+    dateFrom?: string;
+    dateTo?: string;
   }): Promise<ContactMessageListResponseDTO> {
     try {
-      // Business logic validations for pagination parameters
       const {
         page = 1,
         limit = 10,
@@ -154,57 +148,70 @@ export class ContactMessageService {
         throw new AppError(`Invalid sort field. Allowed fields: ${allowedSortFields.join(', ')}`, HttpStatusCode.BAD_REQUEST);
       }
 
-      // Validate date range
-      if (dateFrom && dateTo && dateFrom > dateTo) {
-        throw new AppError('Start date must be before end date', HttpStatusCode.BAD_REQUEST);
-      }
-
       // Build where clause for filtering
       const whereClause: any = {};
+      const andConditions: any[] = [];
 
       // Search filtering
       if (search && search.trim().length > 0) {
-        whereClause.OR = [
-          {
-            name: {
-              contains: search.trim(),
-              mode: 'insensitive'
+        andConditions.push({
+          OR: [
+            {
+              name: {
+                contains: search.trim(),
+                mode: 'insensitive'
+              }
+            },
+            {
+              email: {
+                contains: search.trim(),
+                mode: 'insensitive'
+              }
+            },
+            {
+              subject: {
+                contains: search.trim(),
+                mode: 'insensitive'
+              }
+            },
+            {
+              message: {
+                contains: search.trim(),
+                mode: 'insensitive'
+              }
             }
-          },
-          {
-            email: {
-              contains: search.trim(),
-              mode: 'insensitive'
-            }
-          },
-          {
-            subject: {
-              contains: search.trim(),
-              mode: 'insensitive'
-            }
-          },
-          {
-            message: {
-              contains: search.trim(),
-              mode: 'insensitive'
-            }
-          }
-        ];
+          ]
+        });
       }
 
       // Email filtering
       if (email && email.trim().length > 0) {
-        whereClause.email = {
-          contains: email.trim(),
-          mode: 'insensitive'
-        };
+        andConditions.push({
+          email: {
+            equals: email.trim(),
+            mode: 'insensitive'
+          }
+        });
       }
 
       // Date range filtering
       if (dateFrom || dateTo) {
-        whereClause.createdAt = {};
-        if (dateFrom) whereClause.createdAt.gte = dateFrom;
-        if (dateTo) whereClause.createdAt.lte = dateTo;
+        const dateFilter: any = {};
+        if (dateFrom) {
+          dateFilter.gte = new Date(dateFrom);
+        }
+        if (dateTo) {
+          const endDate = new Date(dateTo);
+          endDate.setHours(23, 59, 59, 999); // Include entire day
+          dateFilter.lte = endDate;
+        }
+        andConditions.push({
+          createdAt: dateFilter
+        });
+      }
+
+      if (andConditions.length > 0) {
+        whereClause.AND = andConditions;
       }
 
       const result = await ContactMessageRepository.findManyWithFilters(whereClause, page, limit, sortBy, sortOrder);
@@ -213,9 +220,7 @@ export class ContactMessageService {
       logger.info('ContactMessageService::getAllContactMessages success', { 
         totalCount: result.totalCount,
         page,
-        limit,
-        email,
-        hasDateFilter: !!(dateFrom || dateTo)
+        limit
       });
 
       return {
@@ -230,22 +235,15 @@ export class ContactMessageService {
           nextPage: page < totalPages ? page + 1 : undefined,
           prevPage: page > 1 ? page - 1 : undefined,
           sortBy,
-          sortOrder,
-          filters: {
-            email,
-            dateFrom,
-            dateTo
-          }
+          sortOrder
         }
       };
     } catch (error: any) {
-      // If it's already an AppError (from repository or business logic), rethrow
       if (error instanceof AppError) {
         logger.error('ContactMessageService::getAllContactMessages', error);
         throw error;
       }
 
-      // For unexpected errors, wrap as generic AppError
       const appError = new AppError(
         error.message || 'Failed to fetch contact messages',
         HttpStatusCode.INTERNAL_SERVER_ERROR,
@@ -259,7 +257,6 @@ export class ContactMessageService {
 
   async getContactMessageById(id: number): Promise<ContactMessageResponseDTO> {
     try {
-      // Validate ID
       if (isNaN(id) || id <= 0) {
         throw new AppError('Invalid contact message ID. Must be a positive integer.', HttpStatusCode.BAD_REQUEST);
       }
@@ -273,13 +270,11 @@ export class ContactMessageService {
       logger.info('ContactMessageService::getContactMessageById success', { id });
       return contactMessage;
     } catch (error: any) {
-      // If it's already an AppError (from repository or business logic), rethrow
       if (error instanceof AppError) {
         logger.error('ContactMessageService::getContactMessageById', error);
         throw error;
       }
 
-      // For unexpected errors, wrap as generic AppError
       const appError = new AppError(
         error.message || 'Failed to fetch contact message',
         HttpStatusCode.INTERNAL_SERVER_ERROR,
@@ -293,7 +288,6 @@ export class ContactMessageService {
 
   async updateContactMessage(id: number, dto: UpdateContactMessageDTO): Promise<ContactMessageResponseDTO> {
     try {
-      // Validate ID
       if (isNaN(id) || id <= 0) {
         throw new AppError('Invalid contact message ID. Must be a positive integer.', HttpStatusCode.BAD_REQUEST);
       }
@@ -309,8 +303,8 @@ export class ContactMessageService {
         if (!dto.name || dto.name.trim().length === 0) {
           throw new AppError('Name cannot be empty', HttpStatusCode.BAD_REQUEST);
         }
-        if (dto.name.trim().length > 100) {
-          throw new AppError('Name must be 100 characters or less', HttpStatusCode.BAD_REQUEST);
+        if (dto.name.trim().length > 255) {
+          throw new AppError('Name must be 255 characters or less', HttpStatusCode.BAD_REQUEST);
         }
       }
 
@@ -318,11 +312,14 @@ export class ContactMessageService {
         if (!dto.email || dto.email.trim().length === 0) {
           throw new AppError('Email cannot be empty', HttpStatusCode.BAD_REQUEST);
         }
-        if (!this.validateEmail(dto.email.trim())) {
-          throw new AppError('Please provide a valid email address', HttpStatusCode.BAD_REQUEST);
-        }
         if (dto.email.trim().length > 255) {
           throw new AppError('Email must be 255 characters or less', HttpStatusCode.BAD_REQUEST);
+        }
+
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(dto.email.trim())) {
+          throw new AppError('Invalid email format', HttpStatusCode.BAD_REQUEST);
         }
       }
 
@@ -330,8 +327,8 @@ export class ContactMessageService {
         if (!dto.subject || dto.subject.trim().length === 0) {
           throw new AppError('Subject cannot be empty', HttpStatusCode.BAD_REQUEST);
         }
-        if (dto.subject.trim().length > 200) {
-          throw new AppError('Subject must be 200 characters or less', HttpStatusCode.BAD_REQUEST);
+        if (dto.subject.trim().length > 500) {
+          throw new AppError('Subject must be 500 characters or less', HttpStatusCode.BAD_REQUEST);
         }
       }
 
@@ -339,8 +336,8 @@ export class ContactMessageService {
         if (!dto.message || dto.message.trim().length === 0) {
           throw new AppError('Message cannot be empty', HttpStatusCode.BAD_REQUEST);
         }
-        if (dto.message.trim().length > 2000) {
-          throw new AppError('Message must be 2000 characters or less', HttpStatusCode.BAD_REQUEST);
+        if (dto.message.trim().length > 5000) {
+          throw new AppError('Message must be 5000 characters or less', HttpStatusCode.BAD_REQUEST);
         }
       }
 
@@ -356,13 +353,11 @@ export class ContactMessageService {
       logger.info('ContactMessageService::updateContactMessage success', { id });
       return updatedContactMessage;
     } catch (error: any) {
-      // If it's already an AppError (from repository or business logic), rethrow
       if (error instanceof AppError) {
         logger.error('ContactMessageService::updateContactMessage', error);
         throw error;
       }
 
-      // For unexpected errors, wrap as generic AppError
       const appError = new AppError(
         error.message || 'Failed to update contact message',
         HttpStatusCode.INTERNAL_SERVER_ERROR,
@@ -376,7 +371,6 @@ export class ContactMessageService {
 
   async deleteContactMessage(id: number): Promise<boolean> {
     try {
-      // Validate ID
       if (isNaN(id) || id <= 0) {
         throw new AppError('Invalid contact message ID. Must be a positive integer.', HttpStatusCode.BAD_REQUEST);
       }
@@ -391,13 +385,11 @@ export class ContactMessageService {
       logger.info('ContactMessageService::deleteContactMessage success', { id });
       return true;
     } catch (error: any) {
-      // If it's already an AppError (from repository or business logic), rethrow
       if (error instanceof AppError) {
         logger.error('ContactMessageService::deleteContactMessage', error);
         throw error;
       }
 
-      // For unexpected errors, wrap as generic AppError
       const appError = new AppError(
         error.message || 'Failed to delete contact message',
         HttpStatusCode.INTERNAL_SERVER_ERROR,
@@ -411,31 +403,24 @@ export class ContactMessageService {
 
   async getContactMessagesByEmail(email: string): Promise<ContactMessageResponseDTO[]> {
     try {
-      // Validate email parameter
       if (!email || email.trim().length === 0) {
-        throw new AppError('Email parameter is required', HttpStatusCode.BAD_REQUEST);
-      }
-
-      if (!this.validateEmail(email.trim())) {
-        throw new AppError('Please provide a valid email address', HttpStatusCode.BAD_REQUEST);
+        throw new AppError('Email cannot be empty', HttpStatusCode.BAD_REQUEST);
       }
 
       const contactMessages = await ContactMessageRepository.findByEmail(email.trim());
 
       logger.info('ContactMessageService::getContactMessagesByEmail success', { 
         email,
-        count: contactMessages.length 
+        count: contactMessages.length
       });
 
       return contactMessages;
     } catch (error: any) {
-      // If it's already an AppError (from repository or business logic), rethrow
       if (error instanceof AppError) {
         logger.error('ContactMessageService::getContactMessagesByEmail', error);
         throw error;
       }
 
-      // For unexpected errors, wrap as generic AppError
       const appError = new AppError(
         error.message || 'Failed to fetch contact messages by email',
         HttpStatusCode.INTERNAL_SERVER_ERROR,
@@ -447,29 +432,26 @@ export class ContactMessageService {
     }
   }
 
-  async getRecentContactMessages(hours: number = 24): Promise<ContactMessageResponseDTO[]> {
+  async getRecentContactMessages(days: number = 7): Promise<ContactMessageResponseDTO[]> {
     try {
-      // Validate hours parameter
-      if (hours <= 0 || hours > 168) { // Max 7 days
-        throw new AppError('Hours must be between 1 and 168 (7 days)', HttpStatusCode.BAD_REQUEST);
+      if (isNaN(days) || days <= 0) {
+        throw new AppError('Days must be a positive number', HttpStatusCode.BAD_REQUEST);
       }
 
-      const contactMessages = await ContactMessageRepository.findRecentMessages(hours);
+      const contactMessages = await ContactMessageRepository.findRecentMessages(days);
 
       logger.info('ContactMessageService::getRecentContactMessages success', { 
-        hours,
-        count: contactMessages.length 
+        days,
+        count: contactMessages.length
       });
 
       return contactMessages;
     } catch (error: any) {
-      // If it's already an AppError (from repository or business logic), rethrow
       if (error instanceof AppError) {
         logger.error('ContactMessageService::getRecentContactMessages', error);
         throw error;
       }
 
-      // For unexpected errors, wrap as generic AppError
       const appError = new AppError(
         error.message || 'Failed to fetch recent contact messages',
         HttpStatusCode.INTERNAL_SERVER_ERROR,
@@ -477,6 +459,63 @@ export class ContactMessageService {
         false
       );
       logger.error('ContactMessageService::getRecentContactMessages', appError);
+      throw appError;
+    }
+  }
+
+  async getContactMessageCount(): Promise<number> {
+    try {
+      const count = await ContactMessageRepository.count();
+
+      logger.info('ContactMessageService::getContactMessageCount success', { 
+        count
+      });
+
+      return count;
+    } catch (error: any) {
+      if (error instanceof AppError) {
+        logger.error('ContactMessageService::getContactMessageCount', error);
+        throw error;
+      }
+
+      const appError = new AppError(
+        error.message || 'Failed to count contact messages',
+        HttpStatusCode.INTERNAL_SERVER_ERROR,
+        undefined,
+        false
+      );
+      logger.error('ContactMessageService::getContactMessageCount', appError);
+      throw appError;
+    }
+  }
+
+  async getContactMessageCountByEmail(email: string): Promise<number> {
+    try {
+      if (!email || email.trim().length === 0) {
+        throw new AppError('Email cannot be empty', HttpStatusCode.BAD_REQUEST);
+      }
+
+      const count = await ContactMessageRepository.countByEmail(email.trim());
+
+      logger.info('ContactMessageService::getContactMessageCountByEmail success', { 
+        email,
+        count
+      });
+
+      return count;
+    } catch (error: any) {
+      if (error instanceof AppError) {
+        logger.error('ContactMessageService::getContactMessageCountByEmail', error);
+        throw error;
+      }
+
+      const appError = new AppError(
+        error.message || 'Failed to count contact messages by email',
+        HttpStatusCode.INTERNAL_SERVER_ERROR,
+        undefined,
+        false
+      );
+      logger.error('ContactMessageService::getContactMessageCountByEmail', appError);
       throw appError;
     }
   }

@@ -7,12 +7,14 @@ interface TechnologyCreateInput {
   name: string;
   description: string;
   icon: string;
+  iconColor: string;
 }
 
 interface TechnologyUpdateInput {
   name?: string;
   description?: string;
   icon?: string;
+  iconColor?: string;
 }
 
 class TechnologyRepository {
@@ -22,7 +24,9 @@ class TechnologyRepository {
         data: {
           name: data.name,
           description: data.description,
-          icon: data.icon
+          icon: data.icon,
+          iconColor: data.iconColor,
+    
         }
       });
     } catch (error: any) {

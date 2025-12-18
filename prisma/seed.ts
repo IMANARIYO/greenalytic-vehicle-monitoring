@@ -795,7 +795,10 @@ async function seedAdditionalModels() {
   const features: Prisma.FeatureCreateManyInput[] = [];
 
   for (const product of createdProducts) {
-    for (let i = 0; i < 5; i++) {
+    const productName =
+      products.find((p) => p.name === product.name)?.name || "";
+    const featuresForProduct = productFeatures[productName] || [];
+    for (const feature of featuresForProduct) {
       features.push({
         title: faker.lorem.words(3),
         description: faker.lorem.sentence(),
@@ -863,7 +866,6 @@ async function seedAdditionalModels() {
     },
   ].map((member) => ({
     ...member,
-
     description: faker.lorem.paragraph(),
     imageUrl: faker.image.avatar(),
     socialLinks: JSON.stringify({
