@@ -22,9 +22,9 @@ export interface ContactMessageQueryDTO {
   
   // Filtering
   search?: string; // Search in name, email, subject, or message
-  email?: string;
-  dateFrom?: Date;
-  dateTo?: Date;
+  email?: string; // Filter by email
+  dateFrom?: string; // Filter from date
+  dateTo?: string; // Filter to date
   
   // Sorting
   sortBy?: string;
@@ -56,11 +56,6 @@ export interface ContactMessageListResponseDTO {
     prevPage?: number;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
-    filters?: {
-      email?: string;
-      dateFrom?: Date;
-      dateTo?: Date;
-    };
   };
 }
 
@@ -68,4 +63,12 @@ export interface ContactMessageListResponseDTO {
 export interface CreateContactMessageResponseDTO {
   message: string;
   data: ContactMessageResponseDTO;
+}
+
+// DTO for email sending status
+export interface EmailStatusDTO {
+  userEmailSent: boolean;
+  adminEmailSent: boolean;
+  userEmailError?: string;
+  adminEmailError?: string;
 }

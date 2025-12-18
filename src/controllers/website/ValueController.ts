@@ -14,7 +14,8 @@ class ValueController {
     const dto: CreateValueDTO = {
       title: req.body.title,
       description: req.body.description,
-      icon: req.body.icon
+      icon: req.body.icon,
+      iconBackgroundColor: req.body.iconBackgroundColor
     };
 
     const result = await ValueService.createValue(dto);

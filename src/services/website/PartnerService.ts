@@ -11,7 +11,8 @@ import { PaginationMeta, PaginationParams } from '../../types/GlobalTypes.js';
 import PartnerRepository from '../../repositories/website/PartnerRepository.js';
 import { AppError, HttpStatusCode } from '../../middlewares/errorHandler.js';
 import logger from '../../utils/logger.js';
-
+  import fs from 'fs';
+import path from 'path';
 export class PartnerService {
   
   private validateUrl(url: string): boolean {
@@ -128,6 +129,40 @@ export class PartnerService {
       throw appError;
     }
   }
+
+async uploadLogo(file: Express.Multer.File): Promise<string> {
+  try {
+    // Ensure upload directory exists
+    const uploadDir = 'uploads/partners/';
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+
+    // Return the URL path that will be accessible via static serving
+    const logoUrl = `/uploads/partners/${file.filename}`;
+    
+    logger.info('PartnerService::uploadLogo success', { 
+      filename: file.filename,
+      logoUrl 
+    });
+
+    return logoUrl;
+  } catch (error: any) {
+    // Clean up file if processing fails
+    if (file.path && fs.existsSync(file.path)) {
+      fs.unlinkSync(file.path);
+    }
+
+    const appError = new AppError(
+      error.message || 'Failed to upload logo',
+      HttpStatusCode.INTERNAL_SERVER_ERROR,
+      undefined,
+      false
+    );
+    logger.error('PartnerService::uploadLogo', appError);
+    throw appError;
+  }
+}
 
   async getAllPartners(params: PaginationParams & {
     search?: string;
