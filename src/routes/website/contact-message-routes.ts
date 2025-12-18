@@ -9,7 +9,7 @@ export const ContactMessageRouter = Router();
 const contactMessageController = ContactMessageController;
 
 // CREATE ROUTES
-// Create contact message - Public access (no auth required for contact forms)
+// Create contact message - Public access
 ContactMessageRouter.post(
   '/',
   (req: Request, res: Response, next: NextFunction) => {
@@ -38,6 +38,16 @@ ContactMessageRouter.get(
   }
 );
 
+// Get contact message count - Admin only
+ContactMessageRouter.get(
+  '/count',
+//   isLoggedIn,
+//   hasRole(['ADMIN']),
+  (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    contactMessageController.getContactMessageCount(req, res, next);
+  }
+);
+
 // Get contact messages by email - Admin only
 ContactMessageRouter.get(
   '/email/:email',
@@ -45,6 +55,16 @@ ContactMessageRouter.get(
 //   hasRole(['ADMIN']),
   (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     contactMessageController.getContactMessagesByEmail(req, res, next);
+  }
+);
+
+// Get contact message count by email - Admin only
+ContactMessageRouter.get(
+  '/email/:email/count',
+//   isLoggedIn,
+//   hasRole(['ADMIN']),
+  (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    contactMessageController.getContactMessageCountByEmail(req, res, next);
   }
 );
 

@@ -19,6 +19,7 @@ import { FeatureRouter } from './website/feature-routes.js'; // Import the Featu
 import { ProductRouter } from './website/product-routes.js'; // Import the ProductRouter
 import { SolutionRouter } from './website/solution-routes.js'; // Import the SolutionRouter
 import { TestimonialRouter } from './website/testimonial-routes.js'; // Import the TestimonialRouter
+import { BlogPostRouter } from './website/blog-post-routes.js';
 
 import authRoutes from './authRoutes.js';
 
@@ -44,6 +45,7 @@ MainRouter.use('/website/features', FeatureRouter);
 MainRouter.use('/website/products', ProductRouter);
 MainRouter.use('/website/solutions', SolutionRouter);
 MainRouter.use('/website/testimonials', TestimonialRouter);
+MainRouter.use('/website/blogs', BlogPostRouter);
 
 MainRouter.get('/test', (req, res) => {
   res.json({ message: 'MainRouter is working' });

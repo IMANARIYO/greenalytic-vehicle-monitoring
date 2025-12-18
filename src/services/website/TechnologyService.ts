@@ -48,7 +48,9 @@ export class TechnologyService {
       const technology = await TechnologyRepository.create({
         name: dto.name.trim(),
         description: dto.description.trim(),
-        icon: dto.icon.trim()
+        icon: dto.icon.trim(),
+        iconColor: dto.iconColor.trim(),
+  
       });
 
       logger.info('TechnologyService::createTechnology success', { 

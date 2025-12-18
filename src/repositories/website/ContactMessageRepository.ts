@@ -1,6 +1,6 @@
 import { ContactMessage, Prisma } from '@prisma/client';
 import logger from '../../utils/logger.js';
-import { AppError, handlePrismaError, HttpStatusCode, NotFoundError } from '../../middlewares/errorHandler.js';
+import { AppError, handlePrismaError, HttpStatusCode } from '../../middlewares/errorHandler.js';
 import prisma from '../../config/db.js';
 
 interface ContactMessageCreateInput {
@@ -29,13 +29,11 @@ class ContactMessageRepository {
         }
       });
     } catch (error: any) {
-      // Handle known Prisma errors with your AppError system
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         const appError = handlePrismaError(error);
         logger.error('ContactMessageRepository::create', appError);
         throw appError;
       }
-      // For other errors, wrap or rethrow as generic AppError
       const appError = new AppError(
         error.message || 'Failed to create contact message',
         HttpStatusCode.INTERNAL_SERVER_ERROR,
@@ -53,13 +51,11 @@ class ContactMessageRepository {
         where: { id }
       });
     } catch (error: any) {
-      // Handle known Prisma errors consistently
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         const appError = handlePrismaError(error);
         logger.error('ContactMessageRepository::findById', appError);
         throw appError;
       }
-      // For other errors, wrap as generic AppError
       const appError = new AppError(
         error.message || 'Failed to find contact message by ID',
         HttpStatusCode.INTERNAL_SERVER_ERROR,
@@ -77,13 +73,11 @@ class ContactMessageRepository {
         orderBy: { createdAt: 'desc' }
       });
     } catch (error: any) {
-      // Handle known Prisma errors consistently
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         const appError = handlePrismaError(error);
         logger.error('ContactMessageRepository::findAll', appError);
         throw appError;
       }
-      // For other errors, wrap as generic AppError
       const appError = new AppError(
         error.message || 'Failed to find all contact messages',
         HttpStatusCode.INTERNAL_SERVER_ERROR,
@@ -119,13 +113,11 @@ class ContactMessageRepository {
 
       return { data, totalCount };
     } catch (error: any) {
-      // Handle known Prisma errors consistently
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         const appError = handlePrismaError(error);
         logger.error('ContactMessageRepository::findManyWithFilters', appError);
         throw appError;
       }
-      // For other errors, wrap as generic AppError
       const appError = new AppError(
         error.message || 'Failed to find contact messages with filters',
         HttpStatusCode.INTERNAL_SERVER_ERROR,
@@ -151,13 +143,11 @@ class ContactMessageRepository {
         data: updateData
       });
     } catch (error: any) {
-      // Handle known Prisma errors consistently
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         const appError = handlePrismaError(error);
         logger.error('ContactMessageRepository::update', appError);
         throw appError;
       }
-      // For other errors, wrap as generic AppError
       const appError = new AppError(
         error.message || 'Failed to update contact message',
         HttpStatusCode.INTERNAL_SERVER_ERROR,
@@ -175,13 +165,11 @@ class ContactMessageRepository {
         where: { id }
       });
     } catch (error: any) {
-      // Handle known Prisma errors consistently
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         const appError = handlePrismaError(error);
         logger.error('ContactMessageRepository::delete', appError);
         throw appError;
       }
-      // For other errors, wrap as generic AppError
       const appError = new AppError(
         error.message || 'Failed to delete contact message',
         HttpStatusCode.INTERNAL_SERVER_ERROR,
@@ -205,13 +193,11 @@ class ContactMessageRepository {
         orderBy: { createdAt: 'desc' }
       });
     } catch (error: any) {
-      // Handle known Prisma errors consistently
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         const appError = handlePrismaError(error);
         logger.error('ContactMessageRepository::findByEmail', appError);
         throw appError;
       }
-      // For other errors, wrap as generic AppError
       const appError = new AppError(
         error.message || 'Failed to find contact messages by email',
         HttpStatusCode.INTERNAL_SERVER_ERROR,
@@ -223,47 +209,15 @@ class ContactMessageRepository {
     }
   }
 
-  async findRecentMessages(hours: number = 24): Promise<ContactMessage[]> {
-    try {
-      const startTime = new Date();
-      startTime.setHours(startTime.getHours() - hours);
-
-      return await prisma.contactMessage.findMany({
-        where: {
-          createdAt: { gte: startTime }
-        },
-        orderBy: { createdAt: 'desc' }
-      });
-    } catch (error: any) {
-      // Handle known Prisma errors consistently
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        const appError = handlePrismaError(error);
-        logger.error('ContactMessageRepository::findRecentMessages', appError);
-        throw appError;
-      }
-      // For other errors, wrap as generic AppError
-      const appError = new AppError(
-        error.message || 'Failed to find recent contact messages',
-        HttpStatusCode.INTERNAL_SERVER_ERROR,
-        undefined,
-        false
-      );
-      logger.error('ContactMessageRepository::findRecentMessages', appError);
-      throw appError;
-    }
-  }
-
   async count(): Promise<number> {
     try {
       return await prisma.contactMessage.count();
     } catch (error: any) {
-      // Handle known Prisma errors consistently
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         const appError = handlePrismaError(error);
         logger.error('ContactMessageRepository::count', appError);
         throw appError;
       }
-      // For other errors, wrap as generic AppError
       const appError = new AppError(
         error.message || 'Failed to count contact messages',
         HttpStatusCode.INTERNAL_SERVER_ERROR,
@@ -275,31 +229,59 @@ class ContactMessageRepository {
     }
   }
 
-  async countByDateRange(startDate: Date, endDate: Date): Promise<number> {
+  async countByEmail(email: string): Promise<number> {
     try {
       return await prisma.contactMessage.count({
-        where: {
-          createdAt: {
-            gte: startDate,
-            lte: endDate
+        where: { 
+          email: {
+            equals: email,
+            mode: 'insensitive'
           }
         }
       });
     } catch (error: any) {
-      // Handle known Prisma errors consistently
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         const appError = handlePrismaError(error);
-        logger.error('ContactMessageRepository::countByDateRange', appError);
+        logger.error('ContactMessageRepository::countByEmail', appError);
         throw appError;
       }
-      // For other errors, wrap as generic AppError
       const appError = new AppError(
-        error.message || 'Failed to count contact messages by date range',
+        error.message || 'Failed to count contact messages by email',
         HttpStatusCode.INTERNAL_SERVER_ERROR,
         undefined,
         false
       );
-      logger.error('ContactMessageRepository::countByDateRange', appError);
+      logger.error('ContactMessageRepository::countByEmail', appError);
+      throw appError;
+    }
+  }
+
+  async findRecentMessages(days: number = 7): Promise<ContactMessage[]> {
+    try {
+      const dateFrom = new Date();
+      dateFrom.setDate(dateFrom.getDate() - days);
+
+      return await prisma.contactMessage.findMany({
+        where: {
+          createdAt: {
+            gte: dateFrom
+          }
+        },
+        orderBy: { createdAt: 'desc' }
+      });
+    } catch (error: any) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        const appError = handlePrismaError(error);
+        logger.error('ContactMessageRepository::findRecentMessages', appError);
+        throw appError;
+      }
+      const appError = new AppError(
+        error.message || 'Failed to find recent contact messages',
+        HttpStatusCode.INTERNAL_SERVER_ERROR,
+        undefined,
+        false
+      );
+      logger.error('ContactMessageRepository::findRecentMessages', appError);
       throw appError;
     }
   }
